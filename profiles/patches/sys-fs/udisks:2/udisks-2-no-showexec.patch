@@ -1,0 +1,11 @@
+--- udisks-2.1.7/src/udiskslinuxfilesystem.c.bak	2016-04-14 08:35:27.770064419 +0300
++++ udisks-2.1.7/src/udiskslinuxfilesystem.c	2016-04-14 08:36:10.627528627 +0300
+@@ -284,7 +284,7 @@
+ 
+ /* ---------------------- vfat -------------------- */
+ 
+-static const gchar *vfat_defaults[] = { "uid=", "gid=", "shortname=mixed", "utf8=1", "showexec", "flush", NULL };
++static const gchar *vfat_defaults[] = { "uid=", "gid=", "shortname=mixed", "utf8=1", "flush", NULL };
+ static const gchar *vfat_allow[] = { "flush", "utf8=", "shortname=", "umask=", "dmask=", "fmask=", "codepage=", "iocharset=", "usefree", "showexec", NULL };
+ static const gchar *vfat_allow_uid_self[] = { "uid=", NULL };
+ static const gchar *vfat_allow_gid_self[] = { "gid=", NULL };

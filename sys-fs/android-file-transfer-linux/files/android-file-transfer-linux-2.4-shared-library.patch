@@ -1,0 +1,35 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4c44066..2895674 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -61,8 +61,6 @@ set(SOURCES
+ 	mtp/usb/BulkPipe.cpp
+ )
+ 
+-set(MTP_LIBRARIES mtp-ng-static)
+-
+ if (USB_BACKEND_LIBUSB)
+ 
+ 	pkg_check_modules(LIBUSB libusb-1.0 REQUIRED)
+@@ -99,8 +97,6 @@ else()
+ 	)
+ endif()
+ 
+-
+-add_library(mtp-ng-static STATIC ${SOURCES})
+ if (BUILD_SHARED_LIB)
+ 	add_library(mtp-ng SHARED ${SOURCES})
+ 	target_link_libraries(mtp-ng ${CMAKE_THREAD_LIBS_INIT})
+@@ -108,6 +104,12 @@ if (BUILD_SHARED_LIB)
+ 	if (USB_BACKEND_LIBUSB)
+ 		target_link_libraries(mtp-ng ${LIBUSB_LIBRARIES})
+ 	endif()
++	list(APPEND MTP_LIBRARIES mtp-ng)
++	install(TARGETS mtp-ng LIBRARY DESTINATION "lib${LIB_SUFFIX}" ARCHIVE DESTINATION "lib${LIB_SUFFIX}")
++else (BUILD_SHARED_LIB)
++	add_library(mtp-ng-static STATIC ${SOURCES})
++	list(APPEND MTP_LIBRARIES mtp-ng-static)
++	install(TARGETS mtp-ng-static LIBRARY DESTINATION "lib${LIB_SUFFIX}" ARCHIVE DESTINATION "lib${LIB_SUFFIX}")
+ endif (BUILD_SHARED_LIB)
+ 
+ add_definitions(-D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64)

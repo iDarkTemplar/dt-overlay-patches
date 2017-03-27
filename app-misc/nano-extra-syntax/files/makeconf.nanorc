@@ -1,0 +1,26 @@
+## if you now how make it better, please write)
+
+syntax "make.conf" "make.conf$"
+color brightred "\$+[{(][a-zA-Z0-9_-]+[})]"
+
+## "="
+color brightyellow "[=]"
+
+##main symbols
+color magenta "\<(CHOST|CBUILD|MAKEOPTS|PKGDIR|ICCCFLAGS|ICCCXXFLAGS|LINGUAS|LANGUAGE|LANG|ACCEPT_KEYWORDS|ACCEPT_LICENSE)\>"
+color green "\<(CFLAGS|CXXFLAGS|LDFLAGS|VIDEO_CARDS|INPUT_DEVICES|USE|source)\>"
+
+##for ccache
+color brightyellow "\<(CCACHE_SIZE|CCACHE_DIR|PORTAGE_NICENESS)\>"
+
+##for proxy
+color brightred "\<(http_proxy|RSYNC_PROXY|ftp_proxy)\>"
+##features,fetch & resume command
+color brightcyan "\<(FEATURES|FETCHCOMMAND|RESUMECOMMAND)\>"
+
+## mirrors & sync
+color brightmagenta "\<(GENTOO_MIRRORS|SYNC)\>"
+
+##comments
+icolor brightblue "^[[:space:]]*#.*$"
+icolor cyan "^[[:space:]]*##.*$"

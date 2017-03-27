@@ -1,0 +1,11 @@
+--- A/heimdall-frontend/heimdall-frontend.pro	2013-03-30 21:43:23.086858482 +0400
++++ B/heimdall-frontend/heimdall-frontend.pro	2013-03-30 21:42:28.987860064 +0400
+@@ -70,7 +70,7 @@
+ 		isEmpty(OUTPUTDIR) {
+ 			target.path = /usr/local/bin
+ 		} else {
+-			target.path = $$(OUTPUTDIR)
++			target.path = $$OUTPUTDIR
+ 		}
+ 
+ 		INSTALLS += target

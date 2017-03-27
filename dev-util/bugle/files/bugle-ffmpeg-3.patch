@@ -1,0 +1,37 @@
+diff -Naur bugle-0.0.20140104.orig/src/filters/screenshot.c bugle-0.0.20140104/src/filters/screenshot.c
+--- bugle-0.0.20140104.orig/src/filters/screenshot.c	2016-12-30 15:26:05.628985904 +0300
++++ bugle-0.0.20140104/src/filters/screenshot.c	2016-12-30 15:40:47.797968479 +0300
+@@ -68,7 +68,7 @@
+ #   include <swscale.h>
+ #  endif
+ # endif
+-# define CAPTURE_AV_FMT PIX_FMT_RGB24
++# define CAPTURE_AV_FMT AV_PIX_FMT_RGB24
+ # define CAPTURE_GL_FMT GL_RGB
+ #endif
+ #define CAPTURE_GL_ELEMENTS 3
+@@ -273,7 +273,7 @@
+     if (!video_stream)
+         return BUGLE_FALSE;
+     codec = avcodec_find_encoder_by_name(video_codec);
+-    if (!codec) codec = avcodec_find_encoder(CODEC_ID_HUFFYUV);
++    if (!codec) codec = avcodec_find_encoder(AV_CODEC_ID_HUFFYUV);
+     if (!codec)
+         return BUGLE_FALSE;
+     c = video_stream->codec;
+@@ -283,11 +283,11 @@
+     c->codec_type = AVMEDIA_TYPE_VIDEO;
+ #endif
+     c->codec_id = codec->id;
+-    if (c->codec_id == CODEC_ID_HUFFYUV)
+-        c->pix_fmt = PIX_FMT_YUV422P;
++    if (c->codec_id == AV_CODEC_ID_HUFFYUV)
++        c->pix_fmt = AV_PIX_FMT_YUV422P;
+     else
+-        c->pix_fmt = PIX_FMT_YUV420P;
+-    if (c->codec_id == CODEC_ID_FFV1)
++        c->pix_fmt = AV_PIX_FMT_YUV420P;
++    if (c->codec_id == AV_CODEC_ID_FFV1)
+         c->strict_std_compliance = -1;
+     c->bit_rate = video_bitrate;
+     c->width = width;

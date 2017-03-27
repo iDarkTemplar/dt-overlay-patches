@@ -1,0 +1,168 @@
+diff --git a/sysvinit-2.88dsf/src/init.c b/sysvinit-2.88dsf/src/init.c
+index 27532ad..4124f6a 100644
+--- a/sysvinit-2.88dsf/src/init.c
++++ b/sysvinit-2.88dsf/src/init.c
+@@ -168,6 +168,7 @@ struct actions {
+   { "initdefault", INITDEFAULT	},
+   { "sysinit",	   SYSINIT	},
+   { "kbrequest",   KBREQUEST    },
++  { "exec",   EXEC    },
+   { NULL,	   0		},
+ };
+ 
+@@ -924,7 +925,7 @@ void init_freeenv(char **e)
+  *
+  */
+ static
+-pid_t spawn(CHILD *ch, int *res)
++pid_t spawn(CHILD *ch, int *res, int do_fork)
+ {
+   char *args[16];		/* Argv array */
+   char buf[136];		/* Line buffer */
+@@ -933,7 +934,7 @@ pid_t spawn(CHILD *ch, int *res)
+   time_t t;			/* System time */
+   int oldAlarm;			/* Previous alarm value */
+   char *proc = ch->process;	/* Command line */
+-  pid_t pid, pgrp;		/* child, console process group. */
++  pid_t pid = -1, pgrp;		/* child, console process group. */
+   sigset_t nmask, omask;	/* For blocking SIGCHLD */
+   struct sigaction sa;
+ 
+@@ -1033,25 +1034,29 @@ pid_t spawn(CHILD *ch, int *res)
+ 	/*
+ 	 *	Block sigchild while forking.
+ 	 */
+-	sigemptyset(&nmask);
+-	sigaddset(&nmask, SIGCHLD);
+-	sigprocmask(SIG_BLOCK, &nmask, &omask);
++	if (do_fork) {
++		sigemptyset(&nmask);
++		sigaddset(&nmask, SIGCHLD);
++		sigprocmask(SIG_BLOCK, &nmask, &omask);
++	}
+ 
+-	if ((pid = fork()) == 0) {
++	if ((!do_fork) || ((pid = fork()) == 0)) {
+ 
+-		close(0);
+-		close(1);
+-		close(2);
+-		if (pipe_fd >= 0) close(pipe_fd);
++		if (do_fork) {
++			close(0);
++			close(1);
++			close(2);
++			if (pipe_fd >= 0) close(pipe_fd);
+ 
+-  		sigprocmask(SIG_SETMASK, &omask, NULL);
++			sigprocmask(SIG_SETMASK, &omask, NULL);
++		}
+ 
+ 		/*
+ 		 *	In sysinit, boot, bootwait or single user mode:
+ 		 *	for any wait-type subprocess we _force_ the console
+ 		 *	to be its controlling tty.
+ 		 */
+-  		if (strchr("*#sS", runlevel) && ch->flags & WAITING) {
++  		if (strchr("*#sS", runlevel) && ch->flags & WAITING && do_fork) {
+ 			/*
+ 			 *	We fork once extra. This is so that we can
+ 			 *	wait and change the process group and session
+@@ -1123,8 +1128,10 @@ pid_t spawn(CHILD *ch, int *res)
+ 			/* Set ioctl settings to default ones */
+ 			console_stty();
+ 
+-  		} else {
+-			setsid();
++		} else {
++			if (do_fork) {
++				setsid();
++			}
+ 			if ((f = console_open(O_RDWR|O_NOCTTY)) < 0) {
+ 				initlog(L_VB, "open(%s): %s", console_dev,
+ 					strerror(errno));
+@@ -1150,8 +1157,10 @@ pid_t spawn(CHILD *ch, int *res)
+ 		 * FIXME: that's for compatibility with *very*
+ 		 * old getties - probably it can be taken out.
+ 		 */
+-		if (ch->process[0] != '+')
+-			write_utmp_wtmp("", ch->id, getpid(), INIT_PROCESS, "");
++		if (do_fork) {
++			if (ch->process[0] != '+')
++				write_utmp_wtmp("", ch->id, getpid(), INIT_PROCESS, "");
++		}
+ 
+   		/* Reset all the signals, set up environment */
+   		for(f = 1; f < NSIG; f++) SETSIG(sa, f, SIG_DFL, SA_RESTART);
+@@ -1173,16 +1182,31 @@ pid_t spawn(CHILD *ch, int *res)
+ 		}
+   		initlog(L_VB, "cannot execute \"%s\"", args[1]);
+ 
+-		if (ch->process[0] != '+')
+-			write_utmp_wtmp("", ch->id, getpid(), DEAD_PROCESS, NULL);
+-  		exit(1);
++		if (do_fork) {
++			if (ch->process[0] != '+')
++				write_utmp_wtmp("", ch->id, getpid(), DEAD_PROCESS, NULL);
++			exit(1);
++		}
++		else
++		{
++			/*
++			 * exec() failed, continue init process
++			 * Make sure there are some fallback records after an exec record
++			 */
++
++			initlog(L_VB, "cannot execute \"%s\", continuing to next action", args[1]);
++		 }
+   	}
++
+ 	*res = pid;
+-  	sigprocmask(SIG_SETMASK, &omask, NULL);
+ 
+-	INITDBG(L_VB, "Started id %s (pid %d)", ch->id, pid);
++	if (do_fork) {
++		sigprocmask(SIG_SETMASK, &omask, NULL);
+ 
+-	if (pid == -1) {
++		INITDBG(L_VB, "Started id %s (pid %d)", ch->id, pid);
++	}
++
++	if (do_fork && (pid == -1)) {
+ 		initlog(L_VB, "cannot fork, retry..");
+ 		do_sleep(5);
+ 		continue;
+@@ -1220,8 +1244,11 @@ void startup(CHILD *ch)
+ 		case ONDEMAND:
+ 		case RESPAWN:
+   			ch->flags |= RUNNING;
+-  			(void)spawn(ch, &(ch->pid));
++  			(void)spawn(ch, &(ch->pid), 1);
+   			break;
++  		case EXEC:
++			(void)spawn(ch, &(ch->pid), 0);
++			break;
+ 	}
+ }
+ 
+@@ -2606,7 +2633,7 @@ void init_main(void)
+ 	if (emerg_shell) {
+ 		pid_t rc;
+ 		SETSIG(sa, SIGCHLD, SIG_DFL, SA_RESTART);
+-		if (spawn(&ch_emerg, &f) > 0) {
++		if (spawn(&ch_emerg, &f, 1) > 0) {
+ 			while((rc = wait(&st)) != f)
+ 				if (rc < 0 && errno == ECHILD)
+ 					break;
+diff --git a/src/init.h b/src/init.h
+index 9763140..17a3f0d 100644
+--- a/sysvinit-2.88dsf/src/init.h
++++ b/sysvinit-2.88dsf/src/init.h
+@@ -78,6 +78,7 @@ void wall(const char *text, int remote);
+ #define SYSINIT		       13
+ #define POWERFAILNOW           14
+ #define KBREQUEST               15
++#define EXEC               16
+ 
+ /* Information about a process in the in-core inittab */
+ typedef struct _child_ {

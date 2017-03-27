@@ -1,0 +1,30 @@
+diff --git a/SConstruct b/SConstruct
+index 316d15a..6070997 100644
+--- a/SConstruct
++++ b/SConstruct
+@@ -264,6 +264,12 @@ def setup_aspects():
+         choices = ['yes', 'no'],
+         default = 'yes'))
+ 
++    aspects.AddAspect(Aspect(
++        group = 'options',
++        name = 'gldb-gui-name-prefix',
++        help = 'Prefix for gldb-gui application name',
++        default = None))
++
+     return aspects
+ 
+ # Process command line arguments
+diff --git a/src/gldb/SConscript b/src/gldb/SConscript
+index cfdcf82..61f547c 100644
+--- a/src/gldb/SConscript
++++ b/src/gldb/SConscript
+@@ -45,7 +45,7 @@ if 'debugger' in aspects['parts']:
+         'gldb-common.c',
+         'gldb-channels.c'])
+ 
+-    gldb_gui = gldb_env.Program('gldb-gui', [
++    gldb_gui = gldb_env.Program('gldb-gui' + aspects['gldb-gui-name-prefix'], [
+         'gldb-gui-backtrace.c',
+         'gldb-gui-breakpoint.c',
+         'gldb-gui-buffer.c',

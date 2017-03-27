@@ -1,0 +1,40 @@
+diff -Naur sni-qt-0.2.6.orig/src/iconcache.cpp sni-qt-0.2.6/src/iconcache.cpp
+--- sni-qt-0.2.6.orig/src/iconcache.cpp	2017-01-05 00:11:42.969316526 +0300
++++ sni-qt-0.2.6/src/iconcache.cpp	2017-01-05 00:36:48.360220250 +0300
+@@ -131,17 +131,25 @@
+ void IconCache::cacheIcon(const QString& key, const QIcon& icon) const
+ {
+     QList<QSize> sizes = icon.availableSizes();
+-    if (sizes.isEmpty()) {
+-        // sizes can be empty if icon is an SVG. In this case generate images for a few sizes
+-        #define SIZE(x) QSize(x, x)
+-        sizes
+-            << SIZE(16)
+-            << SIZE(22)
+-            << SIZE(32)
+-            << SIZE(48)
+-            ;
+-        #undef SIZE
+-    }
++
++    // sizes can be empty if icon is an SVG. In this case generate images for a few sizes
++    #define SIZE(x) QSize(x, x)
++    QList<QSize> extra_sizes;
++    extra_sizes
++        << SIZE(16)
++        << SIZE(22)
++        << SIZE(32)
++        << SIZE(48)
++        ;
++    #undef SIZE
++
++	for (auto extra_sizes_iter = extra_sizes.begin(); extra_sizes_iter != extra_sizes.end(); ++extra_sizes_iter)
++	{
++		if (sizes.indexOf(*extra_sizes_iter) == -1)
++		{
++			sizes.push_back(*extra_sizes_iter);
++		}
++	}
+ 
+     QDir dir(m_themePath);
+     Q_FOREACH(const QSize& size, sizes) {

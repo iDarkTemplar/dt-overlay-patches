@@ -1,0 +1,35 @@
+From 0aee393587d0c043f2c98dc157332259c12a8865 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <dark_templar@hotbox.ru>
+Date: Wed, 29 Jul 2015 21:40:58 +0300
+Subject: [PATCH] Implemented command-line switch for starting in fullscreen
+ mode.
+
+---
+ src/gfx.cpp | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/src/gfx.cpp b/src/gfx.cpp
+index da197e1..6d180e5 100644
+--- a/src/gfx.cpp
++++ b/src/gfx.cpp
+@@ -227,8 +227,16 @@ String GetBasePath()
+ #endif
+ }
+ 
+-int main(int /*argc*/, char * /*argv*/[])
++int main(int argc, char **argv)
+ {
++	for (int i = 1; i < argc; ++i)
++	{
++		if (strcmp(argv[i], "--fullscreen") == 0)
++		{
++			fullscreen = true;
++		}
++	}
++
+ 	base_path = GetBasePath();
+ 
+ /*
+-- 
+2.3.6
+

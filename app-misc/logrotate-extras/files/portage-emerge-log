@@ -1,0 +1,8 @@
+/var/log/emerge.log {
+	compress
+	delaycompress
+	rotate 12
+	monthly
+	missingok
+	notifempty
+}

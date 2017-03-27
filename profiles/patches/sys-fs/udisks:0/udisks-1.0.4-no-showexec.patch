@@ -1,0 +1,11 @@
+--- udisks-1.0.4/src/device.c.back	2011-08-26 01:31:20.000000000 +0400
++++ udisks-1.0.4/src/device.c	2012-06-09 22:01:01.000000000 +0400
+@@ -5872,7 +5872,7 @@
+ 
+ /* ---------------------- vfat -------------------- */
+ 
+-static const char *vfat_defaults[] = { "uid=", "gid=", "shortname=mixed", "dmask=0077", "utf8=1", "showexec", NULL };
++static const char *vfat_defaults[] = { "uid=", "gid=", "shortname=mixed", "dmask=0077", "utf8=1", NULL };
+ static const char *vfat_allow[] = { "flush", "utf8=", "shortname=", "umask=", "dmask=", "fmask=", "codepage=", "iocharset=", "usefree", "showexec", NULL };
+ static const char *vfat_allow_uid_self[] = { "uid=", NULL };
+ static const char *vfat_allow_gid_self[] = { "gid=", NULL };
