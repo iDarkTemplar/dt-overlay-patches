@@ -1,0 +1,107 @@
+--- wine-2.3/dlls/shell32/shellpath.c.back	2017-03-29 10:02:23.648010249 +0300
++++ wine-2.3/dlls/shell32/shellpath.c	2017-03-29 11:13:38.363256883 +0300
+@@ -59,6 +59,8 @@
+ 
+ static const BOOL is_win64 = sizeof(void *) > sizeof(int);
+ 
++static void _SHCreateSymbolicLinks(void);
++
+ /*
+ 	########## Combining and Constructing paths ##########
+ */
+@@ -3939,6 +3941,9 @@
+         goto end;
+     }
+ 
++	/* If creation of one of directory is requested, and it doesn't exist yet, make sure to setup symlinks to some of default directories first */
++	_SHCreateSymbolicLinks();
++
+     /* create directory/directories */
+     ret = SHCreateDirectoryExW(hwndOwner, szBuildPath, NULL);
+     if (ret && ret != ERROR_ALREADY_EXISTS)
+@@ -4265,9 +4270,9 @@
+     char * xdg_desktop_dir;
+ 
+     /* Create all necessary profile sub-dirs up to 'My Documents' and get the unix path. */
+-    hr = SHGetFolderPathW(NULL, CSIDL_PERSONAL|CSIDL_FLAG_CREATE, NULL,
++    hr = SHGetFolderPathW(NULL, CSIDL_PERSONAL, NULL,
+                           SHGFP_TYPE_DEFAULT, wszTempPath);
+-    if (FAILED(hr)) return;
++    if (FAILED(hr) && (hr != HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))) return;
+     pszPersonal = wine_get_unix_file_name(wszTempPath);
+     if (!pszPersonal) return;
+ 
+@@ -4292,7 +4297,7 @@
+                 {
+                     strcpy(szMyStuffTarget, szPersonalTarget);
+                     if (_SHAppendToUnixPath(szMyStuffTarget, MAKEINTRESOURCEW(aidsMyStuff[i])))
+-                        mkdir(szMyStuffTarget, 0777);
++                        mkdir(szMyStuffTarget, 0755);
+                 }
+                 break;
+             }
+@@ -4319,19 +4324,19 @@
+         }
+ 
+         /* Replace 'My Documents' directory with a symlink or fail silently if not empty. */
+-        remove(pszPersonal);
+-        symlink(szPersonalTarget, pszPersonal);
++		symlink(szPersonalTarget, pszPersonal);
+     }
+     else
+     {
+         /* '$HOME' doesn't exist. Create 'My Pictures', 'My Videos' and 'My Music' subdirs
+          * in '%USERPROFILE%\\My Documents' or fail silently if they already exist. */
+         pszHome = NULL;
++		mkdir(pszPersonal, 0755);
+         strcpy(szPersonalTarget, pszPersonal);
+         for (i = 0; i < sizeof(aidsMyStuff)/sizeof(aidsMyStuff[0]); i++) {
+             strcpy(szMyStuffTarget, szPersonalTarget);
+             if (_SHAppendToUnixPath(szMyStuffTarget, MAKEINTRESOURCEW(aidsMyStuff[i])))
+-                mkdir(szMyStuffTarget, 0777);
++                mkdir(szMyStuffTarget, 0755);
+         }
+     }
+ 
+@@ -4339,13 +4344,13 @@
+     for (i=0; i < sizeof(aidsMyStuff)/sizeof(aidsMyStuff[0]); i++)
+     {
+         /* Create the current 'My Whatever' folder and get its unix path. */
+-        hr = SHGetFolderPathW(NULL, acsidlMyStuff[i]|CSIDL_FLAG_CREATE, NULL,
++        hr = SHGetFolderPathW(NULL, acsidlMyStuff[i], NULL,
+                               SHGFP_TYPE_DEFAULT, wszTempPath);
+-        if (FAILED(hr)) continue;
++        if (hr != HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) continue;
+ 
+         pszMyStuff = wine_get_unix_file_name(wszTempPath);
+         if (!pszMyStuff) continue;
+-        
++
+         while (1)
+         {
+             /* Check for the Wine-specific '$HOME/My Documents' subfolder */
+@@ -4375,8 +4380,8 @@
+             strcpy(szMyStuffTarget, szPersonalTarget);
+             break;
+         }
+-        remove(pszMyStuff);
+-        symlink(szMyStuffTarget, pszMyStuff);
++
++		symlink(szMyStuffTarget, pszMyStuff);
+         HeapFree(GetProcessHeap(), 0, pszMyStuff);
+     }
+ 
+@@ -4392,11 +4397,10 @@
+         (_SHAppendToUnixPath(szDesktopTarget, DesktopW) &&
+         !stat(szDesktopTarget, &statFolder) && S_ISDIR(statFolder.st_mode)))
+     {
+-        hr = SHGetFolderPathW(NULL, CSIDL_DESKTOPDIRECTORY|CSIDL_FLAG_CREATE, NULL,
++        hr = SHGetFolderPathW(NULL, CSIDL_DESKTOPDIRECTORY, NULL,
+                               SHGFP_TYPE_DEFAULT, wszTempPath);
+-        if (SUCCEEDED(hr) && (pszDesktop = wine_get_unix_file_name(wszTempPath))) 
++        if ((hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) && (pszDesktop = wine_get_unix_file_name(wszTempPath)))
+         {
+-            remove(pszDesktop);
+             if (xdg_desktop_dir)
+                 symlink(xdg_desktop_dir, pszDesktop);
+             else
