@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<use>
+		<flag name="console">Install console client</flag>
+		<flag name="mtab">Use mtab as writable file instead of a symlink</flag>
+		<flag name="openrc">Install openrc service and configuration</flag>
+	</use>
+</pkgmetadata>
