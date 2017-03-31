@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<repositories encoding="UTF-8" version="1.1">
+  <repo priority="50" quality="experimental" status="unofficial">
+    <name>dt-overlay-public</name>
+    <description>Overlay for Gentoo with ebuilds for projects of i.Dark_Templar</description>
+    <homepage>https://github.com/iDarkTemplar/dt-overlay-public</homepage>
+    <owner>
+      <email>darktemplar@dark-templar-archives.net</email>
+      <name>i.Dark_Templar</name>
+    </owner>
+    <source branch="master" type="git">https://github.com/iDarkTemplar/dt-overlay-public.git</source>
+    <feed>https://github.com/iDarkTemplar/dt-overlay-public/commits/master.atom</feed>
+  </repo>
+</repositories>
