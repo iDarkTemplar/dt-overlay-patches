@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<repositories encoding="UTF-8" version="1.1">
+  <repo priority="50" quality="experimental" status="unofficial">
+    <name>dt-overlay-patches</name>
+    <description>Overlay for Gentoo with patches, fixes and ebuilds for Gentoo and 3rd party projects which may exist or not exist in official Gentoo portage tree</description>
+    <homepage>https://github.com/iDarkTemplar/dt-overlay-patches</homepage>
+    <owner>
+      <email>darktemplar@dark-templar-archives.net</email>
+      <name>i.Dark_Templar</name>
+    </owner>
+    <source branch="master" type="git">https://github.com/iDarkTemplar/dt-overlay-patches.git</source>
+    <feed>https://github.com/iDarkTemplar/dt-overlay-patches/commits/master.atom</feed>
+  </repo>
+</repositories>
