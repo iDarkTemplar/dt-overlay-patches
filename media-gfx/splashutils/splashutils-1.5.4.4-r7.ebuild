@@ -131,6 +131,8 @@ src_prepare() {
 		echo > "libs/klibc_compat.h"
 	fi
 
+	sed -i -e 's:#!/sbin/runscript:#!/sbin/openrc-run:' "${SG}/init-fbcondecor"
+
 	rm -f m4/*
 	epatch_user
 	export PKG_CONFIG="pkg-config --static"
