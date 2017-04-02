@@ -1,3 +1,6 @@
+# Copyright 1999-2017 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
 EAPI=5
 
 inherit eutils cmake-utils
@@ -8,8 +11,8 @@ HOMEPAGE="https://github.com/iDarkTemplar/dtmd"
 SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 LICENSE="LGPL-3+"
 SLOT="0"
-KEYWORDS="amd64 x86 ~amd64-fbsd ~x86-fbsd"
-IUSE="+console +cxx +openrc qt4 qt5 +syslog udev +mtab"
+KEYWORDS="amd64 x86 ~x86-fbsd"
+IUSE="+console +cxx +openrc qt4 qt5 +syslog udev +mtab kernel_linux kernel_FreeBSD"
 
 REQUIRED_USE="
 	qt4? ( cxx )
@@ -30,8 +33,12 @@ DEPEND="
 		dev-qt/qtwidgets:5
 	)
 
-	udev? ( virtual/udev )
-	!udev? ( sys-apps/util-linux )
+	kernel_linux? (
+		udev? ( virtual/udev )
+		!udev? ( sys-apps/util-linux )
+	)
+
+	kernel_FreeBSD? ( sys-freebsd/freebsd-lib )
 	"
 
 RDEPEND="

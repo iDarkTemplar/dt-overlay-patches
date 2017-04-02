@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
+	<maintainer type="person">
+		<email>darktemplar@dark-templar-archives.net</email>
+		<name>i.Dark_Templar</name>
+	</maintainer>
+	<longdescription>Script for combining parts of multiple git repositories into one</longdescription>
 	<use>
 		<flag name="portage">Install portage postsync hook</flag>
 	</use>

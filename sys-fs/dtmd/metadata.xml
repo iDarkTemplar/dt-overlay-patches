@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
+	<maintainer type="person">
+		<email>darktemplar@dark-templar-archives.net</email>
+		<name>i.Dark_Templar</name>
+	</maintainer>
+	<longdescription>Removable media mount daemon for Linux and FreeBSD</longdescription>
 	<use>
 		<flag name="console">Install console client</flag>
 		<flag name="mtab">Use mtab as writable file instead of a symlink</flag>

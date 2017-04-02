@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>darktemplar@dark-templar-archives.net</email>
+		<name>i.Dark_Templar</name>
+	</maintainer>
+	<longdescription>
+	Tool for searching duplicate or obsolete records related to portage atoms or USE-flags in portage config files.
+	It doesn't modify any configuration files, and thus it doesn't require any privileges to run, and it's up to user to update configs.
+	</longdescription>
+</pkgmetadata>

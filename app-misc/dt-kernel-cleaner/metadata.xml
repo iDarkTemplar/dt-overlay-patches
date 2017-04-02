@@ -5,8 +5,5 @@
 		<email>darktemplar@dark-templar-archives.net</email>
 		<name>i.Dark_Templar</name>
 	</maintainer>
-	<longdescription>Library for parsing cue sheets and a tool to split files into separate flac tracks using this information</longdescription>
-	<use>
-		<flag name="tools">Install additional tools</flag>
-	</use>
+	<longdescription>Tool for removing installed files and sources of kernel no longer needed</longdescription>
 </pkgmetadata>
