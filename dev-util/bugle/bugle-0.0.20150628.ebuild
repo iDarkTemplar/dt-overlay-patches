@@ -1,3 +1,6 @@
+# Copyright 1999-2017 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
 EAPI=5
 
 inherit multilib multilib-build scons-utils toolchain-funcs eutils
@@ -17,9 +20,9 @@ COMMON_DEPEND="
 		libav? ( media-video/libav:=[abi_x86_32?,abi_x86_64?] ) )
 	gtk? ( x11-libs/gtk+:2[abi_x86_32?,abi_x86_64?] x11-libs/gtkglext[abi_x86_32?,abi_x86_64?] )
 	virtual/opengl[abi_x86_32?,abi_x86_64?]
-	media-libs/glew[abi_x86_32?,abi_x86_64?]
+	media-libs/glew:=[abi_x86_32?,abi_x86_64?]
 	media-libs/freeglut[abi_x86_32?,abi_x86_64?]
-	>=dev-lang/python-2.6
+	>=dev-lang/python-2.6:*
 	>=dev-lang/perl-5"
 
 DEPEND+="${COMMON_DEPEND}
@@ -101,7 +104,6 @@ src_compile() {
 	}
 	multilib_foreach_abi my_src_compile
 }
-
 
 src_install() {
 	my_src_install() {

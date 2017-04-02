@@ -1,7 +1,9 @@
-EAPI="2"
+# Copyright 1999-2017 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+EAPI=6
 
 MY_PN=hexahop
-inherit games
 
 DESCRIPTION="a hexagonal tile-based puzzle game"
 HOMEPAGE="http://hexahop.sourceforge.net/"
@@ -19,11 +21,12 @@ RDEPEND="media-libs/libsdl
 DEPEND="${RDEPEND}"
 
 src_prepare() {
-	epatch "${FILESDIR}/${PN}-fullscreen-commandline.patch"
+	eapply "${FILESDIR}/${PN}-fullscreen-commandline.patch"
+	eapply_user
 }
 
 src_install() {
-	emake install DESTDIR="${D}" || die "install failed"
+	default
 
 	insinto /usr/share/pixmaps
 	doins "${FILESDIR}/hex-a-hop.xpm"

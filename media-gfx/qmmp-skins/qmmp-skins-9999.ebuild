@@ -1,12 +1,13 @@
-EAPI=4
+# Copyright 1999-2017 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
 
-inherit eutils
+EAPI=4
 
 DESCRIPTION="Additional skins for QMMP"
 HOMEPAGE="http://qmmp.ylsoftware.com"
 
 SRC_URI="http://qmmp.ylsoftware.com/files/skins/Skins_All_in_One.zip"
-LICENSE="as-is"
+LICENSE="freedist"
 SLOT="0"
 KEYWORDS="amd64 x86"
 IUSE=""
@@ -20,8 +21,6 @@ INST_DIR="usr/share/qmmp/skins"
 ZIP_DIR="Skins_All_in_One"
 
 src_install() {
-	cd "${S}"
-
-	insinto "${EPREFIX}/${INST_DIR}"
-	doins "${S}/${ZIP_DIR}"/*
+	insinto "${INST_DIR}"
+	doins "${ZIP_DIR}"/*
 }
