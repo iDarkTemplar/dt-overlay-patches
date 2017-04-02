@@ -1,7 +1,7 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=2
+EAPI=6
 
 DESCRIPTION="ipfw.ru fortunes"
 HOMEPAGE="http://ipfw.ru/"
@@ -23,6 +23,7 @@ S="${WORKDIR}"
 
 src_prepare() {
 	wget ${DL_FILE}
+	eapply_user
 }
 
 src_compile() {
