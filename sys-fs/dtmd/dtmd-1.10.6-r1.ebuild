@@ -54,17 +54,17 @@ src_configure() {
 	)
 
 	if use qt5 ; then
-		mycmakeargs+=" -DCLIENT_QT=5"
+		mycmakeargs+=("-DCLIENT_QT=5")
 	elif use qt4 ; then
-		mycmakeargs+=" -DCLIENT_QT=4"
+		mycmakeargs+=("-DCLIENT_QT=4")
 	else
-		mycmakeargs+=" -DCLIENT_QT=0"
+		mycmakeargs+=("-DCLIENT_QT=0")
 	fi
 
 	if use udev ; then
-		mycmakeargs+=" -DLINUX_UDEV=1"
+		mycmakeargs+=("-DLINUX_UDEV=1")
 	else
-		mycmakeargs+=" -DLINUX_UDEV=0"
+		mycmakeargs+=("-DLINUX_UDEV=0")
 	fi
 
 	cmake-utils_src_configure
