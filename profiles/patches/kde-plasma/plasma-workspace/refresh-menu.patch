@@ -1,0 +1,75 @@
+diff --git a/libdbusmenuqt/dbusmenuimporter.cpp b/libdbusmenuqt/dbusmenuimporter.cpp
+index 9c4a1df..7e10f9d 100644
+--- a/libdbusmenuqt/dbusmenuimporter.cpp
++++ b/libdbusmenuqt/dbusmenuimporter.cpp
+@@ -408,46 +408,38 @@ void DBusMenuImporter::slotGetLayoutFinished(QDBusPendingCallWatcher *watcher)
+     }
+     for (QAction *action: menu->actions()) {
+         int id = action->property(DBUSMENU_PROPERTY_ID).toInt();
+-        if (! newDBusMenuItemIds.contains(id)) {
+-            action->deleteLater();
+-            d->m_actionForId.remove(id);
+-        }
++        action->deleteLater();
++        d->m_actionForId.remove(id);
+     }
+ 
+-    //insert or update new actions into our menu
++    // Clear menu, all actions either were just deleted, or will be added back in following loop
++    // Don't cache any actions since they can change type (i.e. action can become separator) and it'd cause a bug
++    menu->clear();
++
++    //insert new or updated actions into our menu
+     for (const DBusMenuLayoutItem &dbusMenuItem: rootItem.children) {
+-        DBusMenuImporterPrivate::ActionForId::Iterator it = d->m_actionForId.find(dbusMenuItem.id);
+         QAction *action = nullptr;
+-        if (it == d->m_actionForId.end()) {
+-            int id = dbusMenuItem.id;
+-            action = d->createAction(id, dbusMenuItem.properties, menu);
+-            d->m_actionForId.insert(id, action);
++        int id = dbusMenuItem.id;
++        action = d->createAction(id, dbusMenuItem.properties, menu);
++        d->m_actionForId.insert(id, action);
+ 
+-            connect(action, &QObject::destroyed, this, [this, id]() {
+-                d->m_actionForId.remove(id);
+-            });
+-
+-            connect(action, &QAction::triggered, this, [action, id, this]() {
+-                sendClickedEvent(id);
+-            });
++        connect(action, &QObject::destroyed, this, [this, id]() {
++            d->m_actionForId.remove(id);
++        });
+ 
+-            if (action->menu()) {
+-                auto menu = action->menu();
+-                connect(menu, &QMenu::aboutToShow, this, [menu, this]() {
+-                   updateMenu(menu);
+-                });
+-            }
+-            connect(menu, &QMenu::aboutToHide, this, &DBusMenuImporter::slotMenuAboutToHide);
++        connect(action, &QAction::triggered, this, [action, id, this]() {
++            sendClickedEvent(id);
++        });
+ 
+-            menu->addAction(action);
+-        } else {
+-            action = *it;
+-            QStringList filteredKeys = dbusMenuItem.properties.keys();
+-            filteredKeys.removeOne("type");
+-            filteredKeys.removeOne("toggle-type");
+-            filteredKeys.removeOne("children-display");
+-            d->updateAction(*it, dbusMenuItem.properties, filteredKeys);
++        if (action->menu()) {
++            auto menu = action->menu();
++            connect(menu, &QMenu::aboutToShow, this, [menu, this]() {
++               updateMenu(menu);
++            });
+         }
++        connect(menu, &QMenu::aboutToHide, this, &DBusMenuImporter::slotMenuAboutToHide);
++
++        menu->addAction(action);
+     }
+ 
+     emit menuUpdated(menu);
