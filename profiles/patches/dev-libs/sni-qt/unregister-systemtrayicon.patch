@@ -1,0 +1,131 @@
+diff --git a/src/statusnotifieritem.cpp b/src/statusnotifieritem.cpp
+index ed85754..7ad5925 100644
+--- a/src/statusnotifieritem.cpp
++++ b/src/statusnotifieritem.cpp
+@@ -29,7 +29,6 @@
+ #include <QApplication>
+ #include <QCoreApplication>
+ #include <QCursor>
+-#include <QDBusConnection>
+ #include <QDBusMetaType>
+ #include <QDebug>
+ #include <QMenu>
+@@ -43,6 +42,8 @@ static const char* NOTIFICATION_INTERFACE = "org.freedesktop.Notifications";
+ static const char* NOTIFICATION_SERVICE = "org.freedesktop.Notifications";
+ static const char* NOTIFICATION_PATH = "/org/freedesktop/Notifications";
+ 
++static const QString KDEItemFormat = QString("org.sni-qt.StatusNotifierItem-%1-%2");
++
+ void registerMetaTypes()
+ {
+     static bool registered = false;
+@@ -54,22 +55,26 @@ void registerMetaTypes()
+     qDBusRegisterMetaType<DBusToolTip>();
+ }
+ 
++std::atomic<int> StatusNotifierItem::s_idx(0);
++
+ StatusNotifierItem::StatusNotifierItem(QSystemTrayIcon* icon, IconCache* iconCache)
+ : QAbstractSystemTrayIconSys(icon)
+ , m_iconCache(iconCache)
+ , m_activateAction(0)
+ , m_placeholderMenu(new QMenu)
++, m_instance_name(KDEItemFormat.arg(QCoreApplication::applicationPid()).arg(++(StatusNotifierItem::s_idx)))
++, m_bus(QDBusConnection::connectToBus(QDBusConnection::SessionBus, m_instance_name))
+ {
+     SNI_VAR(this);
+     registerMetaTypes();
+ 
+-    static int id = 1;
+-    m_objectPath = QString("/org/kde/statusnotifieritem/%1").arg(id++);
++    m_objectPath = QString("/statusnotifieritem");
+     SNI_VAR(m_objectPath);
+ 
++    m_bus.registerService(m_instance_name);
++
+     new StatusNotifierItemAdaptor(this);
+-    QDBusConnection bus = QDBusConnection::sessionBus();
+-    bus.registerObject(m_objectPath, this, QDBusConnection::ExportAdaptors);
++    m_bus.registerObject(m_objectPath, this, QDBusConnection::ExportAdaptors);
+ 
+     updateMenu();
+ }
+@@ -77,6 +82,13 @@ StatusNotifierItem::StatusNotifierItem(QSystemTrayIcon* icon, IconCache* iconCac
+ StatusNotifierItem::~StatusNotifierItem()
+ {
+     SNI_VAR(this);
++
++    m_bus.unregisterObject(m_objectPath);
++
++    m_bus.unregisterService(m_instance_name);
++
++    QDBusConnection::disconnectFromBus(m_instance_name);
++
+     // m_dbusMenuExporter is a child of the menu it exports, so we need to use
+     // a QWeakPointer to track it:
+     //
+@@ -127,7 +139,7 @@ void StatusNotifierItem::updateMenu()
+         menu = m_placeholderMenu;
+     }
+     connect(menu, SIGNAL(aboutToShow()), SLOT(slotAboutToShow()));
+-    m_dbusMenuExporter = new DBusMenuExporter(menuObjectPath(), menu);
++    m_dbusMenuExporter = new DBusMenuExporter(menuObjectPath(), menu, m_bus);
+ }
+ 
+ void StatusNotifierItem::showMessage(const QString &title, const QString &message,
+@@ -149,7 +161,7 @@ void StatusNotifierItem::showMessage(const QString &title, const QString &messag
+         break;
+     }
+ 
+-    QDBusInterface iface(NOTIFICATION_SERVICE, NOTIFICATION_PATH, NOTIFICATION_INTERFACE);
++    QDBusInterface iface(NOTIFICATION_SERVICE, NOTIFICATION_PATH, NOTIFICATION_INTERFACE, m_bus);
+     iface.asyncCall("Notify",
+         id(),
+         quint32(0),    // replaces_id
+diff --git a/src/statusnotifieritem.h b/src/statusnotifieritem.h
+index d012a9d..d1dfd14 100644
+--- a/src/statusnotifieritem.h
++++ b/src/statusnotifieritem.h
+@@ -26,6 +26,8 @@
+ // Qt
+ #include <QObject>
+ #include <QWeakPointer>
++#include <QDBusConnection>
++#include <atomic>
+ 
+ class QAction;
+ class QDBusObjectPath;
+@@ -89,6 +91,7 @@ public:
+     QString attentionMovieName() const { return QString(); }
+     DBusToolTip toolTip() const;
+     QDBusObjectPath menu() const;
++    QDBusConnection connection() const { return m_bus; }
+ 
+ Q_SIGNALS:
+     void NewStatus(const QString &status);
+@@ -106,8 +109,12 @@ private:
+     QWeakPointer<DBusMenuExporter> m_dbusMenuExporter;
+     QAction* m_activateAction;
+     QMenu* m_placeholderMenu;
++    QString m_instance_name;
++    QDBusConnection m_bus;
+ 
+     QString menuObjectPath() const;
++
++    static std::atomic<int> s_idx;
+ };
+ 
+ #endif // STATUSNOTIFIERITEM_H
+diff --git a/src/statusnotifieritemfactory.cpp b/src/statusnotifieritemfactory.cpp
+index 6e81f25..7f6cbbd 100644
+--- a/src/statusnotifieritemfactory.cpp
++++ b/src/statusnotifieritemfactory.cpp
+@@ -144,7 +144,7 @@ void StatusNotifierItemFactory::slotItemDestroyed(QObject* obj)
+ void StatusNotifierItemFactory::registerItem(StatusNotifierItem* item)
+ {
+     SNI_DEBUG;
+-    QDBusInterface snw(SNW_SERVICE, SNW_PATH, SNW_IFACE);
++    QDBusInterface snw(SNW_SERVICE, SNW_PATH, SNW_IFACE, item->connection());
+     snw.asyncCall("RegisterStatusNotifierItem", item->objectPath());
+ }
+ 
