@@ -9,12 +9,12 @@ inherit qt5-build
 DESCRIPTION="The GUI module and platform plugins for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="~amd64 ~arm ~arm64 ~hppa ~ppc ~ppc64 ~x86"
+	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
 # TODO: linuxfb
 
-IUSE="accessibility dbus egl eglfs evdev +gif gles2 gtkstyle
+IUSE="accessibility dbus egl eglfs evdev +gif gles2 gtk
 	ibus jpeg libinput +png tslib tuio +udev +xcb"
 REQUIRED_USE="
 	|| ( eglfs xcb )
@@ -40,8 +40,9 @@ RDEPEND="
 		x11-libs/libdrm
 	)
 	evdev? ( sys-libs/mtdev )
-	gtkstyle? (
-		x11-libs/gtk+:2
+	gtk? (
+		x11-libs/gtk+:3
+		x11-libs/libX11
 		x11-libs/pango
 		!!x11-libs/cairo[qt4]
 	)
@@ -77,6 +78,11 @@ PDEPEND="
 	ibus? ( app-i18n/ibus )
 "
 
+PATCHES=(
+	"${FILESDIR}/${P}-qclipboard.patch" # QTBUG-56972, KDE bug #348390
+	"${FILESDIR}/${P}-x32.patch" # bug 623882
+)
+
 QT5_TARGET_SUBDIRS=(
 	src/gui
 	src/openglextensions
@@ -103,8 +109,7 @@ QT5_GENTOO_CONFIG=(
 	!gif:no-gif:
 	gles2::OPENGL_ES
 	gles2:opengles2:OPENGL_ES_2
-	gtkstyle:gtkstyle:
-	gtkstyle:gtk2:STYLE_GTK
+	gtk:gtk3:
 	!:no-gui:
 	:system-harfbuzz:HARFBUZZ
 	!:no-harfbuzz:
@@ -158,7 +163,7 @@ src_configure() {
 		-fontconfig
 		-system-freetype
 		$(usex gif '' -no-gif)
-		$(qt_use gtkstyle)
+		$(qt_use gtk)
 		-system-harfbuzz
 		$(qt_use jpeg libjpeg system)
 		$(qt_use libinput)
