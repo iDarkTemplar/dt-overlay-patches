@@ -22,7 +22,9 @@ DEPEND="
 	icu? ( dev-libs/icu:= )
 	systemd? ( sys-apps/systemd:= )
 "
-RDEPEND="${DEPEND}
+RDEPEND="${DEPEND}"
+
+PDEPEND="
 	examples? (
 		~dev-qt/qtcore-examples-${PV}
 	)

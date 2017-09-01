@@ -24,6 +24,9 @@ DEPEND="
 RDEPEND="${DEPEND}
 	connman? ( net-misc/connman )
 	networkmanager? ( net-misc/networkmanager )
+"
+
+PDEPEND="
 	examples? (
 		~dev-qt/qtcore-examples-${PV}
 	)

@@ -17,7 +17,9 @@ DEPEND="
 	~dev-qt/qtcore-${PV}
 	>=sys-apps/dbus-1.4.20
 "
-RDEPEND="${DEPEND}
+RDEPEND="${DEPEND}"
+
+PDEPEND="
 	examples? (
 		~dev-qt/qtcore-examples-${PV}
 	)

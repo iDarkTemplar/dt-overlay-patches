@@ -24,7 +24,7 @@ REQUIRED_USE="
 	xcb? ( gles2? ( egl ) )
 "
 
-COMMON_DEPEND="
+RDEPEND="
 	dev-libs/glib:2
 	~dev-qt/qtcore-${PV}
 	media-libs/fontconfig
@@ -69,17 +69,15 @@ COMMON_DEPEND="
 		x11-libs/xcb-util-wm
 	)
 "
-
-RDEPEND="${COMMON_DEPEND}
+DEPEND="${RDEPEND}
+	evdev? ( sys-kernel/linux-headers )
+	udev? ( sys-kernel/linux-headers )
+"
+PDEPEND="
 	ibus? ( app-i18n/ibus )
 	examples? (
 		~dev-qt/qtcore-examples-${PV}
 	)
-"
-
-DEPEND="${COMMON_DEPEND}
-	evdev? ( sys-kernel/linux-headers )
-	udev? ( sys-kernel/linux-headers )
 "
 
 PATCHES=(

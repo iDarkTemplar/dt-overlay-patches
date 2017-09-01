@@ -18,9 +18,11 @@ DEPEND="
 	~dev-qt/qtcore-${PV}
 	~dev-qt/qtgui-${PV}[gles2=,png=,xcb?]
 "
-RDEPEND="${DEPEND}
+RDEPEND="${DEPEND}"
+
+PDEPEND="
 	examples? (
-		~dev-qt/qtcore-examples-${PV}[gles2=]
+		~dev-qt/qtcore-examples-${PV}
 	)
 "
 

@@ -17,7 +17,9 @@ DEPEND="
 	~dev-qt/qtcore-${PV}
 "
 
-RDEPEND="${DEPEND}
+RDEPEND="${DEPEND}"
+
+PDEPEND="
 	examples? (
 		~dev-qt/qtcore-examples-${PV}
 	)

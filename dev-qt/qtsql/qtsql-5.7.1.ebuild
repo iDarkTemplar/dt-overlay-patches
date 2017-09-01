@@ -26,7 +26,9 @@ DEPEND="
 	postgres? ( dev-db/postgresql:* )
 	sqlite? ( >=dev-db/sqlite-3.8.10.2:3 )
 "
-RDEPEND="${DEPEND}
+RDEPEND="${DEPEND}"
+
+PDEPEND="
 	examples? (
 		~dev-qt/qtcore-examples-${PV}
 	)

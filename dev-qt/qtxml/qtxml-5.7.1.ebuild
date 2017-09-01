@@ -13,16 +13,17 @@ fi
 
 IUSE="examples"
 
-COMMON_DEPEND="
+RDEPEND="
 	~dev-qt/qtcore-${PV}
 "
-RDEPEND="${COMMON_DEPEND}
+DEPEND="${RDEPEND}
+	test? ( ~dev-qt/qtnetwork-${PV} )
+"
+
+PDEPEND="
 	examples? (
 		~dev-qt/qtcore-examples-${PV}
 	)
-"
-DEPEND="${COMMON_DEPEND}
-	test? ( ~dev-qt/qtnetwork-${PV} )
 "
 
 QT5_TARGET_SUBDIRS=(

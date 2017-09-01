@@ -14,18 +14,19 @@ fi
 
 IUSE="examples"
 
-COMMON_DEPEND="
+RDEPEND="
 	~dev-qt/qtcore-${PV}
 "
-RDEPEND="${COMMON_DEPEND}
-	examples? (
-		~dev-qt/qtcore-examples-${PV}
-	)
-"
-DEPEND="${COMMON_DEPEND}
+DEPEND="${RDEPEND}
 	test? (
 		~dev-qt/qtgui-${PV}
 		~dev-qt/qtxml-${PV}
+	)
+"
+
+PDEPEND="
+	examples? (
+		~dev-qt/qtcore-examples-${PV}
 	)
 "
 

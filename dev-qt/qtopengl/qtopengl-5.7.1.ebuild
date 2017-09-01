@@ -20,7 +20,9 @@ DEPEND="
 	~dev-qt/qtwidgets-${PV}[gles2=]
 	virtual/opengl
 "
-RDEPEND="${DEPEND}
+RDEPEND="${DEPEND}"
+
+PDEPEND="
 	examples? (
 		~dev-qt/qtcore-examples-${PV}
 	)
