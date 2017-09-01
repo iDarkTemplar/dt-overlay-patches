@@ -3,28 +3,26 @@
 
 EAPI=6
 QT5_MODULE="qtbase"
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/xml")
 inherit qt5-build
 
-DESCRIPTION="Implementation of SAX and DOM for the Qt5 framework"
+DESCRIPTION="Multi-threading concurrence support library for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE=""
+IUSE="examples"
 
-RDEPEND="
+DEPEND="
 	~dev-qt/qtcore-${PV}
 "
-DEPEND="${RDEPEND}
+
+RDEPEND="${DEPEND}
 	examples? (
-		~dev-qt/qtwidgets-${PV}
-		~dev-qt/qtnetwork-${PV}
+		~dev-qt/qtcore-examples-${PV}
 	)
-	test? ( ~dev-qt/qtnetwork-${PV} )
 "
 
 QT5_TARGET_SUBDIRS=(
-	src/xml
+	src/concurrent
 )

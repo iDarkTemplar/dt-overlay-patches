@@ -3,32 +3,28 @@
 
 EAPI=6
 QT5_MODULE="qtbase"
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/qtestlib")
-VIRTUALX_REQUIRED="test"
 inherit qt5-build
 
-DESCRIPTION="Unit testing library for the Qt5 framework"
+DESCRIPTION="Implementation of SAX and DOM for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE=""
+IUSE="examples"
 
-RDEPEND="
+COMMON_DEPEND="
 	~dev-qt/qtcore-${PV}
 "
-DEPEND="${RDEPEND}
+RDEPEND="${COMMON_DEPEND}
 	examples? (
-		~dev-qt/qtgui-${PV}
-		~dev-qt/qtwidgets-${PV}
+		~dev-qt/qtcore-examples-${PV}
 	)
-	test? (
-		~dev-qt/qtgui-${PV}
-		~dev-qt/qtxml-${PV}
-	)
+"
+DEPEND="${COMMON_DEPEND}
+	test? ( ~dev-qt/qtnetwork-${PV} )
 "
 
 QT5_TARGET_SUBDIRS=(
-	src/testlib
+	src/xml
 )

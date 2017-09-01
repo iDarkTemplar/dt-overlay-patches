@@ -3,26 +3,32 @@
 
 EAPI=6
 QT5_MODULE="qtbase"
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/qtconcurrent")
+VIRTUALX_REQUIRED="test"
 inherit qt5-build
 
-DESCRIPTION="Multi-threading concurrence support library for the Qt5 framework"
+DESCRIPTION="Unit testing library for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE=""
+IUSE="examples"
 
-DEPEND="
+COMMON_DEPEND="
 	~dev-qt/qtcore-${PV}
+"
+RDEPEND="${COMMON_DEPEND}
 	examples? (
-		~dev-qt/qtgui-${PV}
-		~dev-qt/qtwidgets-${PV}
+		~dev-qt/qtcore-examples-${PV}
 	)
 "
-RDEPEND="${DEPEND}"
+DEPEND="${COMMON_DEPEND}
+	test? (
+		~dev-qt/qtgui-${PV}
+		~dev-qt/qtxml-${PV}
+	)
+"
 
 QT5_TARGET_SUBDIRS=(
-	src/concurrent
+	src/testlib
 )

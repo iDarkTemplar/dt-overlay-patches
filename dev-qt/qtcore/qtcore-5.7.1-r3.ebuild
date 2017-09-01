@@ -3,7 +3,6 @@
 
 EAPI=6
 QT5_MODULE="qtbase"
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/corelib")
 inherit qt5-build
 
 DESCRIPTION="Cross-platform application development framework"
@@ -12,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE="icu systemd"
+IUSE="icu systemd examples"
 
 DEPEND="
 	dev-libs/double-conversion:=
@@ -22,12 +21,12 @@ DEPEND="
 	virtual/libiconv
 	icu? ( dev-libs/icu:= )
 	systemd? ( sys-apps/systemd:= )
+"
+RDEPEND="${DEPEND}
 	examples? (
-		~dev-qt/qtwidgets-${PV}
-		~dev-qt/qtnetwork-${PV}
+		~dev-qt/qtcore-examples-${PV}
 	)
 "
-RDEPEND="${DEPEND}"
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-5.6.2-plugins.patch

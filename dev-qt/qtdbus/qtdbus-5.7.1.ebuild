@@ -3,33 +3,40 @@
 
 EAPI=6
 QT5_MODULE="qtbase"
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/opengl")
-VIRTUALX_REQUIRED="test"
 inherit qt5-build
 
-DESCRIPTION="OpenGL support library for the Qt5 framework (deprecated)"
+DESCRIPTION="Qt5 module for inter-process communication over the D-Bus protocol"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE="gles2"
+IUSE="examples"
 
 DEPEND="
 	~dev-qt/qtcore-${PV}
-	~dev-qt/qtgui-${PV}[gles2=]
-	~dev-qt/qtwidgets-${PV}[gles2=]
-	virtual/opengl
+	>=sys-apps/dbus-1.4.20
 "
-RDEPEND="${DEPEND}"
+RDEPEND="${DEPEND}
+	examples? (
+		~dev-qt/qtcore-examples-${PV}
+	)
+"
 
 QT5_TARGET_SUBDIRS=(
-	src/opengl
+	src/dbus
+	src/tools/qdbusxml2cpp
+	src/tools/qdbuscpp2xml
+)
+
+QT5_GENTOO_CONFIG=(
+	:dbus
+	:dbus-linked:
 )
 
 src_configure() {
 	local myconf=(
-		-opengl $(usex gles2 es2 desktop)
+		-dbus-linked
 	)
 	qt5-build_src_configure
 }

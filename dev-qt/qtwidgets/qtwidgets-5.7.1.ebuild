@@ -3,7 +3,6 @@
 
 EAPI=6
 QT5_MODULE="qtbase"
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/widgets" "examples/touch")
 inherit qt5-build
 
 DESCRIPTION="Set of components for creating classic desktop-style UIs for the Qt5 framework"
@@ -13,18 +12,17 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 fi
 
 # keep IUSE defaults in sync with qtgui
-IUSE="gles2 +png +xcb"
+IUSE="examples gles2 +png +xcb"
 
 DEPEND="
 	~dev-qt/qtcore-${PV}
 	~dev-qt/qtgui-${PV}[gles2=,png=,xcb?]
+"
+RDEPEND="${DEPEND}
 	examples? (
-		~dev-qt/qtopengl-${PV}[gles2=]
-		~dev-qt/qtprintsupport-${PV}
-		~dev-qt/qtxml-${PV}
+		~dev-qt/qtcore-examples-${PV}[gles2=]
 	)
 "
-RDEPEND="${DEPEND}"
 
 QT5_TARGET_SUBDIRS=(
 	src/tools/uic

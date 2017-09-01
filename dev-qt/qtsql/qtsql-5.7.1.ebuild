@@ -3,7 +3,6 @@
 
 EAPI=6
 QT5_MODULE="qtbase"
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/sql")
 inherit qt5-build
 
 DESCRIPTION="SQL abstraction library for the Qt5 tooolkit"
@@ -12,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE="freetds mysql oci8 odbc postgres +sqlite"
+IUSE="examples freetds mysql oci8 odbc postgres +sqlite"
 
 REQUIRED_USE="
 	|| ( freetds mysql oci8 odbc postgres sqlite )
@@ -20,10 +19,6 @@ REQUIRED_USE="
 
 DEPEND="
 	~dev-qt/qtcore-${PV}
-	examples? (
-		~dev-qt/qtwidgets-${PV}
-		~dev-qt/qtxml-${PV}
-	)
 	freetds? ( dev-db/freetds )
 	mysql? ( virtual/libmysqlclient:= )
 	oci8? ( dev-db/oracle-instantclient-basic )
@@ -31,7 +26,11 @@ DEPEND="
 	postgres? ( dev-db/postgresql:* )
 	sqlite? ( >=dev-db/sqlite-3.8.10.2:3 )
 "
-RDEPEND="${DEPEND}"
+RDEPEND="${DEPEND}
+	examples? (
+		~dev-qt/qtcore-examples-${PV}
+	)
+"
 
 QT5_TARGET_SUBDIRS=(
 	src/sql

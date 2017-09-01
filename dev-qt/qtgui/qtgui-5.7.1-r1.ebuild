@@ -3,7 +3,6 @@
 
 EAPI=6
 QT5_MODULE="qtbase"
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/gui" "examples/qpa")
 inherit qt5-build
 
 DESCRIPTION="The GUI module and platform plugins for the Qt5 framework"
@@ -14,7 +13,7 @@ fi
 
 # TODO: linuxfb
 
-IUSE="accessibility dbus egl eglfs evdev +gif gles2 gtk
+IUSE="accessibility dbus egl eglfs evdev examples +gif gles2 gtk
 	ibus jpeg libinput +png tslib tuio +udev +xcb"
 REQUIRED_USE="
 	|| ( eglfs xcb )
@@ -25,7 +24,7 @@ REQUIRED_USE="
 	xcb? ( gles2? ( egl ) )
 "
 
-RDEPEND="
+COMMON_DEPEND="
 	dev-libs/glib:2
 	~dev-qt/qtcore-${PV}
 	media-libs/fontconfig
@@ -70,12 +69,17 @@ RDEPEND="
 		x11-libs/xcb-util-wm
 	)
 "
-DEPEND="${RDEPEND}
+
+RDEPEND="${COMMON_DEPEND}
+	ibus? ( app-i18n/ibus )
+	examples? (
+		~dev-qt/qtcore-examples-${PV}
+	)
+"
+
+DEPEND="${COMMON_DEPEND}
 	evdev? ( sys-kernel/linux-headers )
 	udev? ( sys-kernel/linux-headers )
-"
-PDEPEND="
-	ibus? ( app-i18n/ibus )
 "
 
 PATCHES=(

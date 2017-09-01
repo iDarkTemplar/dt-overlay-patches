@@ -3,7 +3,6 @@
 
 EAPI=6
 QT5_MODULE="qtbase"
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/network")
 inherit qt5-build
 
 DESCRIPTION="Network abstraction library for the Qt5 framework"
@@ -12,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE="bindist connman libproxy networkmanager +ssl"
+IUSE="bindist connman examples libproxy networkmanager +ssl"
 
 DEPEND="
 	~dev-qt/qtcore-${PV}
@@ -21,14 +20,13 @@ DEPEND="
 	libproxy? ( net-libs/libproxy )
 	networkmanager? ( ~dev-qt/qtdbus-${PV} )
 	ssl? ( dev-libs/openssl:0[bindist=] )
-	examples? (
-		~dev-qt/qtgui-${PV}
-		~dev-qt/qtwidgets-${PV}
-	)
 "
 RDEPEND="${DEPEND}
 	connman? ( net-misc/connman )
 	networkmanager? ( net-misc/networkmanager )
+	examples? (
+		~dev-qt/qtcore-examples-${PV}
+	)
 "
 
 QT5_TARGET_SUBDIRS=(
