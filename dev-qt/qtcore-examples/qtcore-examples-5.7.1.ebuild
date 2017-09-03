@@ -15,8 +15,8 @@ IUSE="gles2"
 
 DEPEND="
 	~dev-qt/qtcore-${PV}
-	~dev-qt/qtgui-${PV}
-	~dev-qt/qtwidgets-${PV}
+	~dev-qt/qtgui-${PV}[gles2=]
+	~dev-qt/qtwidgets-${PV}[gles2=]
 	~dev-qt/qtnetwork-${PV}
 	~dev-qt/qtconcurrent-${PV}
 	~dev-qt/qtdbus-${PV}
