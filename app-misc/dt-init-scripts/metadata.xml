@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>darktemplar@dark-templar-archives.net</email>
+		<name>i.Dark_Templar</name>
+	</maintainer>
+	<longdescription>Hook-based init and shutdown scripts</longdescription>
+	<use>
+		<flag name="fbsplash">Install fbsplash support hooks</flag>
+		<flag name="swsusp">Pull in sys-power/suspend</flag>
+		<flag name="luks">Install luks support hooks</flag>
+	</use>
+</pkgmetadata>
