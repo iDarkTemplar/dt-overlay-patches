@@ -1,0 +1,17 @@
+diff --git a/scripts/splash_geninitramfs.in b/scripts/splash_geninitramfs.in
+index ff9b75b..6bab6e3 100644
+--- a/scripts/splash_geninitramfs.in
++++ b/scripts/splash_geninitramfs.in
+@@ -211,6 +211,12 @@ for (( i=0 ; i < index ; i++ )) ; do
+ 			put_item "${icon}"
+ 		done
+ 
++		anims=`cat "${themedir}/${theme}/${j}.cfg" | \
++		       egrep -v '^#' | grep 'anim ' | awk '{print $3}'`
++		for anim in ${anims} ; do
++			put_item "${anim}"
++		done
++
+ 		fonts=`cat "${themedir}/${theme}/${j}.cfg" | \
+ 		       egrep -v '^#' | grep 'text ' | grep -o '[^ ]\+\.ttf'`
+ 		for font in ${fonts} ; do

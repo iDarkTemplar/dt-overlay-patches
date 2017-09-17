@@ -106,6 +106,7 @@ src_prepare() {
 	epatch "${FILESDIR}/libmng2-lcms2.patch"
 	# Bug #557126
 	epatch "${FILESDIR}/${P}-no-la.patch"
+	epatch "${FILESDIR}/splashutils-1.5.4.4-copy-anim-files.patch"
 
 	if use system-libs ; then
 		epatch "${FILESDIR}/${P}-system-libs.patch"
