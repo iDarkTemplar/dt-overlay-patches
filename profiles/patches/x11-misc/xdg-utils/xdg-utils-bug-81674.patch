@@ -7,9 +7,9 @@ index 9817c5f..7252222 100644
          fi
  
 -        pcmanfm "$file"
-+        if pcmanfm --help 2>/dev/null; then
++        if command -v pcmanfm >/dev/null 2>&1 ; then
 +          pcmanfm "$file"
-+        elif pcmanfm-qt --help 2>/dev/null; then
++        elif command -v pcmanfm-qt >/dev/null 2>&1 ; then
 +          pcmanfm-qt "$file"
 +        else
 +          open_generic "$1"
