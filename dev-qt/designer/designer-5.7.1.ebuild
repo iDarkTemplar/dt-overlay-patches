@@ -3,7 +3,6 @@
 
 EAPI=6
 QT5_MODULE="qttools"
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/designer")
 inherit qt5-build
 
 DESCRIPTION="WYSIWYG tool for designing and building Qt-based GUIs"
@@ -12,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE="declarative webkit"
+IUSE="declarative examples webkit"
 
 DEPEND="
 	~dev-qt/qtcore-${PV}
@@ -29,6 +28,10 @@ RDEPEND="${DEPEND}"
 QT5_TARGET_SUBDIRS=(
 	src/designer
 )
+
+pkg_setup() {
+	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples/designer")
+}
 
 src_prepare() {
 	qt_use_disable_mod declarative quickwidgets \

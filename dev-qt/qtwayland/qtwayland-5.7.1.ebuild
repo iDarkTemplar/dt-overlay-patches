@@ -2,7 +2,6 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples")
 inherit qt5-build
 
 DESCRIPTION="Wayland platform plugin for Qt"
@@ -11,7 +10,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE="egl xcomposite"
+IUSE="egl examples xcomposite"
 
 DEPEND="
 	>=dev-libs/wayland-1.4.0
@@ -26,6 +25,10 @@ DEPEND="
 	)
 "
 RDEPEND="${DEPEND}"
+
+pkg_setup() {
+	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples")
+}
 
 src_configure() {
 	qt_use_compile_test xcomposite

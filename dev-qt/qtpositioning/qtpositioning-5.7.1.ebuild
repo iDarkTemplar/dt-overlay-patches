@@ -3,7 +3,6 @@
 
 EAPI=6
 QT5_MODULE="qtlocation"
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/positioning")
 inherit qt5-build
 
 DESCRIPTION="Physical position determination library for the Qt5 framework"
@@ -12,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 ~hppa ppc64 x86"
 fi
 
-IUSE="geoclue qml"
+IUSE="examples geoclue qml"
 
 RDEPEND="
 	~dev-qt/qtcore-${PV}
@@ -32,6 +31,7 @@ QT5_TARGET_SUBDIRS=(
 pkg_setup() {
 	use geoclue && QT5_TARGET_SUBDIRS+=(src/plugins/position/geoclue)
 	use qml && QT5_TARGET_SUBDIRS+=(src/imports/positioning)
+	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples/positioning")
 }
 
 src_prepare() {

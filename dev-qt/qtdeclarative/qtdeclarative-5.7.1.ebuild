@@ -3,7 +3,6 @@
 
 EAPI=6
 PYTHON_COMPAT=( python2_7 python3_{4,5} )
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples")
 inherit python-any-r1 qt5-build
 
 DESCRIPTION="The QML and Quick modules for the Qt5 framework"
@@ -12,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE="gles2 +jit localstorage +widgets xml"
+IUSE="examples gles2 +jit localstorage +widgets xml"
 
 REQUIRED_USE="examples? ( widgets )"
 
@@ -38,6 +37,10 @@ DEPEND="${COMMON_DEPEND}
 RDEPEND="${COMMON_DEPEND}
 	!<dev-qt/qtquickcontrols-5.7:5
 "
+
+pkg_setup() {
+	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples")
+}
 
 src_prepare() {
 	use jit || PATCHES+=("${FILESDIR}/${PN}-5.4.2-disable-jit.patch")

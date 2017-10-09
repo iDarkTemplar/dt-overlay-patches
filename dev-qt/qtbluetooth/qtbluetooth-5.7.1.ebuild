@@ -3,7 +3,6 @@
 
 EAPI=6
 QT5_MODULE="qtconnectivity"
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/bluetooth")
 inherit qt5-build
 
 DESCRIPTION="Bluetooth support library for the Qt5 framework"
@@ -12,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 x86"
 fi
 
-IUSE="qml"
+IUSE="examples qml"
 
 RDEPEND="
 	~dev-qt/qtconcurrent-${PV}
@@ -24,6 +23,10 @@ RDEPEND="
 DEPEND="${RDEPEND}
 	~dev-qt/qtnetwork-${PV}
 "
+
+pkg_setup() {
+	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples/bluetooth")
+}
 
 src_prepare() {
 	sed -i -e 's/nfc//' src/src.pro || die

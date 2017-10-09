@@ -3,7 +3,6 @@
 
 EAPI=6
 QT5_MODULE="qttools"
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/linguist")
 inherit qt5-build
 
 DESCRIPTION="Graphical tool for translating Qt applications"
@@ -12,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~hppa ppc64 x86"
 fi
 
-IUSE=""
+IUSE="examples"
 
 DEPEND="
 	~dev-qt/designer-${PV}
@@ -27,3 +26,7 @@ RDEPEND="${DEPEND}"
 QT5_TARGET_SUBDIRS=(
 	src/linguist/linguist
 )
+
+pkg_setup() {
+	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples/linguist")
+}

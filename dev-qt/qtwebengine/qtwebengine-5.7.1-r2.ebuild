@@ -2,7 +2,6 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples")
 PYTHON_COMPAT=( python2_7 )
 inherit multiprocessing pax-utils python-any-r1 qt5-build
 
@@ -12,8 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 ~arm64 x86"
 fi
 
-IUSE="alsa bindist geolocation pax_kernel pulseaudio +system-ffmpeg +system-icu widgets"
-
+IUSE="alsa bindist examples geolocation pax_kernel pulseaudio +system-ffmpeg +system-icu widgets"
 REQUIRED_USE="examples? ( widgets )"
 
 RDEPEND="
@@ -84,6 +82,10 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.7.0-undef-madv_free.patch"
 	"${FILESDIR}/${PN}-5.7.1-gcc-7.patch"
 )
+
+pkg_setup() {
+	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples")
+}
 
 src_prepare() {
 	use pax_kernel && PATCHES+=( "${FILESDIR}/${PN}-paxmark-mksnapshot.patch" )

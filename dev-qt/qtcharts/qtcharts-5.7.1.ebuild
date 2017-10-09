@@ -2,7 +2,6 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/charts")
 inherit qt5-build
 
 DESCRIPTION="Chart component library for the Qt5 framework"
@@ -12,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="~amd64 ~x86"
 fi
 
-IUSE="qml"
+IUSE="examples qml"
 
 DEPEND="
 	~dev-qt/qtcore-${PV}
@@ -21,6 +20,10 @@ DEPEND="
 	qml? ( ~dev-qt/qtdeclarative-${PV} )
 "
 RDEPEND="${DEPEND}"
+
+pkg_setup() {
+	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples/charts")
+}
 
 src_prepare() {
 	qt_use_disable_mod qml quick \

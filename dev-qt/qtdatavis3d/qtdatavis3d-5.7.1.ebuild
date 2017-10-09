@@ -2,7 +2,6 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/datavisualization")
 inherit qt5-build
 
 DESCRIPTION="3D data visualization library for the Qt5 framework"
@@ -12,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="~amd64 ~x86"
 fi
 
-IUSE="gles2 qml"
+IUSE="examples gles2 qml"
 
 DEPEND="
 	~dev-qt/qtcore-${PV}
@@ -20,6 +19,10 @@ DEPEND="
 	qml? ( ~dev-qt/qtdeclarative-${PV}[gles2=] )
 "
 RDEPEND="${DEPEND}"
+
+pkg_setup() {
+	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples/datavisualization")
+}
 
 src_prepare() {
 	# eliminate bogus dependency on qtwidgets

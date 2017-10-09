@@ -2,7 +2,6 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples/qt3d")
 inherit qt5-build
 
 DESCRIPTION="The 3D module for the Qt5 framework"
@@ -12,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 fi
 
 # TODO: egl, tools
-IUSE="gles2 qml"
+IUSE="examples gles2 qml"
 
 DEPEND="
 	~dev-qt/qtconcurrent-${PV}
@@ -23,6 +22,10 @@ DEPEND="
 	qml? ( ~dev-qt/qtdeclarative-${PV}[gles2=] )
 "
 RDEPEND="${DEPEND}"
+
+pkg_setup() {
+	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples")
+}
 
 src_prepare() {
 	qt5-build_src_prepare

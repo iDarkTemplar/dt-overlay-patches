@@ -76,7 +76,7 @@ DEPEND="${RDEPEND}
 PDEPEND="
 	ibus? ( app-i18n/ibus )
 	examples? (
-		~dev-qt/qtcore-examples-${PV}[gles2=]
+		~dev-qt/qtbase-examples-${PV}[gles2=]
 	)
 "
 

@@ -2,7 +2,6 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
-QT5_MODULE_EXAMPLES_SUBDIRS=("examples")
 inherit qt5-build
 
 DESCRIPTION="Multimedia (audio, video, radio, camera) library for the Qt5 framework"
@@ -11,7 +10,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE="alsa gles2 gstreamer gstreamer010 openal pulseaudio qml widgets"
+IUSE="alsa examples gles2 gstreamer gstreamer010 openal pulseaudio qml widgets"
 REQUIRED_USE="?? ( gstreamer gstreamer010 ) examples? ( widgets )"
 
 RDEPEND="
@@ -45,6 +44,10 @@ RDEPEND="
 DEPEND="${RDEPEND}
 	gstreamer? ( x11-proto/videoproto )
 "
+
+pkg_setup() {
+	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples")
+}
 
 src_prepare() {
 	# do not rely on qtbase configuration

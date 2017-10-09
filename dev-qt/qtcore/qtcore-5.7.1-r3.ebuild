@@ -11,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE="icu systemd examples"
+IUSE="examples icu systemd"
 
 DEPEND="
 	dev-libs/double-conversion:=
@@ -26,7 +26,7 @@ RDEPEND="${DEPEND}"
 
 PDEPEND="
 	examples? (
-		~dev-qt/qtcore-examples-${PV}
+		~dev-qt/qtbase-examples-${PV}
 	)
 "
 

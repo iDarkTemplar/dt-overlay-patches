@@ -22,7 +22,7 @@ DEPEND="${RDEPEND}
 
 PDEPEND="
 	examples? (
-		~dev-qt/qtcore-examples-${PV}
+		~dev-qt/qtbase-examples-${PV}
 	)
 "
 
