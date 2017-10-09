@@ -21,7 +21,7 @@ DEPEND="
 RDEPEND="${DEPEND}"
 
 pkg_setup() {
-	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples/datavisualization")
+	use examples && QT5_EXAMPLES_SUBDIRS=("examples/datavisualization")
 }
 
 src_prepare() {

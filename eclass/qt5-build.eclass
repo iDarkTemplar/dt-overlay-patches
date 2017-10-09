@@ -47,7 +47,7 @@ esac
 # for tests you should proceed with setting VIRTUALX_REQUIRED=test.
 : ${VIRTUALX_REQUIRED:=manual}
 
-# @ECLASS-VARIABLE: QT5_MODULE_EXAMPLES_SUBDIRS
+# @ECLASS-VARIABLE: QT5_EXAMPLES_SUBDIRS
 # @DEFAULT_UNSET
 # @DESCRIPTION:
 # Array variable containing source directories for examples.
@@ -479,7 +479,7 @@ qt5_prepare_env() {
 qt5_foreach_target_subdir() {
 	local QT5_FOREACH_DIRS=("")
 	[[ -n ${QT5_TARGET_SUBDIRS[@]} ]] && QT5_FOREACH_DIRS=("${QT5_TARGET_SUBDIRS[@]}")
-	[[ -n ${QT5_MODULE_EXAMPLES_SUBDIRS[@]} ]] && QT5_FOREACH_DIRS+=("${QT5_MODULE_EXAMPLES_SUBDIRS[@]}")
+	[[ -n ${QT5_EXAMPLES_SUBDIRS[@]} ]] && QT5_FOREACH_DIRS+=("${QT5_EXAMPLES_SUBDIRS[@]}")
 
 	local subdir=
 	for subdir in "${QT5_FOREACH_DIRS[@]}"; do

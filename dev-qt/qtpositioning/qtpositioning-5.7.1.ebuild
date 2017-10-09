@@ -31,7 +31,7 @@ QT5_TARGET_SUBDIRS=(
 pkg_setup() {
 	use geoclue && QT5_TARGET_SUBDIRS+=(src/plugins/position/geoclue)
 	use qml && QT5_TARGET_SUBDIRS+=(src/imports/positioning)
-	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples/positioning")
+	use examples && QT5_EXAMPLES_SUBDIRS=("examples/positioning")
 }
 
 src_prepare() {

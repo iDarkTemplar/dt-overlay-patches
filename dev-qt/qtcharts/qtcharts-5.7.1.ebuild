@@ -22,7 +22,7 @@ DEPEND="
 RDEPEND="${DEPEND}"
 
 pkg_setup() {
-	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples/charts")
+	use examples && QT5_EXAMPLES_SUBDIRS=("examples/charts")
 }
 
 src_prepare() {

@@ -30,5 +30,5 @@ QT5_TARGET_SUBDIRS=(
 )
 
 pkg_setup() {
-	use examples && QT5_MODULE_EXAMPLES_SUBDIRS=("examples/help" "examples/uitools")
+	use examples && QT5_EXAMPLES_SUBDIRS=("examples/help" "examples/uitools")
 }
