@@ -50,9 +50,7 @@ esac
 # @ECLASS-VARIABLE: QT5_EXAMPLES_SUBDIRS
 # @DEFAULT_UNSET
 # @DESCRIPTION:
-# Array variable containing source directories for examples.
-# If this array is not empty, then USE-flag "examples" is provided.
-# When this USE-flag is set, examples from listed directories would be built and installed.
+# Array variable containing source directories of examples that should be built.
 # All paths must be relative to ${S}.
 
 inherit estack flag-o-matic ltprune toolchain-funcs versionator virtualx
