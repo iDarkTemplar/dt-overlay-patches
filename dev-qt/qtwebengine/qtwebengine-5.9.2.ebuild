@@ -64,6 +64,7 @@ RDEPEND="
 	widgets? ( ~dev-qt/qtwidgets-${PV} )
 	examples? (
 		~dev-qt/qtprintsupport-${PV}
+		~dev-qt/quickcontrols2-${PV}
 	)
 "
 DEPEND="${RDEPEND}
