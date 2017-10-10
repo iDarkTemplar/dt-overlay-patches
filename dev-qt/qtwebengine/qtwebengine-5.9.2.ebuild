@@ -23,6 +23,7 @@ RDEPEND="
 	~dev-qt/qtdeclarative-${PV}
 	~dev-qt/qtgui-${PV}
 	~dev-qt/qtnetwork-${PV}
+	~dev-qt/qtprintsupport-${PV}
 	~dev-qt/qtwebchannel-${PV}[qml]
 	dev-libs/expat
 	dev-libs/libevent:=
@@ -63,8 +64,7 @@ RDEPEND="
 	system-icu? ( dev-libs/icu:= )
 	widgets? ( ~dev-qt/qtwidgets-${PV} )
 	examples? (
-		~dev-qt/qtprintsupport-${PV}
-		~dev-qt/quickcontrols2-${PV}
+		~dev-qt/qtquickcontrols2-${PV}
 	)
 "
 DEPEND="${RDEPEND}
