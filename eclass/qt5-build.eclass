@@ -215,10 +215,6 @@ qt5-build_src_prepare() {
 		# Don't add -O3 to CXXFLAGS (bug 549140)
 		sed -i -e '/CONFIG\s*+=/ s/optimize_full//' \
 			src/{corelib/corelib,gui/gui}.pro || die "sed failed (optimize_full)"
-
-		# Don't check for cmake cache for installing example sources
-		# This is needed in order to install sources of examples for packages which build only some subdirectories out of whole package
-		sed -i -e 's/:!isEmpty(_QMAKE_CACHE_)//' mkspecs/features/qt_example_installs.prf || die "sed failed (qt_example_installs.prf)"
 	fi
 
 	default

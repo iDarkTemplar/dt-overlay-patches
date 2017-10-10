@@ -30,6 +30,8 @@ PDEPEND="
 	)
 "
 
+PATCHES=( "${FILESDIR}/${PN}-5.9.2-examples.patch" )
+
 QT5_TARGET_SUBDIRS=(
 	src/tools/bootstrap
 	src/tools/moc
