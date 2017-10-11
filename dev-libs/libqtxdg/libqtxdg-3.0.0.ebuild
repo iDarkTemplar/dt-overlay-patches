@@ -20,12 +20,12 @@ SLOT="0/$(get_version_component_range 1)"
 IUSE="test"
 
 CDEPEND="
-	dev-qt/qtcore:5
-	dev-qt/qtdbus:5
-	dev-qt/qtgui:5
-	dev-qt/qtsvg:5
-	dev-qt/qtwidgets:5
-	dev-qt/qtxml:5
+	dev-qt/qtcore:5=
+	dev-qt/qtdbus:5=
+	dev-qt/qtgui:5=
+	dev-qt/qtsvg:5=
+	dev-qt/qtwidgets:5=
+	dev-qt/qtxml:5=
 "
 DEPEND="${CDEPEND}
 	virtual/pkgconfig
