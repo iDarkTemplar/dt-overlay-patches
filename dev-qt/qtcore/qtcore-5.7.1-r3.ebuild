@@ -34,6 +34,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-5.6.2-plugins.patch
 	"${FILESDIR}"/${P}-qipm.patch
 	"${FILESDIR}"/${P}-qsfpm-{1,2}.patch
+	"${FILESDIR}"/${PN}-5.7.1-examples.patch
 )
 
 QT5_TARGET_SUBDIRS=(
