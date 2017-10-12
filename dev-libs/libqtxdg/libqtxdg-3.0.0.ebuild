@@ -35,6 +35,11 @@ RDEPEND="${CDEPEND}
 	x11-misc/xdg-utils
 "
 
+PATCHES=(
+	"${FILESDIR}/${P}-fix-mimeapps-list.patch"
+	"${FILESDIR}/${P}-check-xdg-config-home-and-dir.patch"
+)
+
 src_configure() {
 	local mycmakeargs=(
 		-DBUILD_TESTS=$(usex test)
