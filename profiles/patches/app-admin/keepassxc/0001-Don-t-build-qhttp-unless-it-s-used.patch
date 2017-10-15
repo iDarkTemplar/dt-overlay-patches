@@ -1,0 +1,65 @@
+From 17755455c8a432647a121e62912cec48f231f176 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sun, 15 Oct 2017 11:56:19 +0300
+Subject: [PATCH] Don't build qhttp unless it's used.
+
+---
+ src/CMakeLists.txt      |  2 +-
+ src/http/CMakeLists.txt | 30 ++++++++++++++----------------
+ 2 files changed, 15 insertions(+), 17 deletions(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index bd8a1fd3..ddc6d483 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -178,8 +178,8 @@ add_feature_info(AutoType WITH_XC_AUTOTYPE "Automatic password typing")
+ add_feature_info(KeePassHTTP WITH_XC_HTTP "Browser integration compatible with ChromeIPass and PassIFox")
+ add_feature_info(YubiKey WITH_XC_YUBIKEY "YubiKey HMAC-SHA1 challenge-response")
+ 
+-add_subdirectory(http)
+ if(WITH_XC_HTTP)
++    add_subdirectory(http)
+     set(keepasshttp_LIB keepasshttp qhttp Qt5::Network)
+ endif()
+ 
+diff --git a/src/http/CMakeLists.txt b/src/http/CMakeLists.txt
+index 8a3b197a..70b339e2 100644
+--- a/src/http/CMakeLists.txt
++++ b/src/http/CMakeLists.txt
+@@ -1,19 +1,17 @@
+ add_subdirectory(qhttp)
+ 
+-if(WITH_XC_HTTP)
+-    include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+-    
+-    set(keepasshttp_SOURCES
+-        AccessControlDialog.cpp
+-        EntryConfig.cpp
+-        HttpPasswordGeneratorWidget.cpp
+-        HttpSettings.cpp
+-        OptionDialog.cpp
+-        Protocol.cpp
+-        Server.cpp
+-        Service.cpp
+-    )
++include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+ 
+-    add_library(keepasshttp STATIC ${keepasshttp_SOURCES})
+-    target_link_libraries(keepasshttp qhttp Qt5::Core Qt5::Concurrent Qt5::Widgets Qt5::Network)
+-endif()
++set(keepasshttp_SOURCES
++    AccessControlDialog.cpp
++    EntryConfig.cpp
++    HttpPasswordGeneratorWidget.cpp
++    HttpSettings.cpp
++    OptionDialog.cpp
++    Protocol.cpp
++    Server.cpp
++    Service.cpp
++)
++
++add_library(keepasshttp STATIC ${keepasshttp_SOURCES})
++target_link_libraries(keepasshttp qhttp Qt5::Core Qt5::Concurrent Qt5::Widgets Qt5::Network)
+-- 
+2.13.6
+
