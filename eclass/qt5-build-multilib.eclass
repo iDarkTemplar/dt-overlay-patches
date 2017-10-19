@@ -359,7 +359,7 @@ qt5_multilib_src_install() {
 # @DESCRIPTION:
 # Regenerate configuration after installation or upgrade/downgrade.
 qt5-build-multilib_pkg_postinst() {
-	qt5_regenerate_global_qconfigs
+	multilib_foreach_abi qt5_regenerate_global_qconfigs
 }
 
 # @FUNCTION: qt5-build-multilib_pkg_postrm
@@ -367,7 +367,7 @@ qt5-build-multilib_pkg_postinst() {
 # Regenerate configuration when a module is completely removed.
 qt5-build-multilib_pkg_postrm() {
 	if [[ -z ${REPLACED_BY_VERSION} && ${PN} != qtcore ]]; then
-		qt5_regenerate_global_qconfigs
+		multilib_foreach_abi qt5_regenerate_global_qconfigs
 	fi
 }
 
@@ -809,17 +809,21 @@ qt5_install_module_qconfigs() {
 # Generates Gentoo-specific qconfig.{h,pri} according to the build configuration.
 # Don't call die here because dying in pkg_post{inst,rm} only makes things worse.
 qt5_regenerate_global_qconfigs() {
-	einfo "Regenerating gentoo-qconfig.h"
+	qt5_prepare_env
 
-	find "${ROOT%/}${QT5_HEADERDIR}"/Gentoo \
-		-name '*-qconfig.h' -a \! -name 'gentoo-qconfig.h' -type f \
-		-execdir cat '{}' + | sort -u > "${T}"/gentoo-qconfig.h
+	if multilib_is_native_abi; then
+		einfo "Regenerating gentoo-qconfig.h"
 
-	[[ -s ${T}/gentoo-qconfig.h ]] || ewarn "Generated gentoo-qconfig.h is empty"
-	mv -f "${T}"/gentoo-qconfig.h "${ROOT%/}${QT5_HEADERDIR}"/Gentoo/gentoo-qconfig.h \
-		|| eerror "Failed to install new gentoo-qconfig.h"
+		find "${ROOT%/}${QT5_HEADERDIR}"/Gentoo \
+			-name '*-qconfig.h' -a \! -name 'gentoo-qconfig.h' -type f \
+			-execdir cat '{}' + | sort -u > "${T}"/gentoo-qconfig.h
 
-	einfo "Updating QT_CONFIG in qconfig.pri"
+		[[ -s ${T}/gentoo-qconfig.h ]] || ewarn "Generated gentoo-qconfig.h is empty"
+		mv -f "${T}"/gentoo-qconfig.h "${ROOT%/}${QT5_HEADERDIR}"/Gentoo/gentoo-qconfig.h \
+			|| eerror "Failed to install new gentoo-qconfig.h"
+	fi
+
+	einfo "Updating QT_CONFIG in qconfig.pri for ${MULTILIB_ABI_FLAG}"
 
 	local qconfig_pri=${ROOT%/}${QT5_ARCHDATADIR}/mkspecs/qconfig.pri
 	if [[ -f ${qconfig_pri} ]]; then
