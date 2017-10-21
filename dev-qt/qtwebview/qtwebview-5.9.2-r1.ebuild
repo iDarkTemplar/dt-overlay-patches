@@ -7,7 +7,7 @@ inherit qt5-build-multilib
 DESCRIPTION="Module for displaying web content in a QML application using the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="~amd64"
+	KEYWORDS=""
 fi
 
 IUSE="examples"
