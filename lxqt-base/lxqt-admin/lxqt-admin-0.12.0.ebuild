@@ -29,6 +29,7 @@ DEPEND="dev-libs/glib:2
 	~lxqt-base/liblxqt-${PV}
 	kde-frameworks/kwindowsystem:5=
 	x11-libs/libX11
+	!lxqt-base/lxqt-common
 "
 RDEPEND="${DEPEND}"
 

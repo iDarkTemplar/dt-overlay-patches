@@ -28,6 +28,7 @@ RDEPEND="
 	dev-qt/qtxml:5=
 	~lxqt-base/liblxqt-${PV}
 	x11-libs/libX11
+	!lxqt-base/lxqt-common
 "
 DEPEND="${RDEPEND}
 	dev-qt/linguist-tools:5=

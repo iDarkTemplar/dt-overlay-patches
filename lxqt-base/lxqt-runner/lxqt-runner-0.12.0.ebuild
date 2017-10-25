@@ -30,7 +30,9 @@ RDEPEND=">=dev-cpp/muParser-2.2.3
 	kde-frameworks/kwindowsystem:5=
 	>=lxde-base/menu-cache-0.5.1
 	~lxqt-base/liblxqt-${PV}
-	~lxqt-base/lxqt-globalkeys-${PV}"
+	~lxqt-base/lxqt-globalkeys-${PV}
+	!lxqt-base/lxqt-common
+"
 DEPEND="${RDEPEND}
 	>=dev-util/cmake-3.6.2
 	>=dev-util/lxqt-build-tools-0.4.0

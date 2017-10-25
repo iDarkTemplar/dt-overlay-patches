@@ -26,6 +26,7 @@ DEPEND="
 	dev-qt/qtx11extras:5=
 	dev-qt/qtxml:5=
 	~lxqt-base/liblxqt-${PV}
+	!lxqt-base/lxqt-common
 "
 RDEPEND="${DEPEND}"
 

@@ -19,7 +19,7 @@ fi
 LICENSE="GPL-2 LGPL-2.1+"
 SLOT="0"
 
-CDEPEND="
+RDEPEND="
 	>=dev-libs/libqtxdg-1.0.0:=
 	dev-qt/qtcore:5=
 	dev-qt/qtdbus:5=
@@ -30,15 +30,15 @@ CDEPEND="
 	kde-frameworks/kwindowsystem:5=[X]
 	~lxqt-base/liblxqt-${PV}
 	x11-libs/libX11
-	x11-misc/xdg-user-dirs"
-DEPEND="${CDEPEND}
+	x11-misc/xdg-user-dirs
+	!lxqt-base/lxqt-common
+"
+DEPEND="${RDEPEND}
 	dev-qt/linguist-tools:5=
 	>=dev-util/lxqt-build-tools-0.4.0
 	dev-util/intltool
 	sys-devel/gettext
 	virtual/pkgconfig"
-RDEPEND="${CDEPEND}
-	=lxqt-base/lxqt-common-0.11*"
 
 src_configure() {
 	local mycmakeargs=( -DPULL_TRANSLATIONS=OFF )

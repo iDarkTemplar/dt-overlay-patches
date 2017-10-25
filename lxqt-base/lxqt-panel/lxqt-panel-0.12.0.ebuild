@@ -48,7 +48,9 @@ CDEPEND="
 		x11-libs/libXdamage
 		x11-libs/libXrender )
 	volume? ( alsa? ( media-libs/alsa-lib )
-		pulseaudio? ( media-sound/pulseaudio ) )"
+		pulseaudio? ( media-sound/pulseaudio ) )
+	!lxqt-base/lxqt-common
+"
 DEPEND="${CDEPEND}
 	>=dev-util/lxqt-build-tools-0.4.0
 	dev-qt/linguist-tools:5="

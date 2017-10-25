@@ -25,6 +25,7 @@ CDEPEND="app-admin/sudo
 	dev-qt/qtgui:5=
 	dev-qt/qtwidgets:5=
 	~lxqt-base/liblxqt-${PV}
+	!lxqt-base/lxqt-common
 	"
 DEPEND="${CDEPEND}"
 RDEPEND="${CDEPEND}

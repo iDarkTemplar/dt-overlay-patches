@@ -26,7 +26,9 @@ RDEPEND="
 	dev-qt/qtwidgets:5=
 	~lxqt-base/liblxqt-${PV}
 	>=x11-libs/libfm-qt-0.12.0:=
-	x11-libs/libX11"
+	x11-libs/libX11
+	!lxqt-base/lxqt-common
+"
 DEPEND="${RDEPEND}
 	>=dev-util/lxqt-build-tools-0.4.0
 	dev-qt/linguist-tools:5="

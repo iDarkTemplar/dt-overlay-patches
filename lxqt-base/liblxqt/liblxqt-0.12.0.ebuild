@@ -26,7 +26,9 @@ RDEPEND=">=dev-libs/libqtxdg-3.1.0:=
 	dev-qt/qtx11extras:5=
 	dev-qt/qtxml:5=
 	kde-frameworks/kwindowsystem:5=[X]
-	x11-libs/libXScrnSaver"
+	x11-libs/libXScrnSaver
+	!lxqt-base/lxqt-common
+"
 DEPEND="${RDEPEND}
 	>=dev-util/lxqt-build-tools-0.4.0
 	dev-qt/linguist-tools:5="

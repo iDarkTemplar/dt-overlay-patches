@@ -28,7 +28,9 @@ CDEPEND="
 	dev-qt/qtx11extras:5=
 	kde-frameworks/kidletime:5=
 	kde-frameworks/solid:5=
-	~lxqt-base/liblxqt-${PV}"
+	~lxqt-base/liblxqt-${PV}
+	!lxqt-base/lxqt-common
+"
 DEPEND="${CDEPEND}
 	dev-qt/linguist-tools:5=
 	virtual/pkgconfig"
