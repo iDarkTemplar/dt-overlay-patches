@@ -31,7 +31,7 @@ RDEPEND="
 	~lxqt-base/liblxqt-${PV}
 	x11-libs/libX11
 	x11-misc/xdg-user-dirs
-	!lxqt-base/lxqt-common
+	!!lxqt-base/lxqt-common
 "
 DEPEND="${RDEPEND}
 	dev-qt/linguist-tools:5=

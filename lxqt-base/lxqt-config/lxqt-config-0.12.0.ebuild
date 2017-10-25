@@ -38,7 +38,7 @@ CDEPEND="
 	x11-libs/libXcursor
 	x11-libs/libXext
 	x11-libs/libXfixes
-	!lxqt-base/lxqt-common
+	!!lxqt-base/lxqt-common
 "
 DEPEND="${CDEPEND}
 	>=dev-util/lxqt-build-tools-0.4.0

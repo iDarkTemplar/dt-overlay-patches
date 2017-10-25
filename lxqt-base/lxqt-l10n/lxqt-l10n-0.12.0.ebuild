@@ -22,5 +22,5 @@ DEPEND="
 	dev-qt/linguist-tools:5=
 	>=dev-util/lxqt-build-tools-0.4.0
 	~lxqt-base/liblxqt-${PV}
-	!lxqt-base/lxqt-common
+	!!lxqt-base/lxqt-common
 "
