@@ -4,7 +4,7 @@
 EAPI=6
 PYTHON_COMPAT=( python2_7 )
 QT_MIN_VER="5.9.1:5"
-inherit python-any-r1 qt5-build-multilib
+inherit python-any-r1 qt5-build
 
 DESCRIPTION="WebKit rendering library for the Qt5 framework (deprecated)"
 
@@ -18,40 +18,40 @@ IUSE="examples geolocation gstreamer gles2 +jit multimedia opengl orientation pr
 REQUIRED_USE="?? ( gstreamer multimedia ) examples? ( qml )"
 
 RDEPEND="
-	dev-db/sqlite:3[${MULTILIB_USEDEP}]
-	dev-libs/icu:=[${MULTILIB_USEDEP}]
-	>=dev-libs/leveldb-1.18-r1[${MULTILIB_USEDEP}]
-	dev-libs/libxml2:2[${MULTILIB_USEDEP}]
-	dev-libs/libxslt[${MULTILIB_USEDEP}]
-	>=dev-qt/qtcore-${QT_MIN_VER}[icu,${MULTILIB_USEDEP}]
-	>=dev-qt/qtgui-${QT_MIN_VER}[${MULTILIB_USEDEP}]
-	>=dev-qt/qtnetwork-${QT_MIN_VER}[${MULTILIB_USEDEP}]
-	>=dev-qt/qtsql-${QT_MIN_VER}[${MULTILIB_USEDEP}]
-	>=dev-qt/qtwidgets-${QT_MIN_VER}[${MULTILIB_USEDEP}]
-	media-libs/fontconfig:1.0[${MULTILIB_USEDEP}]
-	media-libs/libpng:0=[${MULTILIB_USEDEP}]
-	>=sys-libs/zlib-1.2.5[${MULTILIB_USEDEP}]
-	virtual/jpeg:0[${MULTILIB_USEDEP}]
-	virtual/opengl[${MULTILIB_USEDEP}]
-	x11-libs/libX11[${MULTILIB_USEDEP}]
-	x11-libs/libXcomposite[${MULTILIB_USEDEP}]
-	x11-libs/libXrender[${MULTILIB_USEDEP}]
-	geolocation? ( >=dev-qt/qtpositioning-${QT_MIN_VER}[${MULTILIB_USEDEP}] )
+	dev-db/sqlite:3
+	dev-libs/icu:=
+	>=dev-libs/leveldb-1.18-r1
+	dev-libs/libxml2:2
+	dev-libs/libxslt
+	>=dev-qt/qtcore-${QT_MIN_VER}[icu]
+	>=dev-qt/qtgui-${QT_MIN_VER}
+	>=dev-qt/qtnetwork-${QT_MIN_VER}
+	>=dev-qt/qtsql-${QT_MIN_VER}
+	>=dev-qt/qtwidgets-${QT_MIN_VER}
+	media-libs/fontconfig:1.0
+	media-libs/libpng:0=
+	>=sys-libs/zlib-1.2.5
+	virtual/jpeg:0
+	virtual/opengl
+	x11-libs/libX11
+	x11-libs/libXcomposite
+	x11-libs/libXrender
+	geolocation? ( >=dev-qt/qtpositioning-${QT_MIN_VER} )
 	gstreamer? (
-		dev-libs/glib:2[${MULTILIB_USEDEP}]
-		media-libs/gstreamer:1.0[${MULTILIB_USEDEP}]
-		media-libs/gst-plugins-base:1.0[${MULTILIB_USEDEP}]
+		dev-libs/glib:2
+		media-libs/gstreamer:1.0
+		media-libs/gst-plugins-base:1.0
 	)
-	multimedia? ( >=dev-qt/qtmultimedia-${QT_MIN_VER}[widgets,${MULTILIB_USEDEP}] )
+	multimedia? ( >=dev-qt/qtmultimedia-${QT_MIN_VER}[widgets] )
 	opengl? (
-		>=dev-qt/qtgui-${QT_MIN_VER}[gles2=,${MULTILIB_USEDEP}]
-		>=dev-qt/qtopengl-${QT_MIN_VER}[${MULTILIB_USEDEP}]
+		>=dev-qt/qtgui-${QT_MIN_VER}[gles2=]
+		>=dev-qt/qtopengl-${QT_MIN_VER}
 	)
-	orientation? ( >=dev-qt/qtsensors-${QT_MIN_VER}[${MULTILIB_USEDEP}] )
-	printsupport? ( >=dev-qt/qtprintsupport-${QT_MIN_VER}[${MULTILIB_USEDEP}] )
-	qml? ( >=dev-qt/qtdeclarative-${QT_MIN_VER}[${MULTILIB_USEDEP}] )
-	webchannel? ( >=dev-qt/qtwebchannel-${QT_MIN_VER}[${MULTILIB_USEDEP}] )
-	webp? ( media-libs/libwebp:0=[${MULTILIB_USEDEP}] )
+	orientation? ( >=dev-qt/qtsensors-${QT_MIN_VER} )
+	printsupport? ( >=dev-qt/qtprintsupport-${QT_MIN_VER} )
+	qml? ( >=dev-qt/qtdeclarative-${QT_MIN_VER} )
+	webchannel? ( >=dev-qt/qtwebchannel-${QT_MIN_VER} )
+	webp? ( media-libs/libwebp:0= )
 "
 DEPEND="${RDEPEND}
 	${PYTHON_DEPS}
@@ -60,7 +60,7 @@ DEPEND="${RDEPEND}
 	sys-devel/bison
 	sys-devel/flex
 	virtual/rubygems
-	test? ( >=dev-qt/qttest-${QT_MIN_VER}[${MULTILIB_USEDEP}] )
+	test? ( >=dev-qt/qttest-${QT_MIN_VER} )
 "
 
 PDEPEND="
@@ -112,11 +112,11 @@ src_prepare() {
 	# bug 458222
 	sed -i -e '/SUBDIRS += examples/d' Source/QtWebKit.pro || die
 
-	qt5-build-multilib_src_prepare
+	qt5-build_src_prepare
 }
 
-multilib_src_install() {
-	qt5_multilib_src_install
+src_install() {
+	qt5-build_src_install
 
 	# bug 572056
 	if [[ ! -f ${D%/}${QT5_LIBDIR}/libQt5WebKit.so ]]; then
