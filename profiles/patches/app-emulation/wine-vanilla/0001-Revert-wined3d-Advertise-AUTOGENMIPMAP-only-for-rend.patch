@@ -1,0 +1,42 @@
+From 4bf33aee29a077059eab9a9139494ff54a02a729 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Wed, 1 Nov 2017 20:26:20 +0300
+Subject: [PATCH] Revert "wined3d: Advertise AUTOGENMIPMAP only for renderable
+ and filterable formats."
+
+This reverts commit 25a8773d21d0113dc5e4f9dee49d9d9dbeed347b.
+---
+ dlls/d3d9/tests/device.c | 1 +
+ dlls/wined3d/directx.c   | 4 +---
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/dlls/d3d9/tests/device.c b/dlls/d3d9/tests/device.c
+index 8f9985c2a8..0c5f43e7dd 100644
+--- a/dlls/d3d9/tests/device.c
++++ b/dlls/d3d9/tests/device.c
+@@ -6972,6 +6972,7 @@ static void test_mipmap_gen(void)
+                 D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, formats[i]));
+         hr = IDirect3D9_CheckDeviceFormat(d3d, 0, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8,
+                 D3DUSAGE_AUTOGENMIPMAP, D3DRTYPE_TEXTURE, formats[i]);
++        todo_wine_if (!renderable && hr == D3D_OK)
+         ok((hr == D3D_OK && renderable) || hr == D3DOK_NOAUTOGEN,
+                 "Got unexpected hr %#x for %srenderable format %#x.\n",
+                 hr, renderable ? "" : "non", formats[i]);
+diff --git a/dlls/wined3d/directx.c b/dlls/wined3d/directx.c
+index e06001703e..e669cf53df 100644
+--- a/dlls/wined3d/directx.c
++++ b/dlls/wined3d/directx.c
+@@ -5361,9 +5361,7 @@ HRESULT CDECL wined3d_check_device_format(const struct wined3d *wined3d, UINT ad
+         return WINED3DERR_NOTAVAILABLE;
+     }
+ 
+-    if ((usage & WINED3DUSAGE_AUTOGENMIPMAP) && (!gl_info->supported[SGIS_GENERATE_MIPMAP]
+-            || (format->flags[gl_type] & (WINED3DFMT_FLAG_RENDERTARGET | WINED3DFMT_FLAG_FILTERING))
+-            != (WINED3DFMT_FLAG_RENDERTARGET | WINED3DFMT_FLAG_FILTERING)))
++    if ((usage & WINED3DUSAGE_AUTOGENMIPMAP) && !gl_info->supported[SGIS_GENERATE_MIPMAP])
+     {
+         TRACE("No WINED3DUSAGE_AUTOGENMIPMAP support, returning WINED3DOK_NOAUTOGEN.\n");
+         return WINED3DOK_NOAUTOGEN;
+-- 
+2.13.6
+
