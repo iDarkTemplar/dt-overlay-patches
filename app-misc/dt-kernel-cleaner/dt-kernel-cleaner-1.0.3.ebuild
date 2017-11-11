@@ -5,17 +5,17 @@ EAPI=5
 
 inherit eutils cmake-utils
 
-DESCRIPTION="A utility to manage symlinks similar to eselect"
-HOMEPAGE="https://github.com/iDarkTemplar/dt-symlinks-manager"
+DESCRIPTION="Utility to remove leftover files of linux kernels"
+HOMEPAGE="https://github.com/iDarkTemplar/dt-kernel-cleaner"
 
 SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 LICENSE="GPL-3+"
 SLOT="0"
-KEYWORDS="amd64 x86 ~amd64-fbsd ~x86-fbsd"
-IUSE=""
+KEYWORDS="amd64 x86"
+IUSE="boost"
 
 DEPEND="
-	dev-libs/boost
+	boost? ( dev-libs/boost:= )
 	"
 
 RDEPEND="
@@ -23,6 +23,10 @@ RDEPEND="
 	"
 
 src_configure() {
+	local mycmakeargs=(
+		$(cmake-utils_use_use boost BOOST)
+	)
+
 	cmake-utils_src_configure
 }
 

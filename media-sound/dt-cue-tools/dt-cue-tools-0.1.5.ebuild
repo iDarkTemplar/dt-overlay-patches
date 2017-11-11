@@ -12,10 +12,10 @@ SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar
 LICENSE="LGPL-3+"
 SLOT="0"
 KEYWORDS="amd64 x86"
-IUSE="+tools"
+IUSE="boost +tools"
 
 DEPEND="
-	dev-libs/boost:=[${MULTILIB_USEDEP}]
+	boost? ( dev-libs/boost:=[${MULTILIB_USEDEP}] )
 	"
 
 RDEPEND="
@@ -29,6 +29,7 @@ RDEPEND="
 
 multilib_src_configure() {
 	local mycmakeargs=(
+		$(cmake-utils_use_use boost BOOST)
 		$(cmake-utils_use_enable tools SPLIT_TOOL)
 	)
 

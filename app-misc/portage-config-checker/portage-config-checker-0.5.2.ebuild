@@ -15,7 +15,6 @@ KEYWORDS="amd64 x86 ~amd64-fbsd ~x86-fbsd"
 IUSE=""
 
 DEPEND="
-	dev-libs/boost:=
 	"
 
 RDEPEND="
