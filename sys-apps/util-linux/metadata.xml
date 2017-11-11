@@ -10,7 +10,6 @@
 	<flag name="cramfs">build mkfs/fsck helpers for cramfs filesystems</flag>
 	<flag name="fdformat">build fdformat (floppy disk format)</flag>
 	<flag name="kill">build the kill program</flag>
-	<flag name="mtab">support /etc/mtab being a regular file</flag>
 	<flag name="pam">build runuser helper</flag>
 	<flag name="suid">
 		install mount/umount as setuid so non-root users may mount/umount devices,

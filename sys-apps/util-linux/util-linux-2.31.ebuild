@@ -25,7 +25,7 @@ HOMEPAGE="https://www.kernel.org/pub/linux/utils/util-linux/"
 
 LICENSE="GPL-2 LGPL-2.1 BSD-4 MIT public-domain"
 SLOT="0"
-IUSE="build caps +cramfs fdformat kill mtab ncurses nls pam python +readline selinux slang static-libs +suid systemd test tty-helpers udev unicode"
+IUSE="build caps +cramfs fdformat kill ncurses nls pam python +readline selinux slang static-libs +suid systemd test tty-helpers udev unicode"
 
 # Most lib deps here are related to programs rather than our libs,
 # so we rarely need to specify ${MULTILIB_USEDEP}.
@@ -120,6 +120,7 @@ multilib_src_configure() {
 		--enable-schedutils
 		--with-bashcompletiondir="$(get_bashcompdir)"
 		--with-systemdsystemunitdir=$(multilib_native_usex systemd "$(systemd_get_systemunitdir)" "no")
+		--enable-libmount-support-mtab
 		$(multilib_native_use_enable caps setpriv)
 		$(multilib_native_use_enable cramfs)
 		$(multilib_native_use_enable fdformat)
@@ -142,7 +143,6 @@ multilib_src_configure() {
 		$(use_enable static-libs static)
 		$(use_with selinux)
 		$(usex ncurses '' '--without-tinfo')
-		$(use_enable mtab libmount-support-mtab)
 	)
 	ECONF_SOURCE="${S}" econf "${myeconfargs[@]}"
 }
