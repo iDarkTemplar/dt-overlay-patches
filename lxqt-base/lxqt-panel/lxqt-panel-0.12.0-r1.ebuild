@@ -17,9 +17,9 @@ fi
 
 LICENSE="LGPL-2.1+"
 SLOT="0"
-IUSE="+alsa +clock colorpicker cpuload +desktopswitch dom +kbindicator +mainmenu
+IUSE="+alsa clock colorpicker cpuload +desktopswitch +directorymenu dom +kbindicator +mainmenu
 	+mount networkmonitor pulseaudio +quicklaunch sensors +showdesktop
-	statusnotifier sysstat +taskbar +tray +volume worldclock"
+	+spacer statusnotifier sysstat +taskbar +tray +volume +worldclock"
 REQUIRED_USE="volume? ( || ( alsa pulseaudio ) )"
 
 CDEPEND="
@@ -65,8 +65,8 @@ PATCHES=(
 src_configure() {
 	local mycmakeargs i y
 	mycmakeargs=( -DPULL_TRANSLATIONS=OFF )
-	for i in clock colorpicker cpuload desktopswitch dom kbindicator mainmenu mount \
-		networkmonitor quicklaunch sensors showdesktop statusnotifier \
+	for i in clock colorpicker cpuload desktopswitch directorymenu dom kbindicator mainmenu mount \
+		networkmonitor quicklaunch sensors showdesktop spacer statusnotifier \
 		sysstat taskbar tray volume worldclock; do
 		#Switch to ^^ when we switch to EAPI=6.
 		#y=${i^^}
