@@ -1,7 +1,7 @@
-diff --git a/src/part/localLister.cpp b/src/part/localLister.cpp
-index 8105245..7e23c8a 100644
---- a/src/part/localLister.cpp
-+++ b/src/part/localLister.cpp
+diff --git a/src/localLister.cpp b/src/localLister.cpp
+index 8105245..a699bb5 100644
+--- a/src/localLister.cpp
++++ b/src/localLister.cpp
 @@ -172,7 +172,11 @@ LocalLister::scan(const QByteArray &path, const QByteArray &dirname)
          if (qstrcmp(ent->d_name, ".") == 0 || qstrcmp(ent->d_name, "..") == 0)
              continue;
