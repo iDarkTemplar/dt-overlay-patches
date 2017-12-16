@@ -15,7 +15,7 @@ else
 	KEYWORDS="~amd64 ~arm ~arm64 ~x86"
 fi
 
-LICENSE="GPL-2 LGPL-2.1+"
+LICENSE="GPL-2"
 SLOT="0"
 
 RDEPEND="dev-libs/glib:2

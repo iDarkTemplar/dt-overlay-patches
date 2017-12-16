@@ -1,4 +1,4 @@
-# Copyright 1999-2016 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
@@ -15,7 +15,7 @@ else
 	KEYWORDS="~amd64 ~arm ~arm64 ~x86"
 fi
 
-LICENSE="GPL-2 LGPL-2.1+"
+LICENSE="LGPL-2.1+ BSD"
 SLOT="0"
 
 RDEPEND=">=dev-libs/libqtxdg-3.1.0:=
@@ -32,13 +32,6 @@ RDEPEND=">=dev-libs/libqtxdg-3.1.0:=
 DEPEND="${RDEPEND}
 	>=dev-util/lxqt-build-tools-0.4.0
 	dev-qt/linguist-tools:5="
-
-pkg_pretend() {
-	if [[ ${MERGE_TYPE} != binary ]]; then
-		tc-is-gcc && [[ $(gcc-version) < 4.8 ]] && \
-		die 'The active compiler needs to be gcc 4.8 (or newer)'
-	fi
-}
 
 src_configure() {
 	local mycmakeargs=( -DPULL_TRANSLATIONS=OFF )

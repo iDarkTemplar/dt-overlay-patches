@@ -1,4 +1,4 @@
-# Copyright 1999-2016 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
@@ -16,7 +16,8 @@ else
 	KEYWORDS="~amd64 ~arm ~arm64 ~x86"
 fi
 
-LICENSE="GPL-2 LGPL-2.1+"
+IUSE="+themes"
+LICENSE="LGPL-2.1+"
 SLOT="0"
 
 RDEPEND="
@@ -31,6 +32,7 @@ RDEPEND="
 	~lxqt-base/liblxqt-${PV}
 	x11-libs/libX11
 	x11-misc/xdg-user-dirs
+	themes? ( ~x11-themes/lxqt-themes-${PV} )
 	!!lxqt-base/lxqt-common
 "
 DEPEND="${RDEPEND}
