@@ -16,7 +16,9 @@ REQUIRED_USE="
 	?? ( qt4 qt5 )
 	"
 
-RDEPEND="fuse? ( sys-fs/fuse )
+RDEPEND="
+	sys-libs/readline:=
+	fuse? ( sys-fs/fuse )
 	qt4? ( dev-qt/qtgui:4 )
 	qt5? ( dev-qt/qtwidgets:5 )
 	magic? ( sys-apps/file )
