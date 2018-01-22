@@ -1,19 +1,26 @@
-From 6e4eb7a4d4e6a4e2b1b9f0c5bfe40bbefd4540f6 Mon Sep 17 00:00:00 2001
+From b2a2fa446d1bacf9d578178d0833634b6eb64021 Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Fri, 11 Aug 2017 23:08:56 +0300
 Subject: [PATCH] Fix multilevel dynamic context menu issues for system tray
 
 This should fix https://bugs.kde.org/show_bug.cgi?id=383202
 ---
- libdbusmenuqt/dbusmenuimporter.cpp | 56 ++++++++++++++++----------------------
- 1 file changed, 24 insertions(+), 32 deletions(-)
+ libdbusmenuqt/dbusmenuimporter.cpp | 59 ++++++++++++--------------------------
+ 1 file changed, 19 insertions(+), 40 deletions(-)
 
 diff --git a/libdbusmenuqt/dbusmenuimporter.cpp b/libdbusmenuqt/dbusmenuimporter.cpp
-index 2cc5a9c4..68da06fe 100644
+index 21207a98..7c231e41 100644
 --- a/libdbusmenuqt/dbusmenuimporter.cpp
 +++ b/libdbusmenuqt/dbusmenuimporter.cpp
-@@ -408,46 +408,38 @@ void DBusMenuImporter::slotGetLayoutFinished(QDBusPendingCallWatcher *watcher)
+@@ -401,56 +401,35 @@ void DBusMenuImporter::slotGetLayoutFinished(QDBusPendingCallWatcher *watcher)
      }
+ 
+     //remove outdated actions
+-    QSet<int> newDBusMenuItemIds;
+-    newDBusMenuItemIds.reserve(rootItem.children.count());
+-    for (const DBusMenuLayoutItem &item: rootItem.children) {
+-        newDBusMenuItemIds << item.id;
+-    }
      for (QAction *action: menu->actions()) {
          int id = action->property(DBUSMENU_PROPERTY_ID).toInt();
 -        if (! newDBusMenuItemIds.contains(id)) {
@@ -24,27 +31,22 @@ index 2cc5a9c4..68da06fe 100644
 +        d->m_actionForId.remove(id);
      }
  
--    //insert or update new actions into our menu
-+    // Clear menu, all actions either were just deleted, or will be added back in following loop
-+    // Don't cache any actions since they can change type (i.e. action can become separator) and it'd cause a bug
-+    menu->clear();
-+
-+    //insert new or updated actions into our menu
+     //insert or update new actions into our menu
      for (const DBusMenuLayoutItem &dbusMenuItem: rootItem.children) {
 -        DBusMenuImporterPrivate::ActionForId::Iterator it = d->m_actionForId.find(dbusMenuItem.id);
-         QAction *action = nullptr;
+-        QAction *action = nullptr;
 -        if (it == d->m_actionForId.end()) {
 -            int id = dbusMenuItem.id;
 -            action = d->createAction(id, dbusMenuItem.properties, menu);
 -            d->m_actionForId.insert(id, action);
-+        int id = dbusMenuItem.id;
-+        action = d->createAction(id, dbusMenuItem.properties, menu);
-+        d->m_actionForId.insert(id, action);
- 
+-
 -            connect(action, &QObject::destroyed, this, [this, id]() {
 -                d->m_actionForId.remove(id);
 -            });
--
++        int id = dbusMenuItem.id;
++        QAction *action = d->createAction(id, dbusMenuItem.properties, menu);
++        d->m_actionForId.insert(id, action);
+ 
 -            connect(action, &QAction::triggered, this, [action, id, this]() {
 -                sendClickedEvent(id);
 -            });
@@ -71,6 +73,9 @@ index 2cc5a9c4..68da06fe 100644
 -            filteredKeys.removeOne("toggle-type");
 -            filteredKeys.removeOne("children-display");
 -            d->updateAction(*it, dbusMenuItem.properties, filteredKeys);
+-            // Move the action to the tail so we can keep the order same as the dbus request.
+-            menu->removeAction(action);
+-            menu->addAction(action);
 +        if (action->menu()) {
 +            auto menu = action->menu();
 +            connect(menu, &QMenu::aboutToShow, this, [menu, this]() {
@@ -84,5 +89,5 @@ index 2cc5a9c4..68da06fe 100644
  
      emit menuUpdated(menu);
 -- 
-2.13.0
+2.13.6
 
