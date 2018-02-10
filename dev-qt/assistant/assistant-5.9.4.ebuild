@@ -40,7 +40,7 @@ src_prepare() {
 	qt5-build-multilib_src_prepare
 }
 
-src_install() {
+multilib_src_install() {
 	qt5_multilib_src_install
 
 	doicon -s 32 src/assistant/assistant/images/assistant.png

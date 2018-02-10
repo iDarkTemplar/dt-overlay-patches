@@ -43,7 +43,7 @@ src_prepare() {
 	qt5-build-multilib_src_prepare
 }
 
-src_install() {
+multilib_src_install() {
 	qt5_multilib_src_install
 
 	doicon -s 128 src/designer/src/designer/images/designer.png

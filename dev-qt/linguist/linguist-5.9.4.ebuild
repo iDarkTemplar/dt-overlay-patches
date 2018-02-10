@@ -31,7 +31,7 @@ pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples/linguist")
 }
 
-src_install() {
+multilib_src_install() {
 	qt5_multilib_src_install
 
 	local size
