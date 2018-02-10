@@ -32,7 +32,7 @@ pkg_setup() {
 }
 
 src_install() {
-	qt5-build-multilib_src_install
+	qt5_multilib_src_install
 
 	local size
 	for size in 16 32 48 64 128; do

@@ -27,7 +27,7 @@ QT5_TARGET_SUBDIRS=(
 )
 
 src_install() {
-	qt5-build-multilib_src_install
+	qt5_multilib_src_install
 
 	doicon -s 32 src/qdbus/qdbusviewer/images/qdbusviewer.png
 	newicon -s 128 src/qdbus/qdbusviewer/images/qdbusviewer-128.png qdbusviewer.png

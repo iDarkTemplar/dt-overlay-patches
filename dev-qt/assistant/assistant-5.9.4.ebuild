@@ -41,7 +41,7 @@ src_prepare() {
 }
 
 src_install() {
-	qt5-build-multilib_src_install
+	qt5_multilib_src_install
 
 	doicon -s 32 src/assistant/assistant/images/assistant.png
 	newicon -s 128 src/assistant/assistant/images/assistant-128.png assistant.png
