@@ -1,5 +1,5 @@
---- modules/system-source/system-source.c.back	2017-03-06 20:17:58.569512050 +0300
-+++ modules/system-source/system-source.c	2017-03-06 20:19:49.503518553 +0300
+--- a/modules/system-source/system-source.c.back	2017-03-06 20:17:58.569512050 +0300
++++ b/modules/system-source/system-source.c	2017-03-06 20:19:49.503518553 +0300
 @@ -222,22 +222,24 @@
  _is_running_in_linux_container(void)
  {
