@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
@@ -11,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="~amd64 ~arm ~arm64 ~hppa ~ppc ~ppc64 ~x86"
 fi
 
-IUSE="bindist connman examples libproxy networkmanager +ssl"
+IUSE="bindist connman examples libproxy libressl networkmanager +ssl"
 
 DEPEND="
 	~dev-qt/qtcore-${PV}[${MULTILIB_USEDEP}]
@@ -20,6 +20,10 @@ DEPEND="
 	libproxy? ( net-libs/libproxy[${MULTILIB_USEDEP}] )
 	networkmanager? ( ~dev-qt/qtdbus-${PV}[${MULTILIB_USEDEP}] )
 	ssl? ( dev-libs/openssl:0=[bindist=,${MULTILIB_USEDEP}] )
+	ssl? (
+		!libressl? ( dev-libs/openssl:0=[bindist=,${MULTILIB_USEDEP}] )
+		libressl? ( dev-libs/libressl:0=[${MULTILIB_USEDEP}] )
+	)
 "
 RDEPEND="${DEPEND}
 	connman? ( net-misc/connman )

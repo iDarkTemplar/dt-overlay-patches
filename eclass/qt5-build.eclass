@@ -331,6 +331,8 @@ qt5-build_src_install() {
 		# convenience symlinks
 		dosym qt5-"${CHOST}".conf /etc/xdg/qtchooser/5.conf
 		dosym qt5-"${CHOST}".conf /etc/xdg/qtchooser/qt5.conf
+		# TODO bug 522646: write an eselect module to manage default.conf
+		dosym qt5.conf /etc/xdg/qtchooser/default.conf
 	fi
 
 	qt5_install_module_config
@@ -851,8 +853,8 @@ qt5_install_module_config() {
 	# install also the original qconfig.pri
 	[[ ${PN} == qtcore && ${QT5_MINOR_VERSION} -ge 9 ]] && (
 		insinto "${QT5_ARCHDATADIR#${EPREFIX}}"/mkspecs/gentoo
-		newins "${D}${QT5_ARCHDATADIR#${EPREFIX}}"/mkspecs/qconfig.pri qconfig-qtcore.pri
-		newins "${D}${QT5_ARCHDATADIR#${EPREFIX}}"/mkspecs/qmodule.pri qmodule-qtcore.pri
+		newins "${D}${QT5_ARCHDATADIR}"/mkspecs/qconfig.pri qconfig-qtcore.pri
+		newins "${D}${QT5_ARCHDATADIR}"/mkspecs/qmodule.pri qmodule-qtcore.pri
 	)
 }
 
