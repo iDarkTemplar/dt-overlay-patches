@@ -8,7 +8,7 @@ inherit qt5-build-multilib
 DESCRIPTION="Qt5 plugin metadata dumper"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="~amd64 ~x86"
+	KEYWORDS="amd64 x86"
 fi
 
 IUSE=""

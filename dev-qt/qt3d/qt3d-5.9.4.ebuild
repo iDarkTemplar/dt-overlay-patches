@@ -7,7 +7,7 @@ inherit qt5-build-multilib
 DESCRIPTION="The 3D module for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="~amd64 ~x86"
+	KEYWORDS="amd64 x86"
 fi
 
 # TODO: gamepad, tools

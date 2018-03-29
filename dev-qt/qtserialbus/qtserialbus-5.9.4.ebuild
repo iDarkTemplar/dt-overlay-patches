@@ -7,7 +7,7 @@ inherit qt5-build-multilib
 DESCRIPTION="Support for CAN and other serial buses"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="~amd64 ~x86"
+	KEYWORDS="amd64 x86"
 fi
 
 IUSE="examples"
