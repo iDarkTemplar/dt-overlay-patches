@@ -26,6 +26,8 @@ DEPEND="
 "
 RDEPEND="${DEPEND}"
 
+PATCHES=( "${FILESDIR}/${P}-qquickwindow-crash.patch" ) # 5.9 branch
+
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples")
 }
