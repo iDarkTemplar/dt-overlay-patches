@@ -92,7 +92,7 @@ src_configure() {
 			-DENABLE_SERVER="ON"
 			-DSERVER_UID="${PN}"
 			-DSERVER_GID="${PN}"
-			-DFIFO_DIR="/run/wesnothd"
+			-DFIFO_DIR="/run"
 			)
 	else
 		mycmakeargs=(
@@ -118,5 +118,6 @@ src_install() {
 	DOCS="README.md changelog.md players_changelog.md" cmake-utils_src_install
 	if use dedicated || use server; then
 		doinitd "${T}"/wesnothd
+		rmdir "${ED}"/run
 	fi
 }
