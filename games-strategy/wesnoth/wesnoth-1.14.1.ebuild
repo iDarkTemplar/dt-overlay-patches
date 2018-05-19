@@ -50,6 +50,15 @@ pkg_setup() {
 src_prepare() {
 	cmake-utils_src_prepare
 
+	if use dedicated || use server ; then
+		sed \
+			-e "s:GAMES_BINDIR:/usr/bin:" \
+			-e "s:GAMES_STATEDIR::" \
+			-e "s/GAMES_USER_DED/${PN}/" \
+			-e "s/GAMES_GROUP/${PN}/" "${FILESDIR}"/wesnothd.rc \
+			> "${T}"/wesnothd || die
+	fi
+
 	if ! use doc ; then
 		sed -i \
 			-e '/manual/d' \
@@ -108,7 +117,6 @@ src_configure() {
 src_install() {
 	DOCS="README.md changelog.md players_changelog.md" cmake-utils_src_install
 	if use dedicated || use server; then
-		keepdir "/run/wesnothd"
-		newinitd "${FILESDIR}"/wesnothd.rc wesnothd
+		doinitd "${T}"/wesnothd
 	fi
 }

@@ -9,7 +9,7 @@ depend() {
 start() {
 	ebegin "Starting wesnothd"
 	start-stop-daemon --start --quiet -b -m \
-		--pidfile "GAMES_STATEDIR"/run/wesnothd/wesnothd.pid \
+		--pidfile "GAMES_STATEDIR"/run/wesnothd.pid \
 		-c GAMES_USER_DED:GAMES_GROUP \
 		--exec "GAMES_BINDIR"/wesnothd
 	eend $?
@@ -17,6 +17,6 @@ start() {
 
 stop() {
 	ebegin "Stopping wesnothd"
-	start-stop-daemon --stop --quiet --pidfile "GAMES_STATEDIR"/run/wesnothd/wesnothd.pid
+	start-stop-daemon --stop --quiet --pidfile "GAMES_STATEDIR"/run/wesnothd.pid
 	eend $?
 }
