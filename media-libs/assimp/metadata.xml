@@ -2,7 +2,8 @@
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="person">
-		<email>slis@gentoo.org</email>
+		<email>darktemplar@dark-templar-archives.net</email>
+		<name>i.Dark_Templar</name>
 	</maintainer>
 	<use>
 		<flag name="boost">Build assimp with boost support</flag>

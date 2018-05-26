@@ -2,12 +2,8 @@
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="person">
-		<email>pesa@gentoo.org</email>
-		<name>Davide Pesavento</name>
-	</maintainer>
-	<maintainer type="project">
-		<email>qt@gentoo.org</email>
-		<name>Gentoo Qt Project</name>
+		<email>darktemplar@dark-templar-archives.net</email>
+		<name>i.Dark_Templar</name>
 	</maintainer>
 	<use>
 		<flag name="android">Build plugin for Android devices</flag>
