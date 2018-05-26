@@ -1,0 +1,53 @@
+From e64a2ba8edf1c0f7fb5e1b83d2c9e776eee915f3 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sat, 26 May 2018 18:00:26 +0300
+Subject: [PATCH] Mirrorselect: add 'exclude' option to allow excluding hosts
+ from mirrors list.
+
+---
+ mirrorselect.8       | 3 +++
+ mirrorselect/main.py | 7 +++++++
+ 2 files changed, 10 insertions(+)
+
+diff --git a/mirrorselect.8 b/mirrorselect.8
+index cd7b8bb..3a1e304 100644
+--- a/mirrorselect.8
++++ b/mirrorselect.8
+@@ -96,6 +96,9 @@ download mirrors. If this is not specified, a default of 1 is used.
+ .TP
+ .BI \-t " TIMEOUT " "\fR,\fP \-timeout" " TIMEOUT "
+ Timeout for deep mode. Defaults to 10 seconds.
++.TP
++.BI \-e " EXCLUDE " "\fR,\fP \-exclude" " EXCLUDE "
++Exclude host from mirrors list.
+ 
+ .SH "EXAMPLES"
+ automatic:
+diff --git a/mirrorselect/main.py b/mirrorselect/main.py
+index 4858875..a1594bf 100755
+--- a/mirrorselect/main.py
++++ b/mirrorselect/main.py
+@@ -246,6 +246,9 @@ class MirrorSelect(object):
+ 		group.add_option(
+ 			"-t", "--timeout", action="store", type="int",
+ 			default="10", help="Timeout for deep mode. Defaults to 10 seconds.")
++		group.add_option(
++			"-e", "--exclude", action="append", dest="exclude",
++			default=None, help="Exclude host from mirrors list.")
+ 
+ 
+ 
+@@ -305,6 +308,10 @@ class MirrorSelect(object):
+ 		else:
+ 			self.output.write("using url: %s\n" % MIRRORS_3_XML, 2)
+ 			hosts = Extractor(MIRRORS_3_XML, options, self.output).hosts
++
++		if options.exclude:
++			hosts = [x for x in hosts if x[0] not in options.exclude]
++
+ 		return hosts
+ 
+ 
+-- 
+2.16.1
+
