@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
-	<maintainer type="project">
-		<email>qt@gentoo.org</email>
-		<name>Gentoo Qt Project</name>
+	<maintainer type="person">
+		<email>darktemplar@dark-templar-archives.net</email>
+		<name>i.Dark_Templar</name>
 	</maintainer>
 	<longdescription lang="en">
 	QTermWidget is an opensource project based on KDE4 Konsole application.
@@ -11,6 +11,6 @@
 	Qt widget for using as a built-in console or terminal emulation widget.
 	</longdescription>
 	<upstream>
-		<remote-id type="github">qterminal/qtermwidget</remote-id>
+		<remote-id type="github">lxqt/qtermwidget</remote-id>
 	</upstream>
 </pkgmetadata>
