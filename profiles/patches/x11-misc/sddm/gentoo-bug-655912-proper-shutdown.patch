@@ -1,0 +1,12 @@
+diff -uNr sddm-0.17.0.ORG/src/daemon/SeatManager.h sddm-0.17.0/src/daemon/SeatManager.h
+--- sddm-0.17.0.ORG/src/daemon/SeatManager.h	2018-06-04 10:29:50.931682032 +0200
++++ sddm-0.17.0/src/daemon/SeatManager.h	2018-06-04 10:31:52.512225442 +0200
+@@ -31,7 +31,7 @@
+     class SeatManager : public QObject {
+         Q_OBJECT
+     public:
+-        explicit SeatManager(QObject *parent = 0) {}
++	explicit SeatManager(QObject *parent = 0) : QObject(parent) {}
+ 
+         void initialize();
+         void createSeat(const QString &name);
