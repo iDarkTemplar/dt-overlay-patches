@@ -36,7 +36,7 @@ RDEPEND="
 	)
 "
 DEPEND="${RDEPEND}
-	gstreamer? ( x11-proto/videoproto[${MULTILIB_USEDEP}] )
+	gstreamer? ( x11-base/xorg-proto )
 "
 
 pkg_setup() {
