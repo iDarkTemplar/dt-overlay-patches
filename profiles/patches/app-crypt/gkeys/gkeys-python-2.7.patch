@@ -1,0 +1,25 @@
+From 271337d7c1454f667827ea5c57854d24e0dce351 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sat, 7 Jul 2018 23:17:19 +0300
+Subject: [PATCH] Fix output with python-2.7
+
+---
+ gkeys/gkeys/actions.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gkeys/gkeys/actions.py b/gkeys/gkeys/actions.py
+index d3e403d..bb2790a 100644
+--- a/gkeys/gkeys/actions.py
++++ b/gkeys/gkeys/actions.py
+@@ -239,7 +239,7 @@ class Actions(ActionBase):
+                 else:
+                     print(_unicode("           %s") % line)
+                 c += 1
+-            self.logger.debug(_unicode("data output:\n") + str(result))
++            self.logger.debug(_unicode("data output:\n") + _unicode(result))
+         return (True, result)
+ 
+ 
+-- 
+2.16.4
+
