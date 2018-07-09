@@ -28,7 +28,7 @@ RDEPEND=">=dev-cpp/muParser-2.2.3
 	dev-qt/qtx11extras:5=
 	dev-qt/qtxml:5=
 	kde-frameworks/kwindowsystem:5=
-	>=lxde-base/menu-cache-0.5.1
+	>=lxde-base/menu-cache-1.1.0
 	~lxqt-base/liblxqt-${PV}
 	~lxqt-base/lxqt-globalkeys-${PV}
 	!!lxqt-base/lxqt-common
@@ -40,7 +40,10 @@ DEPEND="${RDEPEND}
 	virtual/pkgconfig"
 
 src_configure() {
-	local mycmakeargs=( -DPULL_TRANSLATIONS=OFF )
+	local mycmakeargs=(
+		-DPULL_TRANSLATIONS=OFF
+		-DUSE_MENU_CACHE=ON
+	)
 	cmake-utils_src_configure
 }
 

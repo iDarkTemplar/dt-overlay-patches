@@ -33,7 +33,7 @@ CDEPEND="
 	dev-qt/qtxml:5=
 	kde-frameworks/kguiaddons:5=
 	kde-frameworks/kwindowsystem:5=[X]
-	>=lxde-base/menu-cache-0.3.3
+	>=lxde-base/menu-cache-1.1.0
 	~lxqt-base/liblxqt-${PV}
 	~lxqt-base/lxqt-globalkeys-${PV}
 	x11-libs/libX11
@@ -60,7 +60,10 @@ RDEPEND="${CDEPEND}
 
 src_configure() {
 	local mycmakeargs i y
-	mycmakeargs=( -DPULL_TRANSLATIONS=OFF )
+	mycmakeargs=(
+		-DPULL_TRANSLATIONS=OFF
+		-DUSE_MENU_CACHE=ON
+	)
 	for i in colorpicker cpuload desktopswitch directorymenu dom kbindicator mainmenu mount \
 		networkmonitor quicklaunch sensors showdesktop spacer statusnotifier \
 		sysstat taskbar tray volume worldclock; do
