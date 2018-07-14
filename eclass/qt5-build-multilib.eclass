@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 # @ECLASS: qt5-build.eclass
@@ -13,7 +13,7 @@
 # Requires EAPI 6.
 
 if [[ ${CATEGORY} != dev-qt ]]; then
-	die "qt5-build.eclass is only to be used for building Qt 5."
+	die "qt5-build-multilib.eclass is only to be used for building Qt 5"
 fi
 
 case ${EAPI} in
@@ -63,15 +63,14 @@ esac
 # Array variable containing source directories of examples that should be built.
 # All paths must be relative to ${S}.
 
-inherit estack flag-o-matic ltprune multilib multilib-minimal toolchain-funcs versionator virtualx
+inherit eapi7-ver estack flag-o-matic multilib multilib-minimal toolchain-funcs virtualx
 
 HOMEPAGE="https://www.qt.io/"
 LICENSE="|| ( GPL-2 GPL-3 LGPL-3 ) FDL-1.3"
-SLOT=5/$(get_version_component_range 1-2)
+SLOT=5/$(ver_cut 1-2)
 
-QT5_MINOR_VERSION=$(get_version_component_range 2)
-QT5_PATCH_VERSION=$(get_version_component_range 3)
-readonly QT5_MINOR_VERSION QT5_PATCH_VERSION
+QT5_MINOR_VERSION=$(ver_cut 2)
+readonly QT5_MINOR_VERSION
 
 case ${PV} in
 	5.9999)
@@ -160,15 +159,6 @@ multilib_src_install()		{ qt5_multilib_src_install; }
 # @DESCRIPTION:
 # Unpacks the sources.
 qt5-build-multilib_src_unpack() {
-	if tc-is-gcc; then
-		local min_gcc4_minor_version=7
-		if [[ $(gcc-major-version) -lt 4 ]] || \
-		   [[ $(gcc-major-version) -eq 4 && $(gcc-minor-version) -lt ${min_gcc4_minor_version} ]]; then
-			eerror "GCC version 4.${min_gcc4_minor_version} or later is required to build this package"
-			die "GCC 4.${min_gcc4_minor_version} or later required"
-		fi
-	fi
-
 	# bug 307861
 	if [[ ${PN} == qtwebengine || ${PN} == qtwebkit ]]; then
 		eshopts_push -s extglob
@@ -183,7 +173,7 @@ qt5-build-multilib_src_unpack() {
 	fi
 
 	case ${QT5_BUILD_TYPE} in
-		live)    git-r3_src_unpack ;;
+		live)    git-r3_src_unpack ;&
 		release) default ;;
 	esac
 }
@@ -355,7 +345,9 @@ qt5_multilib_src_install() {
 	fi
 
 	qt5_install_module_config
-	prune_libtool_files
+
+	# prune libtool files
+	find "${D}" -name '*.la' -delete || die
 }
 
 # @FUNCTION: qt5_multilib_src_install_all
@@ -580,6 +572,24 @@ qt5_base_configure() {
 		-sysconfdir "${QT5_SYSCONFDIR}"
 		-examplesdir "${QT5_EXAMPLESDIR}"
 		-testsdir "${QT5_TESTSDIR}"
+
+		# force appropriate compiler
+		$(if use kernel_FreeBSD; then
+			if tc-is-gcc; then
+				echo -platform freebsd-g++
+			elif tc-is-clang; then
+				echo -platform freebsd-clang
+			fi
+		fi)
+		$(if [[ ${QT5_MINOR_VERSION} -ge 10 ]]; then
+			if use kernel_linux; then
+				if tc-is-gcc; then
+					echo -platform linux-g++
+				elif tc-is-clang; then
+					echo -platform linux-clang
+				fi
+			fi
+		fi)
 
 		# configure in release mode by default,
 		# override via the CONFIG qmake variable
@@ -872,7 +882,7 @@ qt5_install_module_config() {
 		)
 	fi
 
-	# install also the original qconfig.pri
+	# install the original {qconfig,qmodule}.pri from qtcore
 	[[ ${PN} == qtcore && ${QT5_MINOR_VERSION} -ge 9 ]] && (
 		insinto "${QT5_ARCHDATADIR#${EPREFIX}}"/mkspecs/gentoo
 		newins "${D}${QT5_ARCHDATADIR}"/mkspecs/qconfig.pri qconfig-qtcore.pri
@@ -968,7 +978,7 @@ qt5_regenerate_global_configs() {
 			done
 
 			# check all items from the original qtcore qmodule.pri,
-			# and add them to the appropriate list if not overriden
+			# and add them to the appropriate list if not overridden
 			# elsewhere
 			for x in ${qprivateconfig_orig_enabled}; do
 				if ! has "${x}" ${new_qprivateconfig_enabled} ${new_qprivateconfig_disabled}; then
