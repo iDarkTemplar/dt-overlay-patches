@@ -36,7 +36,7 @@ RDEPEND="
 	media-libs/libpng:0=
 	>=media-libs/libvpx-1.5:=[svc]
 	media-libs/libwebp:=
-	media-libs/mesa
+	media-libs/mesa[egl]
 	media-libs/opus
 	net-libs/libsrtp:0=
 	sys-apps/dbus
@@ -77,7 +77,12 @@ DEPEND="${RDEPEND}
 	pax_kernel? ( sys-apps/elfix )
 "
 
-PATCHES=( "${FILESDIR}/${PN}-5.9.3-icu-60.1.patch" )
+PATCHES=(
+	"${FILESDIR}/${PN}-5.9.3-icu-60.1.patch"
+	"${FILESDIR}/${P}-jpeg-9-1.patch" # bug 607424
+	# TODO upstream:
+	"${FILESDIR}/${P}-jpeg-9-2.patch" # bug 646456
+)
 
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples")
