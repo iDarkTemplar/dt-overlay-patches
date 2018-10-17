@@ -1,7 +1,7 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=6
 
 inherit eutils cmake-multilib
 
@@ -29,8 +29,8 @@ RDEPEND="
 
 multilib_src_configure() {
 	local mycmakeargs=(
-		$(cmake-utils_use_use boost BOOST)
-		$(cmake-utils_use_enable tools SPLIT_TOOL)
+		-DUSE_BOOST=$(usex boost)
+		-DENABLE_SPLIT_TOOL=$(usex tools)
 	)
 
 	cmake-utils_src_configure

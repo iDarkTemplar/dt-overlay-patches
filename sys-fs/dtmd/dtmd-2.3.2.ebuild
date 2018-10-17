@@ -1,7 +1,7 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=6
 
 inherit eutils cmake-utils
 
@@ -47,23 +47,18 @@ RDEPEND="
 
 src_configure() {
 	local mycmakeargs=(
-		$(cmake-utils_use_enable syslog SYSLOG)
-		$(cmake-utils_use_enable console CONSOLE_CLIENT)
-		$(cmake-utils_use_enable cxx CXX)
+		-DENABLE_SYSLOG=$(usex syslog)
+		-DENABLE_CONSOLE_CLIENT=$(usex console)
+		-DENABLE_CXX=$(usex cxx)
+		-DLINUX_UDEV=$(usex udev)
 	)
 
 	if use qt5 ; then
-		mycmakeargs+=("-DCLIENT_QT=5")
+		mycmakeargs+=( -DCLIENT_QT=5 )
 	elif use qt4 ; then
-		mycmakeargs+=("-DCLIENT_QT=4")
+		mycmakeargs+=( -DCLIENT_QT=4 )
 	else
-		mycmakeargs+=("-DCLIENT_QT=0")
-	fi
-
-	if use udev ; then
-		mycmakeargs+=("-DLINUX_UDEV=1")
-	else
-		mycmakeargs+=("-DLINUX_UDEV=0")
+		mycmakeargs+=( -DCLIENT_QT=0 )
 	fi
 
 	cmake-utils_src_configure
