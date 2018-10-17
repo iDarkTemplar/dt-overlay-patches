@@ -27,8 +27,9 @@ RDEPEND="
 	~dev-qt/qtwebchannel-${PV}[qml]
 	dev-libs/expat
 	dev-libs/libevent:=
-	dev-libs/libxml2
+	dev-libs/libxml2[icu]
 	dev-libs/libxslt
+	dev-libs/re2:=
 	media-libs/fontconfig
 	media-libs/freetype
 	media-libs/harfbuzz:=
@@ -62,7 +63,10 @@ RDEPEND="
 	pulseaudio? ( media-sound/pulseaudio:= )
 	system-ffmpeg? ( <media-video/ffmpeg-4:0= )
 	system-icu? ( dev-libs/icu:= )
-	widgets? ( ~dev-qt/qtwidgets-${PV} )
+	widgets? (
+		~dev-qt/qtdeclarative-${PV}[widgets]
+		~dev-qt/qtwidgets-${PV}
+	)
 	examples? (
 		~dev-qt/qtquickcontrols2-${PV}
 	)
@@ -89,7 +93,7 @@ pkg_setup() {
 }
 
 src_prepare() {
-	use pax_kernel && PATCHES+=( "${FILESDIR}/${PN}-5.9.0-paxmark-mksnapshot.patch" )
+	use pax_kernel && PATCHES+=( "${FILESDIR}/${PN}-5.9.3-paxmark-mksnapshot.patch" )
 
 	# bug 620444 - ensure local headers are used
 	find "${S}" -type f -name "*.pr[fio]" | xargs sed -i -e 's|INCLUDEPATH += |&$$QTWEBENGINE_ROOT/include |' || die

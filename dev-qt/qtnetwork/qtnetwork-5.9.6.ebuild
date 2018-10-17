@@ -19,7 +19,6 @@ DEPEND="
 	connman? ( ~dev-qt/qtdbus-${PV}[${MULTILIB_USEDEP}] )
 	libproxy? ( net-libs/libproxy[${MULTILIB_USEDEP}] )
 	networkmanager? ( ~dev-qt/qtdbus-${PV}[${MULTILIB_USEDEP}] )
-	ssl? ( dev-libs/openssl:0=[bindist=,${MULTILIB_USEDEP}] )
 	ssl? (
 		!libressl? ( dev-libs/openssl:0=[bindist=,${MULTILIB_USEDEP}] )
 		libressl? ( dev-libs/libressl:0=[${MULTILIB_USEDEP}] )

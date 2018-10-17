@@ -18,6 +18,7 @@ DEPEND="
 	~dev-qt/qtcore-${PV}[${MULTILIB_USEDEP}]
 	~dev-qt/qtgui-${PV}[gles2=,png=,xcb?,${MULTILIB_USEDEP}]
 	gtk? (
+		~dev-qt/qtgui-${PV}[dbus,${MULTILIB_USEDEP}]
 		x11-libs/gtk+:3[${MULTILIB_USEDEP}]
 		x11-libs/libX11[${MULTILIB_USEDEP}]
 		x11-libs/pango[${MULTILIB_USEDEP}]
@@ -30,6 +31,8 @@ PDEPEND="
 		~dev-qt/qtbase-examples-${PV}[gles2=]
 	)
 "
+
+PATCHES=( "${FILESDIR}/${P}-QDockWidget-revert-restore-geometry.patch" )
 
 QT5_TARGET_SUBDIRS=(
 	src/tools/uic
