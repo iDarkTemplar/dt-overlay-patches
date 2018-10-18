@@ -67,7 +67,7 @@ src_install() {
 		fi
 	fi
 
-	if use qt4 || use qt5 ; then
+	if use qt5 ; then
 		newicon "${S}/client/qt/images/normal.png" "dtmd-qt.png"
 		make_desktop_entry dtmd-qt "dtmd client" "dtmd-qt" "System;Filesystem"
 	fi
