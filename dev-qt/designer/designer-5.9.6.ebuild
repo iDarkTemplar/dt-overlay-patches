@@ -11,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 ~arm ~arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE="declarative examples webkit"
+IUSE="declarative examples"
 
 DEPEND="
 	~dev-qt/qtcore-${PV}[${MULTILIB_USEDEP}]
@@ -21,7 +21,6 @@ DEPEND="
 	~dev-qt/qtwidgets-${PV}[${MULTILIB_USEDEP}]
 	~dev-qt/qtxml-${PV}[${MULTILIB_USEDEP}]
 	declarative? ( ~dev-qt/qtdeclarative-${PV}[widgets,${MULTILIB_USEDEP}] )
-	webkit? ( >=dev-qt/qtwebkit-5.9.1:5[${MULTILIB_USEDEP}] )
 "
 RDEPEND="${DEPEND}"
 
@@ -37,7 +36,7 @@ src_prepare() {
 	qt_use_disable_mod declarative quickwidgets \
 		src/designer/src/plugins/plugins.pro
 
-	qt_use_disable_mod webkit webkitwidgets \
+	sed -i -e "s/qtHaveModule(webkitwidgets)/false/g" \
 		src/designer/src/plugins/plugins.pro
 
 	qt5-build-multilib_src_prepare
