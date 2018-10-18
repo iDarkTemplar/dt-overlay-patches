@@ -12,20 +12,14 @@ SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar
 LICENSE="LGPL-3+"
 SLOT="0"
 KEYWORDS="amd64 x86 ~x86-fbsd"
-IUSE="+console +cxx +openrc qt4 qt5 +syslog udev kernel_linux kernel_FreeBSD"
+IUSE="+console +cxx +openrc qt5 +syslog udev kernel_linux kernel_FreeBSD"
 
 REQUIRED_USE="
-	qt4? ( cxx )
 	qt5? ( cxx )
-	?? ( qt4 qt5 )
 	"
 
 DEPEND="
 	dev-libs/dt-command:=
-	qt4? (
-		dev-qt/qtcore:4
-		dev-qt/qtgui:4
-	)
 
 	qt5? (
 		dev-qt/qtcore:5
@@ -55,8 +49,6 @@ src_configure() {
 
 	if use qt5 ; then
 		mycmakeargs+=( -DCLIENT_QT=5 )
-	elif use qt4 ; then
-		mycmakeargs+=( -DCLIENT_QT=4 )
 	else
 		mycmakeargs+=( -DCLIENT_QT=0 )
 	fi
