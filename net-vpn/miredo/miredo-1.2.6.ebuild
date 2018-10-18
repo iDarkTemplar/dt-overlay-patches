@@ -1,7 +1,7 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=4
+EAPI=6
 
 inherit autotools eutils linux-info user
 
@@ -31,6 +31,7 @@ src_prepare() {
 	epatch "${FILESDIR}"/${PN}-1.2.5-configure-libcap.diff
 	epatch "${FILESDIR}"/${PN}-1.2.5-ip-path.patch
 	eautoreconf
+	eapply_user
 }
 
 src_configure() {

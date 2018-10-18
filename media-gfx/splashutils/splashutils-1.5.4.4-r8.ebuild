@@ -1,7 +1,7 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=6
 inherit autotools eutils multilib toolchain-funcs
 
 MISCSPLASH="miscsplashutils-0.1.8"
@@ -134,7 +134,7 @@ src_prepare() {
 	sed -i -e 's:#!/sbin/runscript:#!/sbin/openrc-run:' "${SG}/init-fbcondecor"
 
 	rm -f m4/*
-	epatch_user
+	eapply_user
 	export PKG_CONFIG="pkg-config --static"
 	eautoreconf
 	epatch "${FILESDIR}"/splashutils-1.5.4.4-sysmacros.patch

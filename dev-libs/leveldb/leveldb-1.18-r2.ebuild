@@ -1,7 +1,7 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=6
 
 inherit eutils multilib toolchain-funcs versionator multilib-minimal
 
@@ -30,6 +30,8 @@ src_prepare() {
 		-e "s/\(^ SHARED_MINOR =\).*/\1 ${SHARED_MINOR}/" \
 		"${FILESDIR}/${PN}-1.9.0-memenv-so.patch" > memenv-so.patch
 	epatch memenv-so.patch
+
+	eapply_user
 
 	multilib_copy_sources
 }

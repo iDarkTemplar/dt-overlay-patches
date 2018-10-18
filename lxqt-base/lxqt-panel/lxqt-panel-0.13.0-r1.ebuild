@@ -1,7 +1,7 @@
 # Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=6
 inherit cmake-utils
 
 DESCRIPTION="LXQt desktop panel and plugins"
@@ -70,12 +70,12 @@ src_configure() {
 		#Switch to ^^ when we switch to EAPI=6.
 		#y=${i^^}
 		y=$(tr '[:lower:]' '[:upper:]' <<< "${i}")
-		mycmakeargs+=( $(cmake-utils_use ${i} ${y}_PLUGIN) )
+		mycmakeargs+=( -D${y}_PLUGIN=$(usex ${i}) )
 	done
 
 	if use volume; then
-		mycmakeargs+=( $(cmake-utils_use alsa VOLUME_USE_ALSA)
-			$(cmake-utils_use pulseaudio VOLUME_USE_PULSEAUDIO) )
+		mycmakeargs+=( -DVOLUME_USE_ALSA=$(usex alsa)
+			-DVOLUME_USE_PULSEAUDIO=$(usex pulseaudio) )
 	fi
 
 	cmake-utils_src_configure

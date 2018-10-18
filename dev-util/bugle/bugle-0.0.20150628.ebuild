@@ -1,7 +1,7 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=6
 
 inherit multilib multilib-build scons-utils toolchain-funcs eutils
 
@@ -12,12 +12,12 @@ SRC_URI="mirror://sourceforge/bugle/${P}.tar.bz2"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE+="ffmpeg gtk debug libav"
+IUSE+="ffmpeg gtk debug"
 
 COMMON_DEPEND="
 	ffmpeg? (
-		!libav? ( media-video/ffmpeg:=[abi_x86_32?,abi_x86_64?] )
-		libav? ( media-video/libav:=[abi_x86_32?,abi_x86_64?] ) )
+		media-video/ffmpeg:=[abi_x86_32?,abi_x86_64?]
+	)
 	gtk? ( x11-libs/gtk+:2[abi_x86_32?,abi_x86_64?] x11-libs/gtkglext[abi_x86_32?,abi_x86_64?] )
 	virtual/opengl[abi_x86_32?,abi_x86_64?]
 	media-libs/glew:=[abi_x86_32?,abi_x86_64?]
@@ -35,6 +35,8 @@ src_prepare() {
 
 	epatch "${FILESDIR}"/bugle-gldb-gui-name.patch
 	has_version ">=media-video/ffmpeg-3" && epatch "${FILESDIR}"/bugle-ffmpeg-3.patch
+
+	eapply_user
 
 	multilib_copy_sources
 }
@@ -99,17 +101,21 @@ my_src_configure() {
 
 src_compile() {
 	my_src_compile() {
+		pushd "${BUILD_DIR}" >/dev/null || die
 		my_src_configure
-		escons
+		escons "${myesconsargs[@]}"
+		popd >/dev/null || die
 	}
 	multilib_foreach_abi my_src_compile
 }
 
 src_install() {
 	my_src_install() {
+		pushd "${BUILD_DIR}" >/dev/null || die
 		my_src_configure
-		escons install --install-sandbox="${ED}"
+		escons "${myesconsargs[@]}" install --install-sandbox="${ED}"
 		multilib_check_headers
+		popd >/dev/null || die
 	}
 	multilib_foreach_abi my_src_install
 
