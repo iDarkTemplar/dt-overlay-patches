@@ -1,16 +1,17 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
-inherit eutils udev multilib-minimal
+
+inherit autotools udev multilib-minimal
 
 DESCRIPTION="Library for identifying Wacom tablets and their model-specific features"
-HOMEPAGE="http://linuxwacom.sourceforge.net/"
-SRC_URI="mirror://sourceforge/linuxwacom/${PN}/${P}.tar.bz2"
+HOMEPAGE="https://github.com/linuxwacom/libwacom"
+SRC_URI="https://github.com/linuxwacom/${PN}/archive/${P}.tar.gz"
 
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="~alpha ~amd64 ~arm ~ia64 ~ppc ~ppc64 ~sparc ~x86"
+KEYWORDS="alpha amd64 arm ia64 ppc ppc64 sparc x86"
 IUSE="doc static-libs"
 
 RDEPEND="
@@ -22,11 +23,14 @@ DEPEND="${RDEPEND}
 	doc? ( app-doc/doxygen )
 "
 
+S="${WORKDIR}/${PN}-${P}"
+
 src_prepare() {
 	default
 	if ! use doc; then
-		sed -e 's:^\(SUBDIRS = .* \)doc:\1:' -i Makefile.in || die
+		sed -e 's:^\(SUBDIRS = .* \)doc:\1:' -i Makefile.am || die
 	fi
+	eautoreconf
 }
 
 multilib_src_configure() {
@@ -35,6 +39,7 @@ multilib_src_configure() {
 }
 
 multilib_src_install() {
+	use doc && HTML_DOCS=( doc/html/. )
 	default
 
 	if multilib_is_native_abi; then
@@ -42,13 +47,10 @@ multilib_src_install() {
 		dodir "${udevdir}/rules.d"
 		# generate-udev-rules must be run from inside tools directory
 		pushd tools > /dev/null || die
-		./generate-udev-rules > "${ED}/${udevdir}/rules.d/65-libwacom.rules" || die "generating udev rules failed"
+		./generate-udev-rules > "${ED}/${udevdir}/rules.d/65-libwacom.rules" || \
+			die "generating udev rules failed"
 		popd > /dev/null || die
 	fi
 
-	prune_libtool_files
-}
-
-multilib_src_install_all() {
-	use doc && dohtml -r doc/html/*
+	find "${D}" -name '*.la' -exec rm -f {} + || die
 }
