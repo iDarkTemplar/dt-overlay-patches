@@ -44,6 +44,17 @@ QT5_GENTOO_PRIVATE_CONFIG=(
 	:sql
 )
 
+pkg_pretend() {
+	multilib_use_flags_check() {
+		if ! multilib_is_native_abi ; then
+			if use freetds || use postgres ; then
+				die "Can't build qtsql with freetds or postgres support for non-native ABI"
+			fi
+		fi
+	}
+	multilib_foreach_abi multilib_use_flags_check
+}
+
 multilib_src_configure() {
 	local myconf=(
 		$(qt_use freetds  sql-tds    plugin)
