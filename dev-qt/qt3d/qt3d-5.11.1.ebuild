@@ -25,9 +25,11 @@ DEPEND="
 "
 RDEPEND="${DEPEND}"
 
-pkg_setup() {
-	use examples && QT5_EXAMPLES_SUBDIRS=("examples")
-}
+PDEPEND="
+	examples? (
+		~dev-qt/qt3d-examples-${PV}
+	)
+"
 
 src_prepare() {
 	rm -r src/3rdparty/assimp/{code,contrib,include} || die
