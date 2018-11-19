@@ -41,7 +41,9 @@ src_prepare() {
 
 multilib_src_install() {
 	qt5_multilib_src_install
+}
 
+multilib_src_install_all() {
 	doicon -s 32 src/assistant/assistant/images/assistant.png
 	newicon -s 128 src/assistant/assistant/images/assistant-128.png assistant.png
 	make_desktop_entry "${QT5_BINDIR}"/assistant 'Qt 5 Assistant' assistant 'Qt;Development;Documentation'

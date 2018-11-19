@@ -33,7 +33,9 @@ pkg_setup() {
 
 multilib_src_install() {
 	qt5_multilib_src_install
+}
 
+multilib_src_install_all() {
 	local size
 	for size in 16 32 48 64 128; do
 		newicon -s ${size} src/linguist/linguist/images/icons/linguist-${size}-32.png linguist.png

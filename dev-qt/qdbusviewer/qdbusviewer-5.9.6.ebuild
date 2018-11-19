@@ -28,7 +28,9 @@ QT5_TARGET_SUBDIRS=(
 
 multilib_src_install() {
 	qt5_multilib_src_install
+}
 
+multilib_src_install_all() {
 	doicon -s 32 src/qdbus/qdbusviewer/images/qdbusviewer.png
 	newicon -s 128 src/qdbus/qdbusviewer/images/qdbusviewer-128.png qdbusviewer.png
 	make_desktop_entry "${QT5_BINDIR}"/qdbusviewer 'Qt 5 QDBusViewer' qdbusviewer 'Qt;Development'
