@@ -1,8 +1,8 @@
-diff --git a/sysvinit-2.88dsf/src/init.c b/sysvinit-2.88dsf/src/init.c
-index 27532ad..4124f6a 100644
---- a/sysvinit-2.88dsf/src/init.c
-+++ b/sysvinit-2.88dsf/src/init.c
-@@ -168,6 +168,7 @@ struct actions {
+diff --git a/src/init.c b/src/init.c
+index 2d59955..0161aff 100644
+--- a/src/init.c
++++ b/src/init.c
+@@ -173,6 +173,7 @@ struct actions {
    { "initdefault", INITDEFAULT	},
    { "sysinit",	   SYSINIT	},
    { "kbrequest",   KBREQUEST    },
@@ -10,7 +10,7 @@ index 27532ad..4124f6a 100644
    { NULL,	   0		},
  };
  
-@@ -924,7 +925,7 @@ void init_freeenv(char **e)
+@@ -1011,7 +1012,7 @@ void init_freeenv(char **e)
   *
   */
  static
@@ -19,7 +19,7 @@ index 27532ad..4124f6a 100644
  {
    char *args[16];		/* Argv array */
    char buf[136];		/* Line buffer */
-@@ -933,7 +934,7 @@ pid_t spawn(CHILD *ch, int *res)
+@@ -1020,7 +1021,7 @@ pid_t spawn(CHILD *ch, int *res)
    time_t t;			/* System time */
    int oldAlarm;			/* Previous alarm value */
    char *proc = ch->process;	/* Command line */
@@ -28,7 +28,7 @@ index 27532ad..4124f6a 100644
    sigset_t nmask, omask;	/* For blocking SIGCHLD */
    struct sigaction sa;
  
-@@ -1033,25 +1034,29 @@ pid_t spawn(CHILD *ch, int *res)
+@@ -1120,29 +1121,34 @@ pid_t spawn(CHILD *ch, int *res)
  	/*
  	 *	Block sigchild while forking.
  	 */
@@ -47,14 +47,23 @@ index 27532ad..4124f6a 100644
 -		close(0);
 -		close(1);
 -		close(2);
--		if (pipe_fd >= 0) close(pipe_fd);
+-		if (pipe_fd >= 0)
+-                {
+-                    close(pipe_fd);
+-                    pipe_fd = -1;
+-                }
 +		if (do_fork) {
 +			close(0);
 +			close(1);
 +			close(2);
-+			if (pipe_fd >= 0) close(pipe_fd);
  
 -  		sigprocmask(SIG_SETMASK, &omask, NULL);
++			if (pipe_fd >= 0)
++			{
++				close(pipe_fd);
++				pipe_fd = -1;
++			}
++
 +			sigprocmask(SIG_SETMASK, &omask, NULL);
 +		}
  
@@ -64,25 +73,23 @@ index 27532ad..4124f6a 100644
  		 *	to be its controlling tty.
  		 */
 -  		if (strchr("*#sS", runlevel) && ch->flags & WAITING) {
-+  		if (strchr("*#sS", runlevel) && ch->flags & WAITING && do_fork) {
++		if (strchr("*#sS", runlevel) && ch->flags & WAITING && do_fork) {
+ 			int ftty;	/* Handler for tty controlling */
  			/*
  			 *	We fork once extra. This is so that we can
- 			 *	wait and change the process group and session
-@@ -1123,8 +1128,10 @@ pid_t spawn(CHILD *ch, int *res)
- 			/* Set ioctl settings to default ones */
- 			console_stty();
+@@ -1224,7 +1230,9 @@ pid_t spawn(CHILD *ch, int *res)
  
--  		} else {
+   		} else { /* parent */
+ 			int fd;
 -			setsid();
-+		} else {
 +			if (do_fork) {
 +				setsid();
 +			}
- 			if ((f = console_open(O_RDWR|O_NOCTTY)) < 0) {
+ 			if ((fd = console_open(O_RDWR|O_NOCTTY)) < 0) {
  				initlog(L_VB, "open(%s): %s", console_dev,
  					strerror(errno));
-@@ -1150,8 +1157,10 @@ pid_t spawn(CHILD *ch, int *res)
- 		 * FIXME: that's for compatibility with *very*
+@@ -1257,8 +1265,10 @@ pid_t spawn(CHILD *ch, int *res)
+ 		 * This is for compatibility with *very*
  		 * old getties - probably it can be taken out.
  		 */
 -		if (ch->process[0] != '+')
@@ -94,7 +101,7 @@ index 27532ad..4124f6a 100644
  
    		/* Reset all the signals, set up environment */
    		for(f = 1; f < NSIG; f++) SETSIG(sa, f, SIG_DFL, SA_RESTART);
-@@ -1173,16 +1182,31 @@ pid_t spawn(CHILD *ch, int *res)
+@@ -1280,16 +1290,31 @@ pid_t spawn(CHILD *ch, int *res)
  		}
    		initlog(L_VB, "cannot execute \"%s\"", args[1]);
  
@@ -132,20 +139,20 @@ index 27532ad..4124f6a 100644
  		initlog(L_VB, "cannot fork, retry..");
  		do_sleep(5);
  		continue;
-@@ -1220,8 +1244,11 @@ void startup(CHILD *ch)
+@@ -1329,8 +1354,11 @@ void startup(CHILD *ch)
  		case ONDEMAND:
  		case RESPAWN:
    			ch->flags |= RUNNING;
 -  			(void)spawn(ch, &(ch->pid));
-+  			(void)spawn(ch, &(ch->pid), 1);
++			(void)spawn(ch, &(ch->pid), 1);
    			break;
-+  		case EXEC:
++		case EXEC:
 +			(void)spawn(ch, &(ch->pid), 0);
 +			break;
  	}
  }
  
-@@ -2606,7 +2633,7 @@ void init_main(void)
+@@ -2811,7 +2839,7 @@ void init_main(void)
  	if (emerg_shell) {
  		pid_t rc;
  		SETSIG(sa, SIGCHLD, SIG_DFL, SA_RESTART);
@@ -156,8 +163,8 @@ index 27532ad..4124f6a 100644
  					break;
 diff --git a/src/init.h b/src/init.h
 index 9763140..17a3f0d 100644
---- a/sysvinit-2.88dsf/src/init.h
-+++ b/sysvinit-2.88dsf/src/init.h
+--- a/src/init.h
++++ b/src/init.h
 @@ -78,6 +78,7 @@ void wall(const char *text, int remote);
  #define SYSINIT		       13
  #define POWERFAILNOW           14
