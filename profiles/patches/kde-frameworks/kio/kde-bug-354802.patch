@@ -1,4 +1,4 @@
-From dfd53303d7c19ff175117e65955f8766b4b5e73a Mon Sep 17 00:00:00 2001
+From 21a375ab0b5c36f1de9a979f99f9ebbfaa760622 Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sun, 2 Dec 2018 00:40:02 +0300
 Subject: [PATCH] KDirModel: add option for providing only full data
@@ -9,7 +9,7 @@ Subject: [PATCH] KDirModel: add option for providing only full data
  2 files changed, 17 insertions(+), 4 deletions(-)
 
 diff --git a/src/widgets/kdirmodel.cpp b/src/widgets/kdirmodel.cpp
-index 6acd6ff7..185e1e02 100644
+index 6acd6ff7..41e3494e 100644
 --- a/src/widgets/kdirmodel.cpp
 +++ b/src/widgets/kdirmodel.cpp
 @@ -176,10 +176,11 @@ int KDirModelNode::rowNumber() const
@@ -58,7 +58,7 @@ index 6acd6ff7..185e1e02 100644
 -        [this](const QUrl &dirUrl, const KFileItemList &items){d->_k_slotNewItems(dirUrl, items);} );
 +        [this](const QUrl &dirUrl, const KFileItemList &items){ if (!d->m_waitForComplete) { d->_k_slotNewItems(dirUrl, items); } else { d->m_foundItemsAtUrlMap[dirUrl].append(items);} } );
 +    connect(d->m_dirLister, QOverload<const QUrl&>::of(&KCoreDirLister::completed), this,
-+        [this](const QUrl &dirUrl){ if (d->m_waitForComplete) { d->_k_slotNewItems(dirUrl, d->m_foundItemsAtUrlMap[dirUrl]); d->m_foundItemsAtUrlMap[dirUrl].clear(); } } );
++        [this](const QUrl &dirUrl){ if (d->m_waitForComplete) { d->_k_slotNewItems(dirUrl, d->m_foundItemsAtUrlMap[dirUrl]); d->m_foundItemsAtUrlMap.remove(dirUrl); } } );
      connect(d->m_dirLister, &KCoreDirLister::itemsDeleted, this,
          [this](const KFileItemList &items){d->_k_slotDeleteItems(items);} );
      connect(d->m_dirLister, &KCoreDirLister::refreshItems, this,
