@@ -1,0 +1,32 @@
+From 961a7ac577c9886dfc04b96e4cfbd2108fb22b80 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sun, 2 Dec 2018 00:40:43 +0300
+Subject: [PATCH] Use new KDirModel option to receive only complete model data
+
+If due to high disk IO (or other reasons)
+KDirModel reports only partial data
+on folder view desktop initialization,
+position data for not yet reported items is lost.
+Waiting for complete data should fix this issue.
+
+Fixes https://bugs.kde.org/show_bug.cgi?id=354802
+---
+ containments/desktop/plugins/folder/foldermodel.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/containments/desktop/plugins/folder/foldermodel.cpp b/containments/desktop/plugins/folder/foldermodel.cpp
+index 0c522be4..9f87a114 100644
+--- a/containments/desktop/plugins/folder/foldermodel.cpp
++++ b/containments/desktop/plugins/folder/foldermodel.cpp
+@@ -145,7 +145,7 @@ FolderModel::FolderModel(QObject *parent) : QSortFilterProxyModel(parent),
+         emit listingCanceled();
+     });
+ 
+-    m_dirModel = new KDirModel(this);
++    m_dirModel = new KDirModel(true, this);
+     m_dirModel->setDirLister(dirLister);
+     m_dirModel->setDropsAllowed(KDirModel::DropOnDirectory | KDirModel::DropOnLocalExecutable);
+ 
+-- 
+2.19.2
+
