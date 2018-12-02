@@ -1,15 +1,15 @@
-From 21a375ab0b5c36f1de9a979f99f9ebbfaa760622 Mon Sep 17 00:00:00 2001
+From 027325f07fc33e98dedb9b71121632bbbf95dfd3 Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sun, 2 Dec 2018 00:40:02 +0300
 Subject: [PATCH] KDirModel: add option for providing only full data
 
 ---
- src/widgets/kdirmodel.cpp | 20 ++++++++++++++++----
+ src/widgets/kdirmodel.cpp | 33 +++++++++++++++++++++++++++++----
  src/widgets/kdirmodel.h   |  1 +
- 2 files changed, 17 insertions(+), 4 deletions(-)
+ 2 files changed, 30 insertions(+), 4 deletions(-)
 
 diff --git a/src/widgets/kdirmodel.cpp b/src/widgets/kdirmodel.cpp
-index 6acd6ff7..41e3494e 100644
+index 6acd6ff7..651d013f 100644
 --- a/src/widgets/kdirmodel.cpp
 +++ b/src/widgets/kdirmodel.cpp
 @@ -176,10 +176,11 @@ int KDirModelNode::rowNumber() const
@@ -26,16 +26,17 @@ index 6acd6ff7..41e3494e 100644
      {
      }
      ~KDirModelPrivate()
-@@ -243,6 +244,8 @@ public:
+@@ -243,6 +244,9 @@ public:
      QMap<KDirModelNode *, QList<QUrl> > m_urlsBeingFetched;
      QHash<QUrl, KDirModelNode *> m_nodeHash; // global node hash: url -> node
      QStringList m_allCurrentDestUrls; //list of all dest urls that have jobs on them (e.g. copy, download)
 +    bool m_waitForComplete; // wait for complete url scan before sending found items
 +    QMap<QUrl, KFileItemList> m_foundItemsAtUrlMap;
++    QSet<QUrl> m_completedURLs;
  };
  
  KDirModelNode *KDirModelPrivate::nodeForUrl(const QUrl &_url) const // O(1), well, O(length of url as a string)
-@@ -386,7 +389,14 @@ static QString debugIndex(const QModelIndex &index)
+@@ -386,7 +390,14 @@ static QString debugIndex(const QModelIndex &index)
  
  KDirModel::KDirModel(QObject *parent)
      : QAbstractItemModel(parent),
@@ -51,14 +52,26 @@ index 6acd6ff7..41e3494e 100644
  {
      setDirLister(new KDirLister(this));
  }
-@@ -405,7 +415,9 @@ void KDirModel::setDirLister(KDirLister *dirLister)
+@@ -405,7 +416,21 @@ void KDirModel::setDirLister(KDirLister *dirLister)
      d->m_dirLister = dirLister;
      d->m_dirLister->setParent(this);
      connect(d->m_dirLister, &KCoreDirLister::itemsAdded, this,
 -        [this](const QUrl &dirUrl, const KFileItemList &items){d->_k_slotNewItems(dirUrl, items);} );
-+        [this](const QUrl &dirUrl, const KFileItemList &items){ if (!d->m_waitForComplete) { d->_k_slotNewItems(dirUrl, items); } else { d->m_foundItemsAtUrlMap[dirUrl].append(items);} } );
++        [this](const QUrl &dirUrl, const KFileItemList &items){
++            if ((!d->m_waitForComplete) || d->m_completedURLs.contains(dirUrl)) {
++                d->_k_slotNewItems(dirUrl, items);
++            } else {
++                d->m_foundItemsAtUrlMap[dirUrl].append(items);
++            }
++        } );
 +    connect(d->m_dirLister, QOverload<const QUrl&>::of(&KCoreDirLister::completed), this,
-+        [this](const QUrl &dirUrl){ if (d->m_waitForComplete) { d->_k_slotNewItems(dirUrl, d->m_foundItemsAtUrlMap[dirUrl]); d->m_foundItemsAtUrlMap.remove(dirUrl); } } );
++        [this](const QUrl &dirUrl){
++            if (d->m_foundItemsAtUrlMap.contains(dirUrl)) {
++                d->_k_slotNewItems(dirUrl, d->m_foundItemsAtUrlMap[dirUrl]);
++                d->m_foundItemsAtUrlMap.remove(dirUrl);
++                d->m_completedURLs.insert(dirUrl);
++            }
++        } );
      connect(d->m_dirLister, &KCoreDirLister::itemsDeleted, this,
          [this](const KFileItemList &items){d->_k_slotDeleteItems(items);} );
      connect(d->m_dirLister, &KCoreDirLister::refreshItems, this,
