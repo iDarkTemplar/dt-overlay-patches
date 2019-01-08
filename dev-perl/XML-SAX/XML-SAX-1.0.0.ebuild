@@ -27,7 +27,9 @@ PATCHES=("${FILESDIR}/${PN}-1.00-noautoini.patch")
 src_install() {
 	perl-module_src_install
 
-	local filename="$(perl -e \
+	local filename="$( \
+		PERL5LIB=$(for dir in $(perl -e "print qq(@INC)") ; do echo ${ED}$dir ; done | xargs perl -E 'say join(shift, @ARGV)' -- :) \
+		perl -e \
 		'use XML::SAX;
 		use File::Basename qw(dirname);
 		use File::Spec ();
@@ -36,6 +38,9 @@ src_install() {
 		my $filename = File::Spec->catfile($dir, "SAX", XML::SAX::PARSER_DETAILS);
 		print $filename;'
 	)"
+
+	# strip ${ED} from filename
+	filename="/${filename#"${ED}"}"
 
 	dodir "$(dirname ${filename})"
 	touch "${ED}${filename}"
