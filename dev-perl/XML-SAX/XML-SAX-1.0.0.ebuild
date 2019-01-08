@@ -18,19 +18,31 @@ RDEPEND="
 	>=dev-perl/XML-NamespaceSupport-1.40.0
 	>=dev-libs/libxml2-2.4.1
 	virtual/perl-File-Temp
-	virtual/perl-XML-SAX-ParserDetails
 "
 DEPEND="${RDEPEND}
 	virtual/perl-ExtUtils-MakeMaker
 "
 PATCHES=("${FILESDIR}/${PN}-1.00-noautoini.patch")
 
-pkg_postinst() {
-	pkg_update_parser add XML::SAX::PurePerl
+src_install() {
+	perl-module_src_install
+
+	local filename="$(perl -e \
+		'use XML::SAX;
+		use File::Basename qw(dirname);
+		use File::Spec ();
+		my $dir = $INC{"XML/SAX.pm"};
+		$dir = dirname($dir);
+		my $filename = File::Spec->catfile($dir, "SAX", XML::SAX::PARSER_DETAILS);
+		print $filename;'
+	)"
+
+	dodir "$(dirname ${filename})"
+	touch "${ED}${filename}"
 }
 
-pkg_postrm() {
-	pkg_update_parser remove XML::SAX::PurePerl
+pkg_postinst() {
+	pkg_update_parser add XML::SAX::PurePerl
 }
 
 pkg_update_parser() {
