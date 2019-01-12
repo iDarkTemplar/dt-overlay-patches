@@ -4,12 +4,12 @@ Bug: https://bugs.gentoo.org/634220
 +++ b/src/3rdparty/chromium/v8/BUILD.gn
 @@ -661,6 +661,7 @@ action("run_mksnapshot") {
  
-   deps = [
-     ":mksnapshot($v8_snapshot_toolchain)",
-+    ":run_paxmark",
-   ]
+     deps = [
+       ":mksnapshot($v8_snapshot_toolchain)",
++      ":run_paxmark",
+     ]
  
-   script = "tools/run.py"
+     script = "tools/run.py"
 @@ -706,6 +707,28 @@ action("run_mksnapshot") {
      args += [ rebase_path(v8_embed_script, root_build_dir) ]
    }
