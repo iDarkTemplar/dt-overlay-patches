@@ -34,7 +34,12 @@ src_prepare() {
 	sed -i "s/install_env.AddPostAction(targets, SCons.Action.Action('-ldconfig', '"'$LDCONFIGCOMSTR'"'))/True/" "${S}/site_scons/site_tools/buglewrappers.py" || die
 
 	epatch "${FILESDIR}"/bugle-gldb-gui-name.patch
-	has_version ">=media-video/ffmpeg-3" && epatch "${FILESDIR}"/bugle-ffmpeg-3.patch
+
+	if has_version ">=media-video/ffmpeg-4" ; then
+		epatch "${FILESDIR}"/bugle-ffmpeg-4.patch
+	elif has_version ">=media-video/ffmpeg-3" ; then
+		epatch "${FILESDIR}"/bugle-ffmpeg-3.patch
+	fi
 
 	eapply_user
 
