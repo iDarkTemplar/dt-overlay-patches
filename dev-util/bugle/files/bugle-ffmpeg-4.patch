@@ -1,6 +1,6 @@
 diff -Naur bugle-0.0.20150628.orig/src/filters/screenshot.c bugle-0.0.20150628/src/filters/screenshot.c
 --- bugle-0.0.20150628.orig/src/filters/screenshot.c	2019-01-14 22:28:07.012917096 +0300
-+++ bugle-0.0.20150628/src/filters/screenshot.c	2019-01-14 23:09:33.351893385 +0300
++++ bugle-0.0.20150628/src/filters/screenshot.c	2019-01-15 00:27:51.999848575 +0300
 @@ -68,7 +68,7 @@
  #   include <swscale.h>
  #  endif
@@ -74,7 +74,7 @@ diff -Naur bugle-0.0.20150628.orig/src/filters/screenshot.c bugle-0.0.20150628/s
      AVCodecContext *c;
      size_t out_size;
  
-@@ -328,25 +329,9 @@
+@@ -328,26 +329,10 @@
      /* Write any delayed frames. */
      do
      {
@@ -99,9 +99,11 @@ diff -Naur bugle-0.0.20150628.orig/src/filters/screenshot.c bugle-0.0.20150628/s
 -            pkt.stream_index = video_stream->index;
 -            pkt.data = video_buffer;
 -            pkt.size = out_size;
-             ret = av_write_frame(video_context, &pkt);
+-            ret = av_write_frame(video_context, &pkt);
++            ret = av_write_frame(video_context, pkt);
              if (ret != 0)
              {
+                 bugle_log("screenshot", "video", BUGLE_LOG_ERROR,
 @@ -355,7 +340,7 @@
                  exit(1);
              }
@@ -161,7 +163,7 @@ diff -Naur bugle-0.0.20150628.orig/src/filters/screenshot.c bugle-0.0.20150628/s
                  {
 -                    bugle_log("screenshot", "video", BUGLE_LOG_ERROR, "encoding failed");
 -                    exit(1);
-+                    ret = av_write_frame(video_context, &pkt);
++                    ret = av_write_frame(video_context, pkt);
 +                    if (ret != 0)
 +                    {
 +                        bugle_log("screenshot", "video", BUGLE_LOG_ERROR, "encoding failed");
