@@ -1,0 +1,17 @@
+diff -Naur gegl-0.2.0.orig/operations/external/ff-load.c gegl-0.2.0/operations/external/ff-load.c
+--- gegl-0.2.0.orig/operations/external/ff-load.c	2019-01-15 20:02:38.420992385 +0300
++++ gegl-0.2.0/operations/external/ff-load.c	2019-01-15 20:08:45.228988887 +0300
+@@ -309,8 +309,13 @@
+           g_warning ("codec not found");
+         }
+ 
++#if LIBAVCODEC_VERSION_MAJOR >= 58
++      if (p->codec->capabilities & AV_CODEC_CAP_TRUNCATED)
++        p->enc->flags |= AV_CODEC_FLAG_TRUNCATED;
++#else
+       if (p->codec->capabilities & CODEC_CAP_TRUNCATED)
+         p->enc->flags |= CODEC_FLAG_TRUNCATED;
++#endif
+ 
+       if (avcodec_open2 (p->enc, p->codec, NULL) < 0)
+         {
