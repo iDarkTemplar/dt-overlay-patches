@@ -35,10 +35,8 @@ src_prepare() {
 
 	epatch "${FILESDIR}"/bugle-gldb-gui-name.patch
 
-	if has_version ">=media-video/ffmpeg-4" ; then
+	if has_version ">=media-video/ffmpeg-3" ; then
 		epatch "${FILESDIR}"/bugle-ffmpeg-4.patch
-	elif has_version ">=media-video/ffmpeg-3" ; then
-		epatch "${FILESDIR}"/bugle-ffmpeg-3.patch
 	fi
 
 	eapply_user
