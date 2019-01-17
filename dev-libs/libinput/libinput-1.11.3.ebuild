@@ -11,7 +11,7 @@ SRC_URI="https://www.freedesktop.org/software/${PN}/${P}.tar.xz"
 LICENSE="MIT"
 SLOT="0/10"
 KEYWORDS="alpha amd64 arm ~arm64 hppa ia64 ~m68k ~mips ppc ppc64 ~s390 ~sh sparc x86"
-IUSE="doc input_devices_wacom test"
+IUSE="doc input_devices_wacom"
 # Tests require write access to udev rules directory which is a no-no for live system.
 # Other tests are just about logs, exported symbols and autotest of the test library.
 RESTRICT="test"
@@ -20,7 +20,8 @@ RDEPEND="
 	input_devices_wacom? ( >=dev-libs/libwacom-0.20[${MULTILIB_USEDEP}] )
 	>=dev-libs/libevdev-1.3[${MULTILIB_USEDEP}]
 	>=sys-libs/mtdev-1.1[${MULTILIB_USEDEP}]
-	virtual/libudev[${MULTILIB_USEDEP}]
+	virtual/libudev:=[${MULTILIB_USEDEP}]
+	virtual/udev
 "
 DEPEND="${RDEPEND}
 	virtual/pkgconfig[${MULTILIB_USEDEP}]
@@ -38,9 +39,9 @@ multilib_src_configure() {
 	# gui can be built but will not be installed
 	local emesonargs=(
 		-Ddebug-gui=false
-		-Ddocumentation="$(usex doc true false)"
-		-Dlibwacom="$(usex input_devices_wacom true false)"
-		-Dtests="$(usex test true false)"
+		$(meson_use doc documentation)
+		$(meson_use input_devices_wacom libwacom)
+		-Dtests=false # tests are restricted
 		-Dudev-dir="$(get_udevdir)"
 	)
 	meson_src_configure
@@ -55,5 +56,8 @@ multilib_src_install_all() {
 		docinto html
 		dodoc -r "${BUILD_DIR}"/html/.
 	fi
-	find "${ED}" \( -name "*.a" -o -name "*.la" \) -delete || die
+}
+
+pkg_postinst() {
+	udevadm hwdb --update --root="${ROOT%/}"
 }
