@@ -34,6 +34,7 @@ PDEPEND="
 
 PATCHES=(
 	"${FILESDIR}/${PN}-5.9.2-examples.patch"
+	"${FILESDIR}/${PN}-5.11.3-qmake-update-libdirs-order.patch"
 )
 
 QT5_TARGET_SUBDIRS=(

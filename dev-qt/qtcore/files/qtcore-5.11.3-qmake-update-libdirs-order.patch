@@ -1,0 +1,28 @@
+From 05ab27e1fcfb6bffc078ffa4831a09cefe4e9076 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sat, 26 Jan 2019 23:49:49 +0300
+Subject: [PATCH] QMake: update libdirs order: use local and private libraries
+ first
+
+---
+ qmake/generators/unix/unixmake2.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/qmake/generators/unix/unixmake2.cpp b/qmake/generators/unix/unixmake2.cpp
+index ecb0de3b52..b1255fee15 100644
+--- a/qmake/generators/unix/unixmake2.cpp
++++ b/qmake/generators/unix/unixmake2.cpp
+@@ -213,8 +213,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
+     if(!project->isActiveConfig("staticlib")) {
+         t << "LINK          = " << var("QMAKE_LINK") << endl;
+         t << "LFLAGS        = " << var("QMAKE_LFLAGS") << endl;
+-        t << "LIBS          = $(SUBLIBS) " << fixLibFlags("QMAKE_LIBS").join(' ') << ' '
+-                                           << fixLibFlags("QMAKE_LIBS_PRIVATE").join(' ') << endl;
++        t << "LIBS          = $(SUBLIBS) " << fixLibFlags("QMAKE_LIBS_PRIVATE").join(' ') << ' '
++                                           << fixLibFlags("QMAKE_LIBS").join(' ') << endl;
+     }
+ 
+     t << "AR            = " << var("QMAKE_AR") << endl;
+-- 
+2.19.2
+
