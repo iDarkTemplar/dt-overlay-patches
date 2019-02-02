@@ -98,7 +98,10 @@ RDEPEND="${COMMON_DEPEND}
 # 	kde5_src_prepare
 # }
 
-PATCHES=( "${FILESDIR}/${P}-build.patch" )
+PATCHES=(
+	"${FILESDIR}/${P}-build.patch"
+	"${FILESDIR}/${PN}-qt-5.11.3-compat.patch"
+)
 
 src_prepare() {
 	kde5_src_prepare

@@ -1,0 +1,36 @@
+diff --git a/ktorrent/dialogs/fileselectdlg.cpp b/ktorrent/dialogs/fileselectdlg.cpp
+index b7126af..152d1b5 100644
+--- a/ktorrent/dialogs/fileselectdlg.cpp
++++ b/ktorrent/dialogs/fileselectdlg.cpp
+@@ -21,6 +21,7 @@
+ 
+ #include <QMenu>
+ #include <QTextCodec>
++#include <QButtonGroup>
+ #include <klocalizedstring.h>
+ #include <kio/global.h>
+ #include <kmessagebox.h>
+diff --git a/ktorrent/dialogs/torrentcreatordlg.h b/ktorrent/dialogs/torrentcreatordlg.h
+index c739ce7..30c1a37 100644
+--- a/ktorrent/dialogs/torrentcreatordlg.h
++++ b/ktorrent/dialogs/torrentcreatordlg.h
+@@ -21,6 +21,7 @@
+ #ifndef KT_TORRENTCREATORDLG_HH
+ #define KT_TORRENTCREATORDLG_HH
+ 
++#include <QTimer>
+ #include <KDialog>
+ #include "ui_torrentcreatordlg.h"
+ #include <torrent/torrentcreator.h>
+diff --git a/ktorrent/groups/groupview.cpp b/ktorrent/groups/groupview.cpp
+index 4d2010d..b0243b2 100644
+--- a/ktorrent/groups/groupview.cpp
++++ b/ktorrent/groups/groupview.cpp
+@@ -23,6 +23,7 @@
+ #include <QDragEnterEvent>
+ #include <QTreeWidgetItemIterator>
+ #include <QInputDialog>
++#include <QHeaderView>
+ #include <klocalizedstring.h>
+ #include <QMenu>
+ #include <QAction>
