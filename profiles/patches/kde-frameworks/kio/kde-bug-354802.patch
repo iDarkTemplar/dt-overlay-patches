@@ -1,4 +1,4 @@
-From 027325f07fc33e98dedb9b71121632bbbf95dfd3 Mon Sep 17 00:00:00 2001
+From 3ea40ad4bdec8a14315e0ec0fb3452d1c4f0ba75 Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sun, 2 Dec 2018 00:40:02 +0300
 Subject: [PATCH] KDirModel: add option for providing only full data
@@ -9,14 +9,14 @@ Subject: [PATCH] KDirModel: add option for providing only full data
  2 files changed, 30 insertions(+), 4 deletions(-)
 
 diff --git a/src/widgets/kdirmodel.cpp b/src/widgets/kdirmodel.cpp
-index 6acd6ff7..651d013f 100644
+index c2323d22..3a41735c 100644
 --- a/src/widgets/kdirmodel.cpp
 +++ b/src/widgets/kdirmodel.cpp
 @@ -176,10 +176,11 @@ int KDirModelNode::rowNumber() const
  class KDirModelPrivate
  {
  public:
--    KDirModelPrivate(KDirModel *model)
+-    explicit KDirModelPrivate(KDirModel *model)
 +    KDirModelPrivate(KDirModel *model, bool waitForComplete)
          : q(model), m_dirLister(nullptr),
            m_rootNode(new KDirModelDirNode(nullptr, KFileItem())),
