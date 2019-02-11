@@ -14,7 +14,7 @@ fi
 # TODO: linuxfb
 
 IUSE="accessibility dbus egl eglfs evdev examples +gif gles2 ibus
-	jpeg +libinput +png tslib tuio +udev vnc +xcb +xcb-mitshm"
+	jpeg +libinput +png tslib tuio +udev vnc +xcb"
 REQUIRED_USE="
 	|| ( eglfs xcb )
 	accessibility? ( dbus xcb )
@@ -22,7 +22,6 @@ REQUIRED_USE="
 	ibus? ( dbus )
 	libinput? ( udev )
 	xcb? ( gles2? ( egl ) )
-	xcb-mitshm? ( xcb )
 "
 
 RDEPEND="
@@ -171,11 +170,4 @@ multilib_src_configure() {
 		$(usex xcb '-xcb-xlib -xinput2 -xkb' '')
 	)
 	qt5_multilib_src_configure
-}
-
-multilib_src_install_all() {
-	if ! use xcb-mitshm ; then
-		echo 'QT_XCB_NO_MITSHM=1' > 99qt5-xcb-no-mitshm
-		doenvd 99qt5-xcb-no-mitshm
-	fi
 }
