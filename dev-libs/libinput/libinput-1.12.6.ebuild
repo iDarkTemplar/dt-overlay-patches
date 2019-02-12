@@ -1,8 +1,10 @@
-# Copyright 1999-2018 Gentoo Foundation
+# Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
-inherit meson udev multilib-minimal
+EAPI=7
+PYTHON_COMPAT=( python{2_7,3_{4,5,6,7}} )
+
+inherit meson python-any-r1 udev multilib-minimal
 
 DESCRIPTION="Library to handle input devices in Wayland"
 HOMEPAGE="https://www.freedesktop.org/wiki/Software/libinput/"
@@ -10,7 +12,7 @@ SRC_URI="https://www.freedesktop.org/software/${PN}/${P}.tar.xz"
 
 LICENSE="MIT"
 SLOT="0/10"
-KEYWORDS="alpha amd64 arm ~arm64 hppa ia64 ~m68k ~mips ppc ppc64 ~s390 ~sh sparc x86"
+KEYWORDS="~alpha amd64 ~arm ~arm64 hppa ~ia64 ppc ~ppc64 ~sparc x86"
 IUSE="doc input_devices_wacom"
 # Tests require write access to udev rules directory which is a no-no for live system.
 # Other tests are just about logs, exported symbols and autotest of the test library.
@@ -24,8 +26,13 @@ RDEPEND="
 	virtual/udev
 "
 DEPEND="${RDEPEND}
-	virtual/pkgconfig[${MULTILIB_USEDEP}]
 	doc? (
+		$(python_gen_any_dep '
+			dev-python/commonmark[${PYTHON_USEDEP}]
+			dev-python/recommonmark[${PYTHON_USEDEP}]
+			dev-python/sphinx[${PYTHON_USEDEP}]
+			>=dev-python/sphinx_rtd_theme-0.2.4[${PYTHON_USEDEP}]
+		')
 		>=app-doc/doxygen-1.8.3
 		>=media-gfx/graphviz-2.38.0
 	)
@@ -34,6 +41,20 @@ DEPEND="${RDEPEND}
 #		>=dev-libs/check-0.9.10
 #		dev-util/valgrind
 #		sys-libs/libunwind )
+BDEPEND="
+	virtual/pkgconfig[${MULTILIB_USEDEP}]
+"
+
+python_check_deps() {
+	has_version "dev-python/commonmark[${PYTHON_USEDEP}]" && \
+	has_version "dev-python/recommonmark[${PYTHON_USEDEP}]" && \
+	has_version "dev-python/sphinx[${PYTHON_USEDEP}]" && \
+	has_version ">=dev-python/sphinx_rtd_theme-0.2.4[${PYTHON_USEDEP}]"
+}
+
+pkg_setup() {
+	use doc && python-any-r1_pkg_setup
+}
 
 multilib_src_configure() {
 	# gui can be built but will not be installed
@@ -54,7 +75,7 @@ multilib_src_install() {
 multilib_src_install_all() {
 	if use doc ; then
 		docinto html
-		dodoc -r "${BUILD_DIR}"/html/.
+		dodoc -r "${BUILD_DIR}"/Documentation/.
 	fi
 }
 
