@@ -7,6 +7,5 @@
 	</maintainer>
 	<use>
 		<flag name="fbcondecor">Support for the fbcondecor kernel patch.</flag>
-		<flag name="system-libs">Use the system-wide libraries instead of bundled ones</flag>
 	</use>
 </pkgmetadata>

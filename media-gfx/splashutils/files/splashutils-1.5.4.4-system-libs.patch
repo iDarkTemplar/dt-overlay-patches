@@ -1,85 +1,77 @@
-diff --git a/splashutils-1.5.4.4/Makefile.am b/splashutils-1.5.4.4/Makefile.am
-index 5a86fb0..767e650 100644
---- a/splashutils-1.5.4.4/Makefile.am
-+++ b/splashutils-1.5.4.4/Makefile.am
-@@ -1,4 +1,4 @@
--SUBDIRS = libs src docs misc scripts
-+SUBDIRS = src docs misc scripts
- ACLOCAL_AMFLAGS = -I m4
- 
- include common.mk
-diff --git a/splashutils-1.5.4.4/Makefile.in b/splashutils-1.5.4.4/Makefile.in
-index e0b168a..3fa505f 100644
---- a/splashutils-1.5.4.4/Makefile.in
-+++ b/splashutils-1.5.4.4/Makefile.in
-@@ -253,7 +253,7 @@ themedir = @themedir@
- top_build_prefix = @top_build_prefix@
- top_builddir = @top_builddir@
- top_srcdir = @top_srcdir@
--SUBDIRS = libs src docs misc scripts
-+SUBDIRS = src docs misc scripts
- ACLOCAL_AMFLAGS = -I m4
- LIBFREETYPE2_SOURCE_INTERNAL = libs/freetype-2.3.5
- LIBJPEG_SOURCE_INTERNAL = libs/jpeg-6b
-@@ -313,7 +313,7 @@ config.h: stamp-h1
- stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
- 	@rm -f stamp-h1
- 	cd $(top_builddir) && $(SHELL) ./config.status config.h
--$(srcdir)/config.h.in:  $(am__configure_deps) 
-+$(srcdir)/config.h.in:  $(am__configure_deps)
- 	($(am__cd) $(top_srcdir) && $(AUTOHEADER))
- 	rm -f stamp-h1
- 	touch $@
+diff --git a/splashutils-1.5.4.4/scripts/splash_geninitramfs.in b/splashutils-1.5.4.4/scripts/splash_geninitramfs.in
+index d50441f..c283f10 100644
+--- a/splashutils-1.5.4.4/scripts/splash_geninitramfs.in
++++ b/splashutils-1.5.4.4/scripts/splash_geninitramfs.in
+@@ -16,6 +16,50 @@ cleanup()
+ 	rm -rf ${workdir}
+ }
+
++copy()
++{
++	local from=$1
++	local where=$2
++	local rootdir=$3
++
++	local parentdir="$(dirname "${where}")"
++	mkdir -p "${parentdir}"
++
++	cp -a "$from" "$where"
++	if [ -L "$from" ] ; then
++		local link="$(readlink $from)"
++		if [[ "$link" != /* ]] ; then
++			link="$(dirname $from)/$link"
++		fi
++
++		copy "$link" "${rootdir}/$link" "$rootdir"
++	elif [ -f "$from" ] ; then
++		lddtree -l "$from" | tail -n +2 | while read lib ; do
++			if [ ! -e "${rootdir}/$lib" ] ; then
++				[ -e "${rootdir}/$(dirname $lib)" ] || mkdir -p "${rootdir}/$(dirname $lib)"
++				copy "$lib" "${rootdir}/$lib" "${rootdir}"
++			fi
++		done
++	fi
++}
++
++make_executable()
++{
++	local what=$1
++
++	chmod 755 "$(readlink -e $what)"
++}
++
++copy_executable()
++{
++	local from=$1
++	local where=$2
++	local rootdir=$3
++
++	copy "$from" "$where" "$rootdir"
++	make_executable "$where"
++}
++
+ usage()
+ {
+ 	cat <<EOTB
+@@ -166,7 +210,7 @@ if [ ! -e ${splash_hlp} ]; then
+ fi
+
+ printv "o Copying ${splash_hlp}.."
+-cp "${splash_hlp}" "${imgdir}@sbindir@"
++copy_executable "${splash_hlp}" "${imgdir}${splash_hlp}" "${imgdir}"
+ ln -sf "${splash_hlp}" "${imgdir}@sbindir@/splash_helper"
+
+ res=${res//,/ }
 diff --git a/splashutils-1.5.4.4/src/Makefile.am b/splashutils-1.5.4.4/src/Makefile.am
-index d6ce315..b558c35 100644
+index 5cf79b4..5ac6618 100644
 --- a/splashutils-1.5.4.4/src/Makefile.am
 +++ b/splashutils-1.5.4.4/src/Makefile.am
-@@ -242,19 +242,19 @@ fbcondecor_helper_SOURCES = \
- 
- fbcondecor_helper_CPPFLAGS  = -DWITH_ERRLIST -DTARGET_KERNEL -DTT_CONFIG_OPTION_BYTECODE_INTERPRETER
- fbcondecor_helper_CFLAGS    = -Os -w -ffunction-sections -fdata-sections -I.@am__isrc@
--fbcondecor_helper_LDFLAGS   = 
--fbcondecor_helper_LDADD     = 
-+fbcondecor_helper_LDFLAGS   =
-+fbcondecor_helper_LDADD     =
- 
--fbcondecor_helper_CFLAGS   += -I$(abs_top_builddir)/libs/libjpeg -I$(LIBJPEG_SOURCE)
--fbcondecor_helper_LDADD    += $(top_builddir)/libs/libjpeg.a
-+fbcondecor_helper_CFLAGS   += -I$(includedir)
-+fbcondecor_helper_LDFLAGS  += -ljpeg
- if CONFIG_PNG
--fbcondecor_helper_CFLAGS   += -I$(LIBPNG_SOURCE)
--fbcondecor_helper_LDADD    += $(top_builddir)/libs/libpng.a $(top_builddir)/libs/libz.a
-+fbcondecor_helper_CFLAGS   += $(shell pkg-config libpng --cflags --static)
-+fbcondecor_helper_LDFLAGS  += $(shell pkg-config libpng --libs --static) $(shell pkg-config zlib --libs --static)
- endif
- if CONFIG_TTF_KERNEL
- fbcondecor_helper_SOURCES  += ttf.c ttf.h fbsplash.h
--fbcondecor_helper_CFLAGS   += -I$(LIBFREETYPE2_SOURCE)/include -I$(LIBZ_SOURCE)
--fbcondecor_helper_LDADD    += $(top_builddir)/libs/libfreetype.a
-+fbcondecor_helper_CFLAGS   += $(shell pkg-config freetype2 --cflags --static) $(shell pkg-config zlib --cflags --static)
-+fbcondecor_helper_LDFLAGS  += $(shell pkg-config freetype2 --libs --static)
- endif
- if CONFIG_KLIBC_SHARED
- fbcondecor_helper_LDFLAGS  += -shared
-@@ -266,7 +266,7 @@ endif
- fbcondecor_helper: $(fbcondecor_helper_LDADD) $(fbcondecor_helper_OBJECTS) $(lib_LTLIBRARIES)
- 	@$(call infmsg,LD,$@)
- 	$(Q)$(MKDIR_P) $(@D)
--	$(Q)$(KLCC) $(fbcondecor_helper_CFLAGS) $(fbcondecor_helper_LDFLAGS) $(fbcondecor_helper_OBJECTS) $(fbcondecor_helper_LDADD) -o $@
-+	$(Q)$(CC) $(fbcondecor_helper_CFLAGS) $(fbcondecor_helper_OBJECTS) $(fbcondecor_helper_LDFLAGS) $(fbcondecor_helper_LDADD) -o $@
- 	$(Q)$(STRIP) $@
- 
- # Override automake's generation of target rules for building fbcondecor_helper object files.
-@@ -284,7 +284,7 @@ fbcondecor_helper-ttf.o:
- fbcondecor_helper-%.o: %.c
- 	@$(call infmsg,CC,$@)
- 	$(Q)$(MKDIR_P) $(@D)
--	$(Q)$(KLCC) $(fbcondecor_helper_CPPFLAGS) $(fbcondecor_helper_CFLAGS) $(INCLUDES) -c $< -o $@
-+	$(Q)$(CC) $(fbcondecor_helper_CPPFLAGS) $(fbcondecor_helper_CFLAGS) $(INCLUDES) -c $< -o $@
- else
- fbcondecor_helper_SOURCES = \
- 	kernel.c \
--- 
-2.0.5
+@@ -189,7 +189,7 @@ eexecsbin_PROGRAMS += fbsplashctl
+ fbsplashctl_SOURCES         = $(fbsplashd_SOURCES) $(splash_util_SOURCES) fbsplashctl.c
+ fbsplashctl_CFLAGS          = $(AM_CFLAGS) $(PTHREAD_STATIC_CFLAGS) $(RT_CFLAGS) $(libfbsplashrender_la_CFLAGS) -DUNIFIED_BUILD
+ fbsplashctl_CPPFLAGS        = $(fbsplashd_CPPFLAGS) $(splash_util_CPPFLAGS)
+-fbsplashctl_LDFLAGS         = $(AM_LDFLAGS) -all-static
++fbsplashctl_LDFLAGS         = $(AM_LDFLAGS)
+ fbsplashctl_LDADD           = libfbsplashrender.la libfbsplash.la $(PTHREAD_STATIC_LIBS) $(RT_LIBS) $(GPM_LIBS)
 
+ if CONFIG_FBCON_DECOR

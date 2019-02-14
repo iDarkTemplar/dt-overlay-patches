@@ -6,18 +6,9 @@ inherit autotools eutils multilib toolchain-funcs
 
 MISCSPLASH="miscsplashutils-0.1.8"
 GENTOOSPLASH="splashutils-gentoo-1.0.17"
-V_JPEG="8a"
-V_PNG="1.4.3"
-V_ZLIB="1.2.3"
-V_FT="2.3.12"
-
-ZLIBSRC="libs/zlib-${V_ZLIB}"
-LPNGSRC="libs/libpng-${V_PNG}"
-JPEGSRC="libs/jpeg-${V_JPEG}"
-FT2SRC="libs/freetype-${V_FT}"
 
 RESTRICT="test"
-IUSE="hardened +png +truetype +mng gpm fbcondecor system-libs"
+IUSE="+png +truetype +mng gpm fbcondecor"
 
 DESCRIPTION="Framebuffer splash utilities"
 HOMEPAGE="https://sourceforge.net/projects/fbsplash.berlios/"
@@ -25,12 +16,6 @@ SRC_URI="
 	mirror://sourceforge/fbsplash.berlios/${PN}-lite-${PV}.tar.bz2
 	mirror://sourceforge/fbsplash.berlios/${GENTOOSPLASH}.tar.bz2
 	mirror://gentoo/${MISCSPLASH}.tar.bz2
-	!system-libs? (
-		mirror://sourceforge/libpng/libpng-${V_PNG}.tar.bz2
-		ftp://ftp.uu.net/graphics/jpeg/jpegsrc.v${V_JPEG}.tar.gz
-		mirror://sourceforge/freetype/freetype-${V_FT}.tar.bz2
-		http://www.gzip.org/zlib/zlib-${V_ZLIB}.tar.bz2
-	)
 "
 
 LICENSE="GPL-2"
@@ -38,29 +23,28 @@ SLOT="0"
 KEYWORDS="~alpha amd64 ~arm ~ia64 ~ppc ~ppc64 ~sparc x86"
 
 RDEPEND="
-	gpm? ( sys-libs/gpm[static-libs(+)] )
+	gpm? ( sys-libs/gpm )
 	truetype? (
-		>=media-libs/freetype-2[static-libs]
-		app-arch/bzip2[static-libs(+)]
-		sys-libs/zlib[static-libs(+)]
+		>=media-libs/freetype-2
+		app-arch/bzip2
+		sys-libs/zlib
 	)
 	png? (
-		>=media-libs/libpng-1.4.3[static-libs]
-		sys-libs/zlib[static-libs(+)]
+		>=media-libs/libpng-1.4.3
+		sys-libs/zlib
 	)
 	mng? (
-		media-libs/libmng[static-libs(+)]
+		media-libs/libmng
 	)
-	virtual/jpeg:0[static-libs]
+	virtual/jpeg:0
+
 	app-arch/cpio
+	app-misc/pax-utils
 	media-gfx/fbgrab
 	!sys-apps/lcdsplash
 	sys-apps/openrc"
 
 DEPEND="${RDEPEND}
-	!system-libs? (
-		>=dev-libs/klibc-1.5
-	)
 	virtual/pkgconfig
 "
 
@@ -68,25 +52,7 @@ S="${WORKDIR}/${P/_/-}"
 SG="${WORKDIR}/${GENTOOSPLASH}"
 SM="${WORKDIR}/${MISCSPLASH}"
 
-pkg_setup() {
-	if use hardened; then
-		ewarn "Due to problems with klibc, it is currently impossible to compile splashutils"
-		ewarn "with 'hardened' GCC flags. As a workaround, the package will be compiled with"
-		ewarn "-fno-stack-protector. Hardened GCC features will not be used while building"
-		ewarn "the splash kernel helper."
-	fi
-}
-
 src_prepare() {
-	if ! use system-libs ; then
-		mv "${WORKDIR}"/{libpng-${V_PNG},jpeg-${V_JPEG},zlib-${V_ZLIB},freetype-${V_FT}} "${S}/libs"
-
-		# We need to delete the Makefile and let it be rebuilt when splashutils
-		# is being configured. Either that, or we end up with a segfaulting kernel
-		# helper.
-		rm "${S}/libs/zlib-${V_ZLIB}/Makefile"
-	fi
-
 	cd "${SG}"
 	epatch "${FILESDIR}/splashutils-1.5.4.4-gentoo-typo-fix.patch"
 	epatch "${FILESDIR}/splashutils-1.5.4.4-sys-queue.patch"
@@ -94,6 +60,7 @@ src_prepare() {
 	if use truetype ; then
 		cd "${SM}"
 		epatch "${FILESDIR}/splashutils-1.5.4.4-freetype-bz2.patch"
+		epatch "${FILESDIR}/splashutils-1.5.4.4-no-static-fbtruetype.patch"
 		cd "${WORKDIR}"
 		epatch "${FILESDIR}/splashutils-1.5.4.4-ft25.patch"
 	fi
@@ -101,58 +68,31 @@ src_prepare() {
 	cd "${S}"
 	ln -sf "${S}/src" "${WORKDIR}/core"
 
-	#epatch "${FILESDIR}/${P}-bzip2.patch"
 	epatch "${FILESDIR}/${P}-multi-keyboard.patch"
 	epatch "${FILESDIR}/libmng2-lcms2.patch"
 	# Bug #557126
 	epatch "${FILESDIR}/${P}-no-la.patch"
 	epatch "${FILESDIR}/splashutils-1.5.4.4-copy-anim-files.patch"
-
-	if use system-libs ; then
-		epatch "${FILESDIR}/${P}-system-libs.patch"
-	fi
-
-	if ! tc-is-cross-compiler && \
-	   has_version "sys-devel/gcc:$(gcc-version)[vanilla]" ; then
-		ewarn "Your GCC was built with the 'vanilla' flag set. If you can't compile"
-		ewarn "splashutils, you're on your own, as this configuration is not supported."
-	else
-		# This should make splashutils compile on systems with hardened GCC.
-		sed -e 's@K_CFLAGS =@K_CFLAGS = -fno-stack-protector@' -i "${S}/Makefile.in"
-	fi
+	epatch "${FILESDIR}/splashutils-1.5.4.4-sysmacros.patch"
+	epatch "${FILESDIR}/${P}-system-libs.patch"
+	epatch "${FILESDIR}/${P}-stop-draw-thread.patch"
+	epatch "${FILESDIR}/${P}-no-static-in-filenames.patch"
 
 	if ! use truetype ; then
 		sed -i -e 's/fbtruetype kbd/kbd/' "${SM}/Makefile"
-	fi
-
-	# Latest version of klibc defined its own version of ferror, so there is
-	# not need for the hack in klibc_compat.h
-	if has_version ">=dev-libs/klibc-1.5.20"; then
-		echo > "libs/klibc_compat.h"
 	fi
 
 	sed -i -e 's:#!/sbin/runscript:#!/sbin/openrc-run:' "${SG}/init-fbcondecor"
 
 	rm -f m4/*
 	eapply_user
-	export PKG_CONFIG="pkg-config --static"
 	eautoreconf
-	epatch "${FILESDIR}"/splashutils-1.5.4.4-sysmacros.patch
 }
 
 src_configure() {
 	tc-export CC
 	cd "${SM}"
 	emake CC="${CC}" LIB=$(get_libdir) STRIP=true
-
-	local sources
-
-	if ! use system-libs ; then
-		sources="--with-freetype2-src=${FT2SRC}"
-		sources="${sources} --with-jpeg-src=${JPEGSRC}"
-		sources="${sources} --with-lpng-src=${LPNGSRC}"
-		sources="${sources} --with-zlib-src=${ZLIBSRC}"
-	fi
 
 	cd "${S}"
 	econf \
@@ -162,8 +102,8 @@ src_configure() {
 		$(use_with truetype ttf) \
 		$(use_with truetype ttf-kernel) \
 		$(use_enable fbcondecor) \
+		--without-klibc \
 		--docdir=/usr/share/doc/${PF} \
-		${sources} \
 		--with-essential-libdir=/$(get_libdir)
 }
 

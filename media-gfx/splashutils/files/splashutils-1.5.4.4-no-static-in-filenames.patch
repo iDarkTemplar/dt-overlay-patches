@@ -1,0 +1,94 @@
+diff --git a/splashutils-1.5.4.4/scripts/splash-functions.sh.in b/splashutils-1.5.4.4/scripts/splash-functions.sh.in
+index 03f6bfe..cae1810 100644
+--- a/splashutils-1.5.4.4/scripts/splash-functions.sh.in
++++ b/splashutils-1.5.4.4/scripts/splash-functions.sh.in
+@@ -26,9 +26,9 @@ export spl_cachedir="@libdir@/splash/cache"
+ export spl_tmpdir="@libdir@/splash/tmp"
+ export spl_fifo="${spl_cachedir}/.splash"
+ export spl_pidfile="${spl_cachedir}/daemon.pid"
+-export spl_util="@sbindir@/splash_util.static"
+-export spl_daemon="@sbindir@/fbsplashd.static"
+-export spl_decor="@sbindir@/fbcondecor_ctl.static"
++export spl_util="@sbindir@/splash_util"
++export spl_daemon="@sbindir@/fbsplashd"
++export spl_decor="@sbindir@/fbcondecor_ctl"
+ export spl_bindir="@libdir@/splash/bin"
+ 
+ # This is the main function which handles all events.
+diff --git a/splashutils-1.5.4.4/scripts/splash_manager.in b/splashutils-1.5.4.4/scripts/splash_manager.in
+index 7bda259..e83edc5 100644
+--- a/splashutils-1.5.4.4/scripts/splash_manager.in
++++ b/splashutils-1.5.4.4/scripts/splash_manager.in
+@@ -22,8 +22,8 @@
+ #   different from the one used for the silent tty
+ 
+ # System configuration variables
+-spl_util=splash_util.static
+-spl_daemon=fbsplashd.static
++spl_util=splash_util
++spl_daemon=fbsplashd
+ spl_decor=fbcondecor_ctl
+ spl_dir="@libdir@/splash"
+ spl_fifo=${spl_dir}/cache/.splash
+diff --git a/splashutils-1.5.4.4/src/Makefile.am b/splashutils-1.5.4.4/src/Makefile.am
+index 29891ba..0aa8431 100644
+--- a/splashutils-1.5.4.4/src/Makefile.am
++++ b/splashutils-1.5.4.4/src/Makefile.am
+@@ -199,17 +199,17 @@ endif
+ 
+ install-exec-hook:
+ 	cd $(DESTDIR)$(eexecsbindir) && \
+-		$(LN_S) -f fbsplashctl$(EXEEXT) fbsplashd.static$(EXEEXT) && \
+-		$(LN_S) -f fbsplashctl$(EXEEXT) splash_util.static$(EXEEXT)
++		$(LN_S) -f fbsplashctl$(EXEEXT) fbsplashd$(EXEEXT) && \
++		$(LN_S) -f fbsplashctl$(EXEEXT) splash_util$(EXEEXT)
+ if CONFIG_FBCON_DECOR
+-	cd $(DESTDIR)$(eexecsbindir) && $(LN_S) -f fbsplashctl$(EXEEXT) fbcondecor_ctl.static$(EXEEXT)
++	cd $(DESTDIR)$(eexecsbindir) && $(LN_S) -f fbsplashctl$(EXEEXT) fbcondecor_ctl$(EXEEXT)
+ endif
+ 
+ uninstall-hook:
+-	rm -f $(DESTDIR)$(eexecsbindir)/fbsplashd.static$(EXEEXT)
+-	rm -f $(DESTDIR)$(eexecsbindir)/splash_util.static$(EXEEXT)
++	rm -f $(DESTDIR)$(eexecsbindir)/fbsplashd$(EXEEXT)
++	rm -f $(DESTDIR)$(eexecsbindir)/splash_util$(EXEEXT)
+ if CONFIG_FBCON_DECOR
+-	rm -f $(DESTDIR)$(eexecsbindir)/fbcondecor_ctl.static$(EXEEXT)
++	rm -f $(DESTDIR)$(eexecsbindir)/fbcondecor_ctl$(EXEEXT)
+ endif
+ endif
+ 
+diff --git a/splashutils-1.5.4.4/src/fbsplash.h.in b/splashutils-1.5.4.4/src/fbsplash.h.in
+index 7b8b299..8767402 100644
+--- a/splashutils-1.5.4.4/src/fbsplash.h.in
++++ b/splashutils-1.5.4.4/src/fbsplash.h.in
+@@ -10,7 +10,7 @@
+ #define FBSPLASH_CACHEDIR	FBSPLASH_DIR"/cache"
+ #define FBSPLASH_PIDFILE	FBSPLASH_CACHEDIR"/daemon.pid"
+ #define FBSPLASH_PROFILE	FBSPLASH_CACHEDIR"/profile"
+-#define FBSPLASH_DAEMON		"@sbindir@/fbsplashd.static"
++#define FBSPLASH_DAEMON		"@sbindir@/fbsplashd"
+ #define FBSPLASH_FIFO		FBSPLASH_CACHEDIR"/.splash"
+ 
+ #define FBSPL_THEME_DIR		"@themedir@"
+diff --git a/splashutils-1.5.4.4/src/fbsplashctl.c b/splashutils-1.5.4.4/src/fbsplashctl.c
+index efb3bc0..30b1dbd 100644
+--- a/splashutils-1.5.4.4/src/fbsplashctl.c
++++ b/splashutils-1.5.4.4/src/fbsplashctl.c
+@@ -22,13 +22,13 @@ int fbcondecor_main(int argc, char **argv);
+ 
+ int main(int argc, char **argv)
+ {
+-	if (strstr(argv[0], "fbsplashd.static")) {
++	if (strstr(argv[0], "fbsplashd")) {
+ 		return fbsplashd_main(argc, argv);
+-	} else if (strstr(argv[0], "splash_util.static")) {
++	} else if (strstr(argv[0], "splash_util")) {
+ 		return util_main(argc, argv);
+ 	}
+ #ifdef CONFIG_FBCON_DECOR
+-	else if (strstr(argv[0], "fbcondecor_ctl.static")) {
++	else if (strstr(argv[0], "fbcondecor_ctl")) {
+ 		return fbcondecor_main(argc, argv);
+ 	}
+ #endif
