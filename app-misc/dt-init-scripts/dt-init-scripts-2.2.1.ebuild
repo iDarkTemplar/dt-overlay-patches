@@ -12,7 +12,7 @@ SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar
 LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="amd64 x86"
-IUSE="fbsplash swsusp luks"
+IUSE="fbsplash luks pm-utils swsusp"
 
 COMMONDEPEND="
 	fbsplash? (
@@ -32,12 +32,8 @@ RDEPEND="$COMMONDEPEND
 	sys-libs/ncurses
 	sys-apps/sysvinit
 	sys-fs/e2fsprogs
-	sys-power/pm-utils
 	app-misc/pax-utils
-
-	swsusp? (
-		sys-power/suspend
-	)
+	app-arch/cpio
 
 	luks? (
 		sys-fs/cryptsetup
@@ -45,6 +41,14 @@ RDEPEND="$COMMONDEPEND
 		app-crypt/pinentry[ncurses]
 		sys-apps/util-linux
 		app-arch/sharutils
+	)
+
+	pm-utils? (
+		sys-power/pm-utils
+	)
+
+	swsusp? (
+		sys-power/suspend
 	)
 	"
 
@@ -66,7 +70,6 @@ src_install() {
 	dodir /usr/libexec/dt-init-scripts/modules
 	exeinto /usr/libexec/dt-init-scripts/modules
 	doexe "${S}/modules/base"
-	doexe "${S}/modules/suspend"
 
 	dodir /usr/share/dt-init-scripts/helpers
 	insinto /usr/share/dt-init-scripts/helpers
@@ -82,7 +85,6 @@ src_install() {
 	dodir /usr/share/dt-init-scripts/hooks
 	insinto /usr/share/dt-init-scripts/hooks
 	doins "${S}/hooks/base"
-	doins "${S}/hooks/suspend"
 
 	dosbin "${S}/generate_hooks_initramfs"
 	dosbin "${S}/shutdown-newroot-prepare"
@@ -113,6 +115,14 @@ src_install() {
 
 		insinto /usr/share/dt-init-scripts/hooks
 		doins "${S}/hooks/luks"
+	fi
+
+	if use pm-utils || use swsusp ; then
+		exeinto /usr/libexec/dt-init-scripts/modules
+		doexe "${S}/modules/suspend"
+
+		insinto /usr/share/dt-init-scripts/hooks
+		doins "${S}/hooks/suspend"
 	fi
 
 	dodoc README
