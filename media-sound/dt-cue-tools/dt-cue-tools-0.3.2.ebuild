@@ -25,6 +25,7 @@ RDEPEND="
 		media-sound/wavpack:*
 		virtual/ffmpeg:*
 		media-sound/mac:*
+		media-sound/alac_decoder
 	)"
 
 multilib_src_configure() {
