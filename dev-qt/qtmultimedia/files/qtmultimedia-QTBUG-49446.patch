@@ -1,0 +1,262 @@
+From 9800e9d1204174eeabff4c8c0a3b14c1f1657828 Mon Sep 17 00:00:00 2001
+From: VaL Doroshchuk <valentyn.doroshchuk@qt.io>
+Date: Tue, 23 Oct 2018 14:47:18 +0200
+Subject: [PATCH] VideoOutput: Introduce flushMode property
+
+Added flushMode property to QML VideoOutput element to define
+what should be shown when flush is requested.
+
+Takes affect only for QDeclarativeVideoRendererBackend
+and when QSGVideoItemSurface is already started.
+
+Flushing (passing empty video frame to the surface) is usually performed
+when EndOfMedia or playback is stopped.
+Which caused disappearing the content and blinking if playlist is used.
+
+Using this property now possible to define
+what frame (last, first or empty) should be shown when playback is stopped or finished.
+
+By default shows empty frame (clears the video output).
+
+To show a frame it requires to keep QVideoFrame and thus its data.
+
+Task-number: QTBUG-37301
+Task-number: QTBUG-49446
+Change-Id: I3be5309217b9f543da804e3b616dee9d97fba65f
+Reviewed-by: Andy Shaw <andy.shaw@qt.io>
+Reviewed-by: Oliver Wolff <oliver.wolff@qt.io>
+---
+ .../qdeclarativevideooutput_p.h               | 15 ++++++++++++
+ .../qdeclarativevideooutput.cpp               | 24 +++++++++++++++++++
+ .../qdeclarativevideooutput_render.cpp        | 22 +++++++++++------
+ .../qdeclarativevideooutput_render_p.h        |  2 ++
+ .../tst_qdeclarativevideooutput.cpp           | 20 ++++++++++++++++
+ 5 files changed, 76 insertions(+), 7 deletions(-)
+
+diff --git a/src/multimedia/qtmultimediaquicktools_headers/qdeclarativevideooutput_p.h b/src/multimedia/qtmultimediaquicktools_headers/qdeclarativevideooutput_p.h
+index 465821cb..894796df 100644
+--- a/src/multimedia/qtmultimediaquicktools_headers/qdeclarativevideooutput_p.h
++++ b/src/multimedia/qtmultimediaquicktools_headers/qdeclarativevideooutput_p.h
+@@ -79,9 +79,19 @@ class Q_MULTIMEDIAQUICK_EXPORT QDeclarativeVideoOutput : public QQuickItem
+     Q_PROPERTY(QRectF sourceRect READ sourceRect NOTIFY sourceRectChanged)
+     Q_PROPERTY(QRectF contentRect READ contentRect NOTIFY contentRectChanged)
+     Q_PROPERTY(QQmlListProperty<QAbstractVideoFilter> filters READ filters);
++    Q_PROPERTY(FlushMode flushMode READ flushMode WRITE setFlushMode NOTIFY flushModeChanged)
++    Q_ENUMS(FlushMode)
+     Q_ENUMS(FillMode)
+ 
+ public:
++
++    enum FlushMode
++    {
++        EmptyFrame,
++        FirstFrame,
++        LastFrame
++    };
++
+     enum FillMode
+     {
+         Stretch            = Qt::IgnoreAspectRatio,
+@@ -125,6 +135,9 @@ public:
+ 
+     QQmlListProperty<QAbstractVideoFilter> filters();
+ 
++    FlushMode flushMode() const { return m_flushMode; }
++    void setFlushMode(FlushMode mode);
++
+ Q_SIGNALS:
+     void sourceChanged();
+     void fillModeChanged(QDeclarativeVideoOutput::FillMode);
+@@ -132,6 +145,7 @@ Q_SIGNALS:
+     void autoOrientationChanged();
+     void sourceRectChanged();
+     void contentRectChanged();
++    void flushModeChanged();
+ 
+ protected:
+     QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) override;
+@@ -175,6 +189,7 @@ private:
+     QScopedPointer<QDeclarativeVideoBackend> m_backend;
+ 
+     QList<QAbstractVideoFilter *> m_filters;
++    FlushMode m_flushMode = EmptyFrame;
+ };
+ 
+ QT_END_NAMESPACE
+diff --git a/src/qtmultimediaquicktools/qdeclarativevideooutput.cpp b/src/qtmultimediaquicktools/qdeclarativevideooutput.cpp
+index 3c6a6f9c..fccab54a 100644
+--- a/src/qtmultimediaquicktools/qdeclarativevideooutput.cpp
++++ b/src/qtmultimediaquicktools/qdeclarativevideooutput.cpp
+@@ -878,4 +878,28 @@ void QDeclarativeVideoOutput::_q_invalidateSceneGraph()
+         m_backend->invalidateSceneGraph();
+ }
+ 
++/*!
++    \qmlproperty enumeration QtMultimedia::VideoOutput::flushMode
++
++    Set this property to define what \c VideoOutput should show
++    when playback is finished or stopped.
++
++    \list
++    \li EmptyFrame - clears video output.
++    \li FirstFrame - shows the first valid frame.
++    \li LastFrame - shows the last valid frame.
++    \endlist
++
++    The default flush mode is EmptyFrame.
++*/
++
++void QDeclarativeVideoOutput::setFlushMode(FlushMode mode)
++{
++    if (m_flushMode == mode)
++        return;
++
++    m_flushMode = mode;
++    emit flushModeChanged();
++}
++
+ QT_END_NAMESPACE
+diff --git a/src/qtmultimediaquicktools/qdeclarativevideooutput_render.cpp b/src/qtmultimediaquicktools/qdeclarativevideooutput_render.cpp
+index c51aec08..007e5240 100644
+--- a/src/qtmultimediaquicktools/qdeclarativevideooutput_render.cpp
++++ b/src/qtmultimediaquicktools/qdeclarativevideooutput_render.cpp
+@@ -210,13 +210,13 @@ void QDeclarativeVideoRendererBackend::releaseControl()
+ 
+ QSize QDeclarativeVideoRendererBackend::nativeSize() const
+ {
+-    return m_surface->surfaceFormat().sizeHint();
++    return m_surfaceFormat.sizeHint();
+ }
+ 
+ void QDeclarativeVideoRendererBackend::updateGeometry()
+ {
+-    const QRectF viewport = videoSurface()->surfaceFormat().viewport();
+-    const QSizeF frameSize = videoSurface()->surfaceFormat().frameSize();
++    const QRectF viewport = m_surfaceFormat.viewport();
++    const QSizeF frameSize = m_surfaceFormat.frameSize();
+     const QRectF normalizedViewport(viewport.x() / frameSize.width(),
+                                     viewport.y() / frameSize.height(),
+                                     viewport.width() / frameSize.width(),
+@@ -257,13 +257,13 @@ void QDeclarativeVideoRendererBackend::updateGeometry()
+         }
+     }
+ 
+-    if (videoSurface()->surfaceFormat().scanLineDirection() == QVideoSurfaceFormat::BottomToTop) {
++    if (m_surfaceFormat.scanLineDirection() == QVideoSurfaceFormat::BottomToTop) {
+         qreal top = m_sourceTextureRect.top();
+         m_sourceTextureRect.setTop(m_sourceTextureRect.bottom());
+         m_sourceTextureRect.setBottom(top);
+     }
+ 
+-    if (videoSurface()->surfaceFormat().property("mirrored").toBool()) {
++    if (m_surfaceFormat.property("mirrored").toBool()) {
+         qreal left = m_sourceTextureRect.left();
+         m_sourceTextureRect.setLeft(m_sourceTextureRect.right());
+         m_sourceTextureRect.setRight(left);
+@@ -294,7 +294,7 @@ QSGNode *QDeclarativeVideoRendererBackend::updatePaintNode(QSGNode *oldNode,
+     if (m_frameChanged) {
+         // Run the VideoFilter if there is one. This must be done before potentially changing the videonode below.
+         if (m_frame.isValid() && !m_filters.isEmpty()) {
+-            const QVideoSurfaceFormat surfaceFormat = videoSurface()->surfaceFormat();
++            const QVideoSurfaceFormat surfaceFormat = m_surfaceFormat;
+             for (int i = 0; i < m_filters.count(); ++i) {
+                 QAbstractVideoFilter *filter = m_filters[i].filter;
+                 QVideoFilterRunnable *&runnable = m_filters[i].runnable;
+@@ -367,6 +367,12 @@ QSGNode *QDeclarativeVideoRendererBackend::updatePaintNode(QSGNode *oldNode,
+         if (isFrameModified)
+             flags |= QSGVideoNode::FrameFiltered;
+         videoNode->setCurrentFrame(m_frame, flags);
++
++        if ((q->flushMode() == QDeclarativeVideoOutput::FirstFrame && !m_frameOnFlush.isValid())
++            || q->flushMode() == QDeclarativeVideoOutput::LastFrame) {
++            m_frameOnFlush = m_frame;
++        }
++
+         //don't keep the frame for more than really necessary
+         m_frameChanged = false;
+         m_frame = QVideoFrame();
+@@ -403,7 +409,7 @@ QOpenGLContext *QDeclarativeVideoRendererBackend::glContext() const
+ void QDeclarativeVideoRendererBackend::present(const QVideoFrame &frame)
+ {
+     m_frameMutex.lock();
+-    m_frame = frame;
++    m_frame = frame.isValid() ? frame : m_frameOnFlush;
+     m_frameChanged = true;
+     m_frameMutex.unlock();
+ 
+@@ -450,10 +456,12 @@ QList<QVideoFrame::PixelFormat> QSGVideoItemSurface::supportedPixelFormats(
+ bool QSGVideoItemSurface::start(const QVideoSurfaceFormat &format)
+ {
+     qCDebug(qLcVideo) << "Video surface format:" << format << "all supported formats:" << supportedPixelFormats(format.handleType());
++    m_backend->m_frameOnFlush = QVideoFrame();
+ 
+     if (!supportedPixelFormats(format.handleType()).contains(format.pixelFormat()))
+         return false;
+ 
++    m_backend->m_surfaceFormat = format;
+     return QAbstractVideoSurface::start(format);
+ }
+ 
+diff --git a/src/qtmultimediaquicktools/qdeclarativevideooutput_render_p.h b/src/qtmultimediaquicktools/qdeclarativevideooutput_render_p.h
+index 4f1a90c8..c69e7415 100644
+--- a/src/qtmultimediaquicktools/qdeclarativevideooutput_render_p.h
++++ b/src/qtmultimediaquicktools/qdeclarativevideooutput_render_p.h
+@@ -100,8 +100,10 @@ private:
+     QPointer<QVideoRendererControl> m_rendererControl;
+     QList<QSGVideoNodeFactoryInterface*> m_videoNodeFactories;
+     QSGVideoItemSurface *m_surface;
++    QVideoSurfaceFormat m_surfaceFormat;
+     QOpenGLContext *m_glContext;
+     QVideoFrame m_frame;
++    QVideoFrame m_frameOnFlush;
+     bool m_frameChanged;
+     QSGVideoNodeFactory_YUV m_i420Factory;
+     QSGVideoNodeFactory_RGB m_rgbFactory;
+diff --git a/tests/auto/integration/qdeclarativevideooutput/tst_qdeclarativevideooutput.cpp b/tests/auto/integration/qdeclarativevideooutput/tst_qdeclarativevideooutput.cpp
+index 707a0151..3059a464 100644
+--- a/tests/auto/integration/qdeclarativevideooutput/tst_qdeclarativevideooutput.cpp
++++ b/tests/auto/integration/qdeclarativevideooutput/tst_qdeclarativevideooutput.cpp
+@@ -106,6 +106,7 @@ public slots:
+ 
+ private slots:
+     void fillMode();
++    void flushMode();
+     void orientation();
+     void surfaceSource();
+     void sourceRect();
+@@ -161,6 +162,7 @@ void tst_QDeclarativeVideoOutput::initTestCase()
+ }
+ 
+ Q_DECLARE_METATYPE(QDeclarativeVideoOutput::FillMode)
++Q_DECLARE_METATYPE(QDeclarativeVideoOutput::FlushMode)
+ 
+ tst_QDeclarativeVideoOutput::tst_QDeclarativeVideoOutput()
+     : m_mappingComponent(0)
+@@ -199,6 +201,24 @@ void tst_QDeclarativeVideoOutput::fillMode()
+     delete videoOutput;
+ }
+ 
++void tst_QDeclarativeVideoOutput::flushMode()
++{
++    QQmlComponent component(&m_engine);
++    component.setData(m_plainQML, QUrl());
++
++    QObject *videoOutput = component.create();
++    QVERIFY(videoOutput != 0);
++
++    QSignalSpy propSpy(videoOutput, SIGNAL(flushModeChanged()));
++
++    QCOMPARE(videoOutput->property("flushMode").value<QDeclarativeVideoOutput::FlushMode>(), QDeclarativeVideoOutput::EmptyFrame);
++    QCOMPARE(propSpy.count(), 0);
++
++    videoOutput->setProperty("flushMode", QVariant(int(QDeclarativeVideoOutput::FirstFrame)));
++    QCOMPARE(videoOutput->property("fillMode").value<QDeclarativeVideoOutput::FlushMode>(), QDeclarativeVideoOutput::FirstFrame);
++    QCOMPARE(propSpy.count(), 1);
++}
++
+ void tst_QDeclarativeVideoOutput::orientation()
+ {
+     QQmlComponent component(&m_engine);
+-- 
+2.19.2
+

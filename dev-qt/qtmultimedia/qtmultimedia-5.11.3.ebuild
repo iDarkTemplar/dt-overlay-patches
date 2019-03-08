@@ -39,6 +39,10 @@ DEPEND="${RDEPEND}
 	gstreamer? ( x11-base/xorg-proto )
 "
 
+PATCHES=(
+	"${FILESDIR}/${PN}-QTBUG-49446.patch"
+)
+
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples")
 }
