@@ -1,0 +1,239 @@
+From f8ea761a25bddc64ab6b66d77381266fb129c49f Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sat, 30 Mar 2019 18:38:24 +0300
+Subject: [PATCH 1/2] Dolphin: reintroduce information panel without Baloo
+
+This panel is unconfigurable and contains only preview
+---
+ src/CMakeLists.txt                            |  8 +++---
+ src/dolphinmainwindow.cpp                     |  3 ---
+ .../information/informationpanelcontent.cpp   | 27 ++++++++++++++++++-
+ .../information/informationpanelcontent.h     |  4 +--
+ 4 files changed, 31 insertions(+), 11 deletions(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index d5206beb3..798126c42 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -199,6 +199,10 @@ set(dolphinstatic_SRCS
+     dolphintabwidget.cpp
+     trash/dolphintrash.cpp
+     filterbar/filterbar.cpp
++    panels/information/informationpanel.cpp
++    panels/information/informationpanelcontent.cpp
++    panels/information/pixmapviewer.cpp
++    panels/information/phononwidget.cpp
+     panels/places/placespanel.cpp
+     panels/places/placesitem.cpp
+     panels/places/placesitemeditdialog.cpp
+@@ -246,10 +250,6 @@ if(HAVE_BALOO)
+     set(dolphinstatic_SRCS
+         ${dolphinstatic_SRCS}
+         panels/information/filemetadataconfigurationdialog.cpp
+-        panels/information/informationpanel.cpp
+-        panels/information/informationpanelcontent.cpp
+-        panels/information/pixmapviewer.cpp
+-        panels/information/phononwidget.cpp
+     )
+ endif()
+ 
+diff --git a/src/dolphinmainwindow.cpp b/src/dolphinmainwindow.cpp
+index cd4800b7d..a989646b7 100644
+--- a/src/dolphinmainwindow.cpp
++++ b/src/dolphinmainwindow.cpp
+@@ -1228,8 +1228,6 @@ void DolphinMainWindow::setupDockWidgets()
+     infoDock->setLocked(lock);
+     infoDock->setObjectName(QStringLiteral("infoDock"));
+     infoDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+-
+-#ifdef HAVE_BALOO
+     InformationPanel* infoPanel = new InformationPanel(infoDock);
+     infoPanel->setCustomContextMenuActions({lockLayoutAction});
+     connect(infoPanel, &InformationPanel::urlActivated, this, &DolphinMainWindow::handleUrl);
+@@ -1245,7 +1243,6 @@ void DolphinMainWindow::setupDockWidgets()
+             infoPanel, &InformationPanel::setSelection);
+     connect(this, &DolphinMainWindow::requestItemInfo,
+             infoPanel, &InformationPanel::requestDelayedItemInfo);
+-#endif
+ 
+     // Setup "Folders"
+     DolphinDockWidget* foldersDock = new DolphinDockWidget(i18nc("@title:window", "Folders"));
+diff --git a/src/panels/information/informationpanelcontent.cpp b/src/panels/information/informationpanelcontent.cpp
+index 6f671e683..cdf010d30 100644
+--- a/src/panels/information/informationpanelcontent.cpp
++++ b/src/panels/information/informationpanelcontent.cpp
+@@ -32,7 +32,9 @@
+ #include <QMenu>
+ #include <QTextDocument>
+ 
++#ifdef HAVE_BALOO
+ #include <Baloo/FileMetaDataWidget>
++#endif
+ 
+ #include <panels/places/placesitem.h>
+ #include <panels/places/placesitemmodel.h>
+@@ -48,7 +50,9 @@
+ #include <QStyle>
+ 
+ #include "dolphin_informationpanelsettings.h"
++#ifdef HAVE_BALOO
+ #include "filemetadataconfigurationdialog.h"
++#endif
+ #include "phononwidget.h"
+ #include "pixmapviewer.h"
+ 
+@@ -60,7 +64,9 @@ InformationPanelContent::InformationPanelContent(QWidget* parent) :
+     m_preview(nullptr),
+     m_phononWidget(nullptr),
+     m_nameLabel(nullptr),
++#ifdef HAVE_BALOO
+     m_metaDataWidget(nullptr),
++#endif
+     m_metaDataArea(nullptr),
+     m_placesItemModel(nullptr)
+ {
+@@ -102,12 +108,14 @@ InformationPanelContent::InformationPanelContent(QWidget* parent) :
+     const bool previewsShown = InformationPanelSettings::previewsShown();
+     m_preview->setVisible(previewsShown);
+ 
++#ifdef HAVE_BALOO
+     m_metaDataWidget = new Baloo::FileMetaDataWidget(parent);
+     m_metaDataWidget->setDateFormat(static_cast<Baloo::DateFormats>(InformationPanelSettings::dateFormat()));
+     connect(m_metaDataWidget, &Baloo::FileMetaDataWidget::urlActivated,
+             this, &InformationPanelContent::urlActivated);
+     m_metaDataWidget->setFont(QFontDatabase::systemFont(QFontDatabase::SmallestReadableFont));
+     m_metaDataWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
++#endif
+ 
+     // Encapsulate the MetaDataWidget inside a container that has a dummy widget
+     // at the bottom. This prevents that the meta data widget gets vertically stretched
+@@ -116,7 +124,9 @@ InformationPanelContent::InformationPanelContent(QWidget* parent) :
+     QVBoxLayout* containerLayout = new QVBoxLayout(metaDataWidgetContainer);
+     containerLayout->setContentsMargins(0, 0, 0, 0);
+     containerLayout->setSpacing(0);
++#ifdef HAVE_BALOO
+     containerLayout->addWidget(m_metaDataWidget);
++#endif
+     containerLayout->addStretch();
+ 
+     m_metaDataArea = new QScrollArea(parent);
+@@ -186,11 +196,13 @@ void InformationPanelContent::showItem(const KFileItem& item)
+                 this, &InformationPanelContent::showIcon);
+     }
+ 
++#ifdef HAVE_BALOO
+     if (m_metaDataWidget) {
+         m_metaDataWidget->setDateFormat(static_cast<Baloo::DateFormats>(InformationPanelSettings::dateFormat()));
+         m_metaDataWidget->show();
+         m_metaDataWidget->setItems(KFileItemList() << item);
+     }
++#endif
+ 
+     if (InformationPanelSettings::previewsShown()) {
+         const QString mimeType = item.mimetype();
+@@ -225,9 +237,11 @@ void InformationPanelContent::showItems(const KFileItemList& items)
+     );
+     setNameLabelText(i18ncp("@label", "%1 item selected", "%1 items selected", items.count()));
+ 
++#ifdef HAVE_BALOO
+     if (m_metaDataWidget) {
+         m_metaDataWidget->setItems(items);
+     }
++#endif
+ 
+     m_phononWidget->hide();
+ 
+@@ -239,13 +253,17 @@ bool InformationPanelContent::eventFilter(QObject* obj, QEvent* event)
+     switch (event->type()) {
+     case QEvent::Resize: {
+         QResizeEvent* resizeEvent = static_cast<QResizeEvent*>(event);
++#ifdef HAVE_BALOO
+         if (obj == m_metaDataArea->viewport()) {
+             // The size of the meta text area has changed. Adjust the fixed
+             // width in a way that no horizontal scrollbar needs to be shown.
+             m_metaDataWidget->setFixedWidth(resizeEvent->size().width());
+         } else if (obj == parent()) {
++#endif
+             adjustWidgetSizes(resizeEvent->size().width());
++#ifdef HAVE_BALOO
+         }
++#endif
+         break;
+     }
+ 
+@@ -253,9 +271,11 @@ bool InformationPanelContent::eventFilter(QObject* obj, QEvent* event)
+         adjustWidgetSizes(parentWidget()->width());
+         break;
+ 
++#ifdef HAVE_BALOO
+     case QEvent::FontChange:
+         m_metaDataWidget->setFont(QFontDatabase::systemFont(QFontDatabase::SmallestReadableFont));
+         break;
++#endif
+ 
+     default:
+         break;
+@@ -268,6 +288,7 @@ void InformationPanelContent::configureSettings(const QList<QAction*>& customCon
+ {
+     QMenu popup(this);
+ 
++#ifdef HAVE_BALOO
+     QAction* previewAction = popup.addAction(i18nc("@action:inmenu", "Preview"));
+     previewAction->setIcon(QIcon::fromTheme(QStringLiteral("view-preview")));
+     previewAction->setCheckable(true);
+@@ -280,8 +301,8 @@ void InformationPanelContent::configureSettings(const QList<QAction*>& customCon
+     dateformatAction->setIcon(QIcon::fromTheme(QStringLiteral("change-date-symbolic")));
+     dateformatAction->setCheckable(true);
+     dateformatAction->setChecked(InformationPanelSettings::dateFormat() == static_cast<int>(Baloo::DateFormats::ShortFormat));
+-
+     popup.addSeparator();
++#endif
+     foreach (QAction* action, customContextMenuActions) {
+         popup.addAction(action);
+     }
+@@ -293,6 +314,7 @@ void InformationPanelContent::configureSettings(const QList<QAction*>& customCon
+         return;
+     }
+ 
++#ifdef HAVE_BALOO
+     const bool isChecked = action->isChecked();
+     if (action == previewAction) {
+         m_preview->setVisible(isChecked);
+@@ -312,6 +334,7 @@ void InformationPanelContent::configureSettings(const QList<QAction*>& customCon
+         InformationPanelSettings::setDateFormat(dateFormat);
+         refreshMetaData();
+     }
++#endif
+ }
+ 
+ void InformationPanelContent::showIcon(const KFileItem& item)
+@@ -397,9 +420,11 @@ void InformationPanelContent::adjustWidgetSizes(int width)
+ 
+     // The metadata widget also contains a text widget which may return
+     // a large preferred width.
++#ifdef HAVE_BALOO
+     if (m_metaDataWidget) {
+         m_metaDataWidget->setMaximumWidth(maxWidth);
+     }
++#endif
+ 
+     // try to increase the preview as large as possible
+     m_preview->setSizeHint(QSize(maxWidth, maxWidth));
+diff --git a/src/panels/information/informationpanelcontent.h b/src/panels/information/informationpanelcontent.h
+index 9223fcc5a..c8214b1da 100644
+--- a/src/panels/information/informationpanelcontent.h
++++ b/src/panels/information/informationpanelcontent.h
+@@ -138,9 +138,7 @@ private:
+     PixmapViewer* m_preview;
+     PhononWidget* m_phononWidget;
+     QLabel* m_nameLabel;
+-#ifndef HAVE_BALOO
+-    KFileMetaDataWidget* m_metaDataWidget;
+-#else
++#ifdef HAVE_BALOO
+     Baloo::FileMetaDataWidget* m_metaDataWidget;
+ #endif
+     QScrollArea* m_metaDataArea;
+-- 
+2.21.0
+

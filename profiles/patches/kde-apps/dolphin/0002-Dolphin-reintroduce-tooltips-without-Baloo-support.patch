@@ -1,0 +1,229 @@
+From 8bebc102d5427ae45f19f1b16721a35af01b926b Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sat, 30 Mar 2019 19:25:50 +0300
+Subject: [PATCH 2/2] Dolphin: reintroduce tooltips without Baloo support
+
+Tooltips contain only name of item and preview
+---
+ src/CMakeLists.txt                            |  4 +--
+ src/settings/general/behaviorsettingspage.cpp |  8 -----
+ src/views/dolphinview.cpp                     |  6 ----
+ .../tooltips/dolphinfilemetadatawidget.cpp    | 32 +++++++++++++++++--
+ .../tooltips/dolphinfilemetadatawidget.h      |  4 +++
+ 5 files changed, 36 insertions(+), 18 deletions(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 798126c42..ad019e08e 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -98,6 +98,8 @@ set(dolphinprivate_LIB_SRCS
+     views/dolphinviewactionhandler.cpp
+     views/draganddrophelper.cpp
+     views/renamedialog.cpp
++    views/tooltips/dolphinfilemetadatawidget.cpp
++    views/tooltips/tooltipmanager.cpp
+     views/versioncontrol/updateitemstatesthread.cpp
+     views/versioncontrol/versioncontrolobserver.cpp
+     views/viewmodecontroller.cpp
+@@ -113,8 +115,6 @@ ecm_qt_declare_logging_category(dolphinprivate_LIB_SRCS HEADER dolphindebug.h ID
+ if(HAVE_BALOO)
+     set(dolphinprivate_LIB_SRCS
+         ${dolphinprivate_LIB_SRCS}
+-        views/tooltips/dolphinfilemetadatawidget.cpp
+-        views/tooltips/tooltipmanager.cpp
+         kitemviews/private/kbaloorolesprovider.cpp
+     )
+ endif()
+diff --git a/src/settings/general/behaviorsettingspage.cpp b/src/settings/general/behaviorsettingspage.cpp
+index add9acad5..694aa4457 100644
+--- a/src/settings/general/behaviorsettingspage.cpp
++++ b/src/settings/general/behaviorsettingspage.cpp
+@@ -78,11 +78,9 @@ BehaviorSettingsPage::BehaviorSettingsPage(const QUrl& url, QWidget* parent) :
+     topLayout->addItem(new QSpacerItem(0, Dolphin::VERTICAL_SPACER_HEIGHT, QSizePolicy::Fixed, QSizePolicy::Fixed));
+ 
+ 
+-#ifdef HAVE_BALOO
+     // 'Show tooltips'
+     m_showToolTips = new QCheckBox(i18nc("@option:check", "Show tooltips"));
+     topLayout->addRow(i18nc("@title:group", "Miscellaneous: "), m_showToolTips);
+-#endif
+ 
+     // 'Show selection marker'
+     m_showSelectionToggle = new QCheckBox(i18nc("@option:check", "Show selection marker"));
+@@ -104,9 +102,7 @@ BehaviorSettingsPage::BehaviorSettingsPage(const QUrl& url, QWidget* parent) :
+ 
+     connect(m_localViewProps, &QRadioButton::toggled, this, &BehaviorSettingsPage::changed);
+     connect(m_globalViewProps, &QRadioButton::toggled, this, &BehaviorSettingsPage::changed);
+-#ifdef HAVE_BALOO
+     connect(m_showToolTips, &QCheckBox::toggled, this, &BehaviorSettingsPage::changed);
+-#endif
+     connect(m_showSelectionToggle, &QCheckBox::toggled, this, &BehaviorSettingsPage::changed);
+     connect(m_naturalSorting, &QRadioButton::toggled, this, &BehaviorSettingsPage::changed);
+     connect(m_caseInsensitiveSorting, &QRadioButton::toggled, this, &BehaviorSettingsPage::changed);
+@@ -126,9 +122,7 @@ void BehaviorSettingsPage::applySettings()
+ 
+     const bool useGlobalViewProps = m_globalViewProps->isChecked();
+     settings->setGlobalViewProps(useGlobalViewProps);
+-#ifdef HAVE_BALOO
+     settings->setShowToolTips(m_showToolTips->isChecked());
+-#endif
+     settings->setShowSelectionToggle(m_showSelectionToggle->isChecked());
+     setSortingChoiceValue(settings);
+     settings->setRenameInline(m_renameInline->isChecked());
+@@ -159,9 +153,7 @@ void BehaviorSettingsPage::loadSettings()
+     m_localViewProps->setChecked(!useGlobalViewProps);
+     m_globalViewProps->setChecked(useGlobalViewProps);
+ 
+-#ifdef HAVE_BALOO
+     m_showToolTips->setChecked(GeneralSettings::showToolTips());
+-#endif
+     m_showSelectionToggle->setChecked(GeneralSettings::showSelectionToggle());
+     m_renameInline->setChecked(GeneralSettings::renameInline());
+     m_useTabForSplitViewSwitch->setChecked(GeneralSettings::useTabForSwitchingSplitView());
+diff --git a/src/views/dolphinview.cpp b/src/views/dolphinview.cpp
+index b8c2f3d01..5a6c7741d 100644
+--- a/src/views/dolphinview.cpp
++++ b/src/views/dolphinview.cpp
+@@ -176,10 +176,8 @@ DolphinView::DolphinView(const QUrl& url, QWidget* parent) :
+     connect(selectionManager, &KItemListSelectionManager::selectionChanged,
+             this, &DolphinView::slotSelectionChanged);
+ 
+-#ifdef HAVE_BALOO
+     m_toolTipManager = new ToolTipManager(this);
+     connect(m_toolTipManager, &ToolTipManager::urlActivated, this, &DolphinView::urlActivated);
+-#endif
+ 
+     m_versionControlObserver = new VersionControlObserver(this);
+     m_versionControlObserver->setView(this);
+@@ -1039,9 +1037,7 @@ void DolphinView::slotItemHovered(int index)
+         const QPoint pos = m_container->mapToGlobal(itemRect.topLeft().toPoint());
+         itemRect.moveTo(pos);
+ 
+-#ifdef HAVE_BALOO
+         m_toolTipManager->showToolTip(item, itemRect, nativeParentWidget()->windowHandle());
+-#endif
+     }
+ 
+     emit requestItemInfo(item);
+@@ -1418,11 +1414,9 @@ void DolphinView::updateViewState()
+ 
+ void DolphinView::hideToolTip()
+ {
+-#ifdef HAVE_BALOO
+     if (GeneralSettings::showToolTips()) {
+         m_toolTipManager->hideToolTip();
+     }
+-#endif
+ }
+ 
+ void DolphinView::calculateItemCount(int& fileCount,
+diff --git a/src/views/tooltips/dolphinfilemetadatawidget.cpp b/src/views/tooltips/dolphinfilemetadatawidget.cpp
+index f4a688ea8..c35f2a7b6 100644
+--- a/src/views/tooltips/dolphinfilemetadatawidget.cpp
++++ b/src/views/tooltips/dolphinfilemetadatawidget.cpp
+@@ -24,7 +24,11 @@
+ #include <KColorScheme>
+ #include <KSeparator>
+ #include <KStringHandler>
++#ifdef HAVE_BALOO
+ #include <Baloo/FileMetaDataWidget>
++#else
++#include <KFileItem>
++#endif
+ 
+ #include <QLabel>
+ #include <QStyleOptionFrame>
+@@ -36,12 +40,18 @@
+ DolphinFileMetaDataWidget::DolphinFileMetaDataWidget(QWidget* parent) :
+     QWidget(parent),
+     m_preview(nullptr),
+-    m_name(nullptr),
+-    m_fileMetaDataWidget(nullptr)
++    m_name(nullptr)
++#ifdef HAVE_BALOO
++    , m_fileMetaDataWidget(nullptr)
++#endif
+ {
+     // Create widget for file preview
+     m_preview = new QLabel(this);
++#ifdef HAVE_BALOO
+     m_preview->setAlignment(Qt::AlignTop);
++#else
++    m_preview->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
++#endif
+ 
+     // Create widget for file name
+     m_name = new QLabel(this);
+@@ -56,6 +66,7 @@ DolphinFileMetaDataWidget::DolphinFileMetaDataWidget(QWidget* parent) :
+     QFontMetrics fontMetrics(font);
+     m_name->setMaximumWidth(fontMetrics.averageCharWidth() * 40);
+ 
++#ifdef HAVE_BALOO
+     // Create widget for the meta data
+     m_fileMetaDataWidget = new Baloo::FileMetaDataWidget(this);
+     connect(m_fileMetaDataWidget, &Baloo::FileMetaDataWidget::metaDataRequestFinished,
+@@ -81,6 +92,13 @@ DolphinFileMetaDataWidget::DolphinFileMetaDataWidget(QWidget* parent) :
+     layout->addWidget(m_preview);
+     layout->addSpacing(layout->margin());
+     layout->addLayout(textLayout);
++#else
++    QVBoxLayout* textLayout = new QVBoxLayout(this);
++    textLayout->addWidget(m_name);
++    textLayout->addWidget(new KSeparator());
++    textLayout->addWidget(m_preview);
++    textLayout->setAlignment(m_name, Qt::AlignCenter);
++#endif
+ }
+ 
+ DolphinFileMetaDataWidget::~DolphinFileMetaDataWidget()
+@@ -138,11 +156,21 @@ QString DolphinFileMetaDataWidget::name() const
+ 
+ void DolphinFileMetaDataWidget::setItems(const KFileItemList& items)
+ {
++#ifdef HAVE_BALOO
+     m_fileMetaDataWidget->setItems(items);
++#else
++    // This function is used to indicate start of metadata request.
++    // Just immediately report that it's finished
++    emit metaDataRequestFinished(KFileItemList());
++#endif
+ }
+ 
+ KFileItemList DolphinFileMetaDataWidget::items() const
+ {
++#ifdef HAVE_BALOO
+     return m_fileMetaDataWidget->items();
++#else
++    return KFileItemList();
++#endif
+ }
+ 
+diff --git a/src/views/tooltips/dolphinfilemetadatawidget.h b/src/views/tooltips/dolphinfilemetadatawidget.h
+index b9dbd98a1..9c967d18b 100644
+--- a/src/views/tooltips/dolphinfilemetadatawidget.h
++++ b/src/views/tooltips/dolphinfilemetadatawidget.h
+@@ -29,9 +29,11 @@
+ class KFileItemList;
+ class QLabel;
+ 
++#ifdef HAVE_BALOO
+ namespace Baloo {
+     class FileMetaDataWidget;
+ }
++#endif
+ 
+ /**
+  * @brief Widget that shows the meta information and a preview of one
+@@ -75,7 +77,9 @@ signals:
+ private:
+     QLabel* m_preview;
+     QLabel* m_name;
++#ifdef HAVE_BALOO
+     Baloo::FileMetaDataWidget* m_fileMetaDataWidget;
++#endif
+ };
+ 
+ #endif
+-- 
+2.21.0
+
