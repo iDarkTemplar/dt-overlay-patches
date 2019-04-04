@@ -2,6 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
+inherit xdg-utils
 
 DESCRIPTION="Crystal SVG icon theme"
 HOMEPAGE="https://trinitydesktop.org/"
@@ -58,4 +59,12 @@ src_install() {
 
 	insinto ${themedir}
 	doins index.theme
+}
+
+pkg_postinst() {
+	xdg_icon_cache_update
+}
+
+pkg_postrm() {
+	xdg_icon_cache_update
 }
