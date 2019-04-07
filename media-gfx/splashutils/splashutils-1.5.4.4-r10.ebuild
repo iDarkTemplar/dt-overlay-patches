@@ -77,6 +77,8 @@ src_prepare() {
 	epatch "${FILESDIR}/${P}-system-libs.patch"
 	epatch "${FILESDIR}/${P}-stop-draw-thread.patch"
 	epatch "${FILESDIR}/${P}-no-static-in-filenames.patch"
+	epatch "${FILESDIR}/${P}-fix-crash-and-memleak.patch"
+	epatch "${FILESDIR}/${P}-fix-return-type-errors.patch"
 
 	if ! use truetype ; then
 		sed -i -e 's/fbtruetype kbd/kbd/' "${SM}/Makefile"

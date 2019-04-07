@@ -1,0 +1,49 @@
+From 77abba9a5a2cc1eb2d581f43b3ae057edbb2b130 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sun, 7 Apr 2019 18:36:55 +0300
+Subject: [PATCH] Fix return type errors
+
+---
+ src/daemon.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/daemon.c b/src/daemon.c
+index e7910dd..b8b62f4 100644
+--- a/src/daemon.c
++++ b/src/daemon.c
+@@ -416,6 +416,8 @@ __u16 get_ev_key_pressed(int fd_evdev, int ev_buf_size,
+ 			continue;
+ 		return ev_buf[i].code;
+ 	}	
++
++	return 0;
+ }
+ 
+ /*
+@@ -482,6 +484,7 @@ void* thf_switch_evdev(void *unused)
+ 	} /* end of while(1) */
+ 
+ 	pthread_exit(NULL);
++	return NULL;
+ }
+ 
+ /*
+@@ -528,6 +531,7 @@ void* thf_switch_ttymon(void *unused)
+ 	}
+ 
+ 	pthread_exit(NULL);
++	return NULL;
+ }
+ 
+ /*
+@@ -873,6 +877,7 @@ int fbsplashd_main(int argc, char **argv)
+ 
+ 	invalidate_textbox(theme, config.textbox_visible);
+ 	daemon_start();
++	return 0;
+ }
+ 
+ #ifndef UNIFIED_BUILD
+-- 
+2.21.0
+
