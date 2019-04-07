@@ -12,7 +12,7 @@ SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar
 LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="amd64 x86"
-IUSE="fbsplash luks pm-utils swsusp"
+IUSE="fbsplash luks pm-utils rngd swsusp"
 
 COMMONDEPEND="
 	fbsplash? (
@@ -45,6 +45,10 @@ RDEPEND="$COMMONDEPEND
 
 	pm-utils? (
 		sys-power/pm-utils
+	)
+
+	rngd? (
+		sys-apps/rng-tools
 	)
 
 	swsusp? (
@@ -123,6 +127,14 @@ src_install() {
 
 		insinto /usr/share/dt-init-scripts/hooks
 		doins "${S}/hooks/suspend"
+	fi
+
+	if use rngd ; then
+		exeinto /usr/libexec/dt-init-scripts/modules
+		doexe "${S}/modules/rngd"
+
+		insinto /usr/share/dt-init-scripts/hooks
+		doins "${S}/hooks/rngd"
 	fi
 
 	dodoc README
