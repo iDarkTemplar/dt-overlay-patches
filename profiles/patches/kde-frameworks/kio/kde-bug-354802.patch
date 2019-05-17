@@ -1,15 +1,15 @@
-From 3ea40ad4bdec8a14315e0ec0fb3452d1c4f0ba75 Mon Sep 17 00:00:00 2001
+From 68e778b2161065c8e8bb5747a66198f8ad11ecd9 Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sun, 2 Dec 2018 00:40:02 +0300
 Subject: [PATCH] KDirModel: add option for providing only full data
 
 ---
- src/widgets/kdirmodel.cpp | 33 +++++++++++++++++++++++++++++----
+ src/widgets/kdirmodel.cpp | 34 +++++++++++++++++++++++++++++-----
  src/widgets/kdirmodel.h   |  1 +
- 2 files changed, 30 insertions(+), 4 deletions(-)
+ 2 files changed, 30 insertions(+), 5 deletions(-)
 
 diff --git a/src/widgets/kdirmodel.cpp b/src/widgets/kdirmodel.cpp
-index c2323d22..3a41735c 100644
+index 6ad7abe8..717a05a5 100644
 --- a/src/widgets/kdirmodel.cpp
 +++ b/src/widgets/kdirmodel.cpp
 @@ -176,10 +176,11 @@ int KDirModelNode::rowNumber() const
@@ -26,7 +26,7 @@ index c2323d22..3a41735c 100644
      {
      }
      ~KDirModelPrivate()
-@@ -243,6 +244,9 @@ public:
+@@ -244,6 +245,9 @@ public:
      QMap<KDirModelNode *, QList<QUrl> > m_urlsBeingFetched;
      QHash<QUrl, KDirModelNode *> m_nodeHash; // global node hash: url -> node
      QStringList m_allCurrentDestUrls; //list of all dest urls that have jobs on them (e.g. copy, download)
@@ -36,7 +36,7 @@ index c2323d22..3a41735c 100644
  };
  
  KDirModelNode *KDirModelPrivate::nodeForUrl(const QUrl &_url) const // O(1), well, O(length of url as a string)
-@@ -386,7 +390,14 @@ static QString debugIndex(const QModelIndex &index)
+@@ -387,7 +391,14 @@ static QString debugIndex(const QModelIndex &index)
  
  KDirModel::KDirModel(QObject *parent)
      : QAbstractItemModel(parent),
@@ -52,7 +52,7 @@ index c2323d22..3a41735c 100644
  {
      setDirLister(new KDirLister(this));
  }
-@@ -405,7 +416,21 @@ void KDirModel::setDirLister(KDirLister *dirLister)
+@@ -406,9 +417,22 @@ void KDirModel::setDirLister(KDirLister *dirLister)
      d->m_dirLister = dirLister;
      d->m_dirLister->setParent(this);
      connect(d->m_dirLister, &KCoreDirLister::itemsAdded, this,
@@ -64,13 +64,15 @@ index c2323d22..3a41735c 100644
 +                d->m_foundItemsAtUrlMap[dirUrl].append(items);
 +            }
 +        } );
-+    connect(d->m_dirLister, QOverload<const QUrl&>::of(&KCoreDirLister::completed), this,
+     connect(d->m_dirLister, static_cast<void (KCoreDirLister::*)(const QUrl&)>(&KCoreDirLister::completed), this,
+-        [this](const QUrl &dirUrl){d->_k_slotCompleted(dirUrl);} );
 +        [this](const QUrl &dirUrl){
 +            if (d->m_foundItemsAtUrlMap.contains(dirUrl)) {
 +                d->_k_slotNewItems(dirUrl, d->m_foundItemsAtUrlMap[dirUrl]);
 +                d->m_foundItemsAtUrlMap.remove(dirUrl);
 +                d->m_completedURLs.insert(dirUrl);
 +            }
++            d->_k_slotCompleted(dirUrl);
 +        } );
      connect(d->m_dirLister, &KCoreDirLister::itemsDeleted, this,
          [this](const KFileItemList &items){d->_k_slotDeleteItems(items);} );
@@ -88,5 +90,5 @@ index bff7d190..beb1531b 100644
  
      /**
 -- 
-2.19.2
+2.21.0
 
