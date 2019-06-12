@@ -7,6 +7,7 @@
 	</maintainer>
 	<longdescription>Script for combining parts of multiple git repositories into one</longdescription>
 	<use>
+		<flag name="gpg">Pull in gnupg for signature verification -- without gnupg, attempts will fail at runtime!</flag>
 		<flag name="portage">Install portage postsync hook</flag>
 	</use>
 </pkgmetadata>

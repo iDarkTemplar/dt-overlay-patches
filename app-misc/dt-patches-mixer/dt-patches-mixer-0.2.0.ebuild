@@ -12,14 +12,14 @@ SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar
 LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="amd64 x86 ~amd64-fbsd ~x86-fbsd"
-IUSE="+portage"
+IUSE="+gpg +portage"
 
 DEPEND="
 	"
 
 RDEPEND="
 	$DEPEND
-	dev-vcs/git
+	dev-vcs/git[gpg?]
 	"
 
 src_install() {
