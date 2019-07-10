@@ -20,9 +20,8 @@ RDEPEND="games-misc/fortune-mod"
 
 S=${WORKDIR}
 
-src_prepare() {
-	wget ${DL_FILE}
-	eapply_user
+src_unpack() {
+	wget ${DL_FILE} || die
 }
 
 src_compile() {
