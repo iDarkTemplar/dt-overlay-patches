@@ -1,4 +1,4 @@
-From 8bebc102d5427ae45f19f1b16721a35af01b926b Mon Sep 17 00:00:00 2001
+From 553fea3be133c9b8ba06563641a961e3f731472c Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sat, 30 Mar 2019 19:25:50 +0300
 Subject: [PATCH 2/2] Dolphin: reintroduce tooltips without Baloo support
@@ -13,10 +13,10 @@ Tooltips contain only name of item and preview
  5 files changed, 36 insertions(+), 18 deletions(-)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 798126c42..ad019e08e 100644
+index 9bdd0b38e..4f995b2bf 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -98,6 +98,8 @@ set(dolphinprivate_LIB_SRCS
+@@ -100,6 +100,8 @@ set(dolphinprivate_LIB_SRCS
      views/dolphinviewactionhandler.cpp
      views/draganddrophelper.cpp
      views/renamedialog.cpp
@@ -25,7 +25,7 @@ index 798126c42..ad019e08e 100644
      views/versioncontrol/updateitemstatesthread.cpp
      views/versioncontrol/versioncontrolobserver.cpp
      views/viewmodecontroller.cpp
-@@ -113,8 +115,6 @@ ecm_qt_declare_logging_category(dolphinprivate_LIB_SRCS HEADER dolphindebug.h ID
+@@ -115,8 +117,6 @@ ecm_qt_declare_logging_category(dolphinprivate_LIB_SRCS HEADER dolphindebug.h ID
  if(HAVE_BALOO)
      set(dolphinprivate_LIB_SRCS
          ${dolphinprivate_LIB_SRCS}
@@ -35,10 +35,10 @@ index 798126c42..ad019e08e 100644
      )
  endif()
 diff --git a/src/settings/general/behaviorsettingspage.cpp b/src/settings/general/behaviorsettingspage.cpp
-index add9acad5..694aa4457 100644
+index c7a909eca..d519d2851 100644
 --- a/src/settings/general/behaviorsettingspage.cpp
 +++ b/src/settings/general/behaviorsettingspage.cpp
-@@ -78,11 +78,9 @@ BehaviorSettingsPage::BehaviorSettingsPage(const QUrl& url, QWidget* parent) :
+@@ -79,11 +79,9 @@ BehaviorSettingsPage::BehaviorSettingsPage(const QUrl& url, QWidget* parent) :
      topLayout->addItem(new QSpacerItem(0, Dolphin::VERTICAL_SPACER_HEIGHT, QSizePolicy::Fixed, QSizePolicy::Fixed));
  
  
@@ -50,7 +50,7 @@ index add9acad5..694aa4457 100644
  
      // 'Show selection marker'
      m_showSelectionToggle = new QCheckBox(i18nc("@option:check", "Show selection marker"));
-@@ -104,9 +102,7 @@ BehaviorSettingsPage::BehaviorSettingsPage(const QUrl& url, QWidget* parent) :
+@@ -110,9 +108,7 @@ BehaviorSettingsPage::BehaviorSettingsPage(const QUrl& url, QWidget* parent) :
  
      connect(m_localViewProps, &QRadioButton::toggled, this, &BehaviorSettingsPage::changed);
      connect(m_globalViewProps, &QRadioButton::toggled, this, &BehaviorSettingsPage::changed);
@@ -60,7 +60,7 @@ index add9acad5..694aa4457 100644
      connect(m_showSelectionToggle, &QCheckBox::toggled, this, &BehaviorSettingsPage::changed);
      connect(m_naturalSorting, &QRadioButton::toggled, this, &BehaviorSettingsPage::changed);
      connect(m_caseInsensitiveSorting, &QRadioButton::toggled, this, &BehaviorSettingsPage::changed);
-@@ -126,9 +122,7 @@ void BehaviorSettingsPage::applySettings()
+@@ -133,9 +129,7 @@ void BehaviorSettingsPage::applySettings()
  
      const bool useGlobalViewProps = m_globalViewProps->isChecked();
      settings->setGlobalViewProps(useGlobalViewProps);
@@ -70,7 +70,7 @@ index add9acad5..694aa4457 100644
      settings->setShowSelectionToggle(m_showSelectionToggle->isChecked());
      setSortingChoiceValue(settings);
      settings->setRenameInline(m_renameInline->isChecked());
-@@ -159,9 +153,7 @@ void BehaviorSettingsPage::loadSettings()
+@@ -167,9 +161,7 @@ void BehaviorSettingsPage::loadSettings()
      m_localViewProps->setChecked(!useGlobalViewProps);
      m_globalViewProps->setChecked(useGlobalViewProps);
  
@@ -81,7 +81,7 @@ index add9acad5..694aa4457 100644
      m_renameInline->setChecked(GeneralSettings::renameInline());
      m_useTabForSplitViewSwitch->setChecked(GeneralSettings::useTabForSwitchingSplitView());
 diff --git a/src/views/dolphinview.cpp b/src/views/dolphinview.cpp
-index b8c2f3d01..5a6c7741d 100644
+index 5b00fa36d..155a76688 100644
 --- a/src/views/dolphinview.cpp
 +++ b/src/views/dolphinview.cpp
 @@ -176,10 +176,8 @@ DolphinView::DolphinView(const QUrl& url, QWidget* parent) :
@@ -95,7 +95,7 @@ index b8c2f3d01..5a6c7741d 100644
  
      m_versionControlObserver = new VersionControlObserver(this);
      m_versionControlObserver->setView(this);
-@@ -1039,9 +1037,7 @@ void DolphinView::slotItemHovered(int index)
+@@ -1037,9 +1035,7 @@ void DolphinView::slotItemHovered(int index)
          const QPoint pos = m_container->mapToGlobal(itemRect.topLeft().toPoint());
          itemRect.moveTo(pos);
  
@@ -105,7 +105,7 @@ index b8c2f3d01..5a6c7741d 100644
      }
  
      emit requestItemInfo(item);
-@@ -1418,11 +1414,9 @@ void DolphinView::updateViewState()
+@@ -1416,11 +1412,9 @@ void DolphinView::updateViewState()
  
  void DolphinView::hideToolTip()
  {
