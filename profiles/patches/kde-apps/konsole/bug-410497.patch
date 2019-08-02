@@ -1,0 +1,100 @@
+From 162192f906f6fa6f2ea40f6d0de827305f83ef80 Mon Sep 17 00:00:00 2001
+From: Mariusz Glebocki <mglb@arccos-1.net>
+Date: Wed, 27 Feb 2019 18:08:14 +0100
+Subject: [PATCH] Apply new window flags only when necessary
+
+Applying settings in Configure Konsole dialog was causing every Konsole
+window to be hidden and shown again. This was leading to information
+related to window management (window state, desktop, position/display,
+etc.) to be lost - windows were appearing on current display, current
+desktop, at new positions.
+
+The hide/show action is triggered by setting window flags. Only "remove
+window titlebar and frame" option really changes the flags, so it is
+pointless to set them again in other cases. Now, flags are not set when
+they are the same as current ones.
+
+Additionally, when "remove window titlebar and frame" option is changed
+and new flags are different, windows' positions and displays are
+restored. Other properties are still being lost.
+
+Test cases
+----------
+
+* Open a few Konsole windows, put them on different desktops and
+  at different positions.
+* Open Configure Konsole dialog, change any option different than
+  "remove window titlebar and frame".
+* Apply
+
+**Before**
+
+Konsole windows have been moved to current display and current desktop.
+Their positions have changed. The configuration window has been placed
+under them.
+
+**After**
+
+The side effects mentioned above do not occur.
+
+---
+
+* Open a few Konsole windows, put them on different desktops and at
+  different positions.
+* Open Configure Konsole dialog, change "remove window titlebar and
+  frame" option.
+* Apply
+
+**Before**
+
+Konsole windows' titlebar and frame became visible/invisible.
+The windows have been moved to current desktop. Both their positions
+and display have changed. The configuration window has been placed
+under them.
+
+**After**
+
+Like before, except windows' position and display - they are restored
+now.
+---
+ src/MainWindow.cpp | 22 +++++++++++++---------
+ 1 file changed, 13 insertions(+), 9 deletions(-)
+
+diff --git a/src/MainWindow.cpp b/src/MainWindow.cpp
+index 74f1544e..13cf146d 100644
+--- a/src/MainWindow.cpp
++++ b/src/MainWindow.cpp
+@@ -822,17 +822,21 @@ void MainWindow::setMenuBarInitialVisibility(bool visible)
+ 
+ void MainWindow::setRemoveWindowTitleBarAndFrame(bool frameless)
+ {
+-    // This is used to check if the window is in "opening" state
+-    // And avoid the visibility change when we change the window flag
+-    bool oldVisibility = isVisible();
++    Qt::WindowFlags newFlags = frameless ? Qt::FramelessWindowHint : Qt::Window;
+ 
+-    if (frameless) {
+-        setWindowFlags(Qt::FramelessWindowHint);
+-    } else {
+-        setWindowFlags(Qt::Widget);
+-    }
++    // The window is not yet visible
++    if (!isVisible()) {
++        setWindowFlags(newFlags);
++
++    // The window is visible and the setting changed
++    } else if (windowFlags().testFlag(Qt::FramelessWindowHint) != frameless) {
++        const auto oldGeometry = saveGeometry();
++
++        setWindowFlags(newFlags);
+ 
+-    if (oldVisibility && !isVisible()) {
++        // The setWindowFlags() has hidden the window. Show it again
++        // with previous geometry
++        restoreGeometry(oldGeometry);
+         setVisible(true);
+     }
+ }
+-- 
+2.17.1
+
