@@ -43,15 +43,10 @@ src_configure() {
 	local mycmakeargs=(
 		-DENABLE_SYSLOG=$(usex syslog)
 		-DENABLE_CONSOLE_CLIENT=$(usex console)
+		-DENABLE_QT_CLIENT=$(usex qt5)
 		-DENABLE_CXX=$(usex cxx)
 		-DLINUX_UDEV=$(usex udev)
 	)
-
-	if use qt5 ; then
-		mycmakeargs+=( -DCLIENT_QT=5 )
-	else
-		mycmakeargs+=( -DCLIENT_QT=0 )
-	fi
 
 	cmake-utils_src_configure
 }
