@@ -1,0 +1,25 @@
+From 218f1d00dbb6a8c464c9f9debafeefe42bde93ff Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sat, 3 Aug 2019 10:50:12 +0300
+Subject: [PATCH] Ensure that all ncurses libraries are linked to, including
+ libtinfo if it's a separate library
+
+---
+ cmake/ConkyPlatformChecks.cmake | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/cmake/ConkyPlatformChecks.cmake b/cmake/ConkyPlatformChecks.cmake
+index aa2ec3c3..55ebe2dd 100644
+--- a/cmake/ConkyPlatformChecks.cmake
++++ b/cmake/ConkyPlatformChecks.cmake
+@@ -216,6 +216,7 @@ if(BUILD_HTTP)
+ endif(BUILD_HTTP)
+ 
+ if(BUILD_NCURSES)
++  set(CURSES_NEED_NCURSES TRUE)
+   include(FindCurses)
+   if(NOT CURSES_FOUND)
+     message(FATAL_ERROR "Unable to find ncurses library")
+-- 
+2.21.0
+
