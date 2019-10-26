@@ -1,0 +1,25 @@
+diff --git a/src/plugins/clangformat/clangformatutils.cpp b/src/plugins/clangformat/clangformatutils.cpp
+index 59c2b59..a46164b 100644
+--- a/src/plugins/clangformat/clangformatutils.cpp
++++ b/src/plugins/clangformat/clangformatutils.cpp
+@@ -34,6 +34,8 @@
+ #include <projectexplorer/project.h>
+ #include <projectexplorer/session.h>
+ 
++#include <clang/Basic/Version.h>
++
+ #include <QCryptographicHash>
+ 
+ using namespace clang;
+@@ -60,7 +62,11 @@ static clang::format::FormatStyle qtcStyle()
+     style.AllowShortBlocksOnASingleLine = false;
+     style.AllowShortCaseLabelsOnASingleLine = false;
+     style.AllowShortFunctionsOnASingleLine = FormatStyle::SFS_Inline;
++#if CLANG_VERSION_MAJOR > 8
++    style.AllowShortIfStatementsOnASingleLine = FormatStyle::SIS_Never;
++#else
+     style.AllowShortIfStatementsOnASingleLine = false;
++#endif
+     style.AllowShortLoopsOnASingleLine = false;
+     style.AlwaysBreakAfterReturnType = FormatStyle::RTBS_None;
+     style.AlwaysBreakBeforeMultilineStrings = false;
