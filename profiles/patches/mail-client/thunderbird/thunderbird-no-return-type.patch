@@ -1,0 +1,11 @@
+diff --git a/media/libcubeb/src/cubeb_utils.cpp b/media/libcubeb/src/cubeb_utils.cpp
+index 85572a9..d42e951 100644
+--- a/media/libcubeb/src/cubeb_utils.cpp
++++ b/media/libcubeb/src/cubeb_utils.cpp
+@@ -19,5 +19,6 @@ size_t cubeb_sample_size(cubeb_sample_format format)
+     default:
+       // should never happen as all cases are handled above.
+       assert(false);
++      return 0;
+   }
+ }
