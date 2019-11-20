@@ -1,0 +1,210 @@
+diff -Naur a/deps/v8/src/compiler/access-info.cc b/deps/v8/src/compiler/access-info.cc
+--- a/deps/v8/src/compiler/access-info.cc	2019-11-20 16:31:22.045758462 +0300
++++ b/deps/v8/src/compiler/access-info.cc	2019-11-20 16:32:28.072757832 +0300
+@@ -256,6 +256,7 @@
+     case kModuleExport:
+       return false;
+   }
++  return false;
+ }
+ 
+ AccessInfoFactory::AccessInfoFactory(JSHeapBroker* broker,
+diff -Naur a/deps/v8/src/compiler/code-assembler.h b/deps/v8/src/compiler/code-assembler.h
+--- a/deps/v8/src/compiler/code-assembler.h	2019-11-20 17:00:24.907741841 +0300
++++ b/deps/v8/src/compiler/code-assembler.h	2019-11-20 16:59:37.287742295 +0300
+@@ -305,6 +305,7 @@
+     case CheckBounds::kDebugOnly:
+       return DEBUG_BOOL;
+   }
++  return false;
+ }
+ 
+ enum class StoreToObjectWriteBarrier { kNone, kMap, kFull };
+@@ -1276,6 +1277,7 @@
+   TNode<IntPtrT> BitcastTaggedToWord(TNode<Smi> node) {
+     static_assert(sizeof(Dummy) < 0,
+                   "Should use BitcastTaggedSignedToWord instead.");
++    return TNode<IntPtrT>();
+   }
+ 
+   // Changes a double to an inptr_t for pointer arithmetic outside of Smi range.
+diff -Naur a/deps/v8/src/compiler/effect-control-linearizer.cc b/deps/v8/src/compiler/effect-control-linearizer.cc
+--- a/deps/v8/src/compiler/effect-control-linearizer.cc	2019-11-20 16:36:43.222755399 +0300
++++ b/deps/v8/src/compiler/effect-control-linearizer.cc	2019-11-20 16:37:08.507755158 +0300
+@@ -4890,6 +4890,7 @@
+     case kExternalBigUint64Array:
+       UNREACHABLE();
+   }
++  return nullptr;
+ }
+ 
+ Node* EffectControlLinearizer::LowerLoadDataViewElement(Node* node) {
+diff -Naur a/deps/v8/src/compiler/js-heap-broker.cc b/deps/v8/src/compiler/js-heap-broker.cc
+--- a/deps/v8/src/compiler/js-heap-broker.cc	2019-11-20 16:41:39.674752572 +0300
++++ b/deps/v8/src/compiler/js-heap-broker.cc	2019-11-20 16:42:43.927751959 +0300
+@@ -3547,6 +3547,7 @@
+     case JSHeapBroker::kRetired:
+       UNREACHABLE();
+   }
++  return nullptr;
+ }
+ 
+ Reduction NoChangeBecauseOfMissingData(JSHeapBroker* broker,
+diff -Naur a/deps/v8/src/compiler/js-native-context-specialization.cc b/deps/v8/src/compiler/js-native-context-specialization.cc
+--- a/deps/v8/src/compiler/js-native-context-specialization.cc	2019-11-20 16:42:16.205752223 +0300
++++ b/deps/v8/src/compiler/js-native-context-specialization.cc	2019-11-20 16:43:22.206751594 +0300
+@@ -1796,6 +1796,7 @@
+     case ProcessedFeedback::kGlobalAccess:
+       UNREACHABLE();
+   }
++  return Reduction();
+ }
+ 
+ Reduction JSNativeContextSpecialization::ReduceSoftDeoptimize(
+diff -Naur a/deps/v8/src/execution/vm-state-inl.h b/deps/v8/src/execution/vm-state-inl.h
+--- a/deps/v8/src/execution/vm-state-inl.h	2019-11-20 20:36:22.026618272 +0300
++++ b/deps/v8/src/execution/vm-state-inl.h	2019-11-20 20:36:38.120618119 +0300
+@@ -38,6 +38,7 @@
+     case IDLE:
+       return "IDLE";
+   }
++  return "";
+ }
+ 
+ template <StateTag Tag>
+diff -Naur a/deps/v8/src/objects/elements-kind.cc b/deps/v8/src/objects/elements-kind.cc
+--- a/deps/v8/src/objects/elements-kind.cc	2019-11-20 17:32:35.033723434 +0300
++++ b/deps/v8/src/objects/elements-kind.cc	2019-11-20 17:33:09.209723108 +0300
+@@ -107,6 +107,7 @@
+     case NO_ELEMENTS:
+       return "NO_ELEMENTS";
+   }
++  return "";
+ }
+ 
+ ElementsKind kFastElementsKindSequence[kFastElementsKindCount] = {
+diff -Naur a/deps/v8/src/objects/js-collator.cc b/deps/v8/src/objects/js-collator.cc
+--- a/deps/v8/src/objects/js-collator.cc	2019-11-20 20:13:18.402631467 +0300
++++ b/deps/v8/src/objects/js-collator.cc	2019-11-20 20:13:41.504631247 +0300
+@@ -219,6 +219,7 @@
+     case Intl::CaseFirst::kUndefined:
+       return UCOL_OFF;
+   }
++  return UCOL_OFF;
+ }
+ 
+ void SetNumericOption(icu::Collator* icu_collator, bool numeric) {
+diff -Naur a/deps/v8/src/objects/js-date-time-format.cc b/deps/v8/src/objects/js-date-time-format.cc
+--- a/deps/v8/src/objects/js-date-time-format.cc	2019-11-20 20:13:58.214631088 +0300
++++ b/deps/v8/src/objects/js-date-time-format.cc	2019-11-20 20:15:25.415630256 +0300
+@@ -367,6 +367,7 @@
+     case JSDateTimeFormat::DateTimeStyle::kUndefined:
+       UNREACHABLE();
+   }
++  return Handle<String>();
+ }
+ 
+ int FractionalSecondDigitsFromPattern(const std::string& pattern) {
+@@ -633,6 +634,7 @@
+     case JSDateTimeFormat::DefaultsOption::kAll:
+       return Isolate::ICUObjectCacheType::kDefaultSimpleDateFormat;
+   }
++  return Isolate::ICUObjectCacheType::kDefaultSimpleDateFormat;
+ }
+ }  // namespace
+ 
+@@ -1082,6 +1084,7 @@
+     case JSDateTimeFormat::DateTimeStyle::kUndefined:
+       UNREACHABLE();
+   }
++  return icu::DateFormat::EStyle::kFull;
+ }
+ 
+ icu::UnicodeString ReplaceSkeleton(const icu::UnicodeString input,
+@@ -1748,6 +1751,7 @@
+       return ReadOnlyRoots(isolate).endRange_string_handle();
+       UNREACHABLE();
+   }
++  return Handle<String>();
+ }
+ 
+ Maybe<bool> AddPartForFormatRange(Isolate* isolate, Handle<JSArray> array,
+diff -Naur a/deps/v8/src/objects/js-number-format.cc b/deps/v8/src/objects/js-number-format.cc
+--- a/deps/v8/src/objects/js-number-format.cc	2019-11-20 20:15:40.756630110 +0300
++++ b/deps/v8/src/objects/js-number-format.cc	2019-11-20 20:16:56.091629391 +0300
+@@ -106,6 +106,7 @@
+     case CurrencyDisplay::NARROW_SYMBOL:
+       return UNumberUnitWidth::UNUM_UNIT_WIDTH_NARROW;
+   }
++  return UNumberUnitWidth::UNUM_UNIT_WIDTH_FULL_NAME;
+ }
+ 
+ UNumberUnitWidth ToUNumberUnitWidth(UnitDisplay unit_display) {
+@@ -117,6 +118,7 @@
+     case UnitDisplay::NARROW:
+       return UNumberUnitWidth::UNUM_UNIT_WIDTH_NARROW;
+   }
++  return UNumberUnitWidth::UNUM_UNIT_WIDTH_FULL_NAME;
+ }
+ 
+ UNumberSignDisplay ToUNumberSignDisplay(SignDisplay sign_display,
+@@ -143,6 +145,7 @@
+       DCHECK(currency_sign == CurrencySign::STANDARD);
+       return UNumberSignDisplay::UNUM_SIGN_EXCEPT_ZERO;
+   }
++  return UNumberSignDisplay::UNUM_SIGN_AUTO;
+ }
+ 
+ icu::number::Notation ToICUNotation(Notation notation,
+@@ -163,6 +166,7 @@
+       DCHECK(compact_display == CompactDisplay::LONG);
+       return icu::number::Notation::compactLong();
+   }
++  return icu::number::Notation::simple();
+ }
+ 
+ std::map<const std::string, icu::MeasureUnit> CreateUnitMap() {
+diff -Naur a/deps/v8/src/profiler/profile-generator-inl.h b/deps/v8/src/profiler/profile-generator-inl.h
+--- a/deps/v8/src/profiler/profile-generator-inl.h	2019-11-20 17:11:00.376735780 +0300
++++ b/deps/v8/src/profiler/profile-generator-inl.h	2019-11-20 17:11:28.722735510 +0300
+@@ -88,6 +88,7 @@
+     case CodeEventListener::NUMBER_OF_LOG_EVENTS:
+       return CpuProfileNode::kInternal;
+   }
++  return CpuProfileNode::kUnresolved;
+ }  // namespace internal
+ 
+ inline Isolate* ProfileNode::isolate() const { return tree_->isolate(); }
+diff -Naur a/deps/v8/src/torque/torque.cc b/deps/v8/src/torque/torque.cc
+--- a/deps/v8/src/torque/torque.cc	2019-11-20 16:21:40.396764009 +0300
++++ b/deps/v8/src/torque/torque.cc	2019-11-20 16:30:24.382759012 +0300
+@@ -16,6 +16,7 @@
+     case TorqueMessage::Kind::kLint:
+       return "Lint error";
+   }
++  return "";
+ }
+ 
+ int WrappedMain(int argc, const char** argv) {
+diff -Naur a/deps/v8/src/wasm/module-compiler.cc b/deps/v8/src/wasm/module-compiler.cc
+--- a/deps/v8/src/wasm/module-compiler.cc	2019-11-20 20:50:04.987610424 +0300
++++ b/deps/v8/src/wasm/module-compiler.cc	2019-11-20 20:50:42.114610070 +0300
+@@ -639,6 +639,7 @@
+     case WasmCompilationHintStrategy::kDefault:
+       return CompileStrategy::kDefault;
+   }
++  return CompileStrategy::kDefault;
+ }
+ 
+ struct ExecutionTierPair {
+diff -Naur a/deps/v8/src/wasm/wasm-tier.h b/deps/v8/src/wasm/wasm-tier.h
+--- a/deps/v8/src/wasm/wasm-tier.h	2019-11-20 20:49:40.721610655 +0300
++++ b/deps/v8/src/wasm/wasm-tier.h	2019-11-20 20:50:25.739610226 +0300
+@@ -30,6 +30,7 @@
+     case ExecutionTier::kNone:
+       return "none";
+   }
++  return "";
+ }
+ 
+ }  // namespace wasm
