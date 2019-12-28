@@ -1,0 +1,14 @@
+diff --git a/dlls/wined3d/buffer.c b/dlls/wined3d/buffer.c
+index 95fcdff..570f731 100644
+--- a/dlls/wined3d/buffer.c
++++ b/dlls/wined3d/buffer.c
+@@ -1016,7 +1016,8 @@ static HRESULT buffer_resource_sub_resource_map(struct wined3d_resource *resourc
+             dirty_size = 0;
+         }
+ 
+-        if (((flags & WINED3D_MAP_WRITE) && !(flags & (WINED3D_MAP_NOOVERWRITE | WINED3D_MAP_DISCARD)))
++        if (((flags & WINED3D_MAP_WRITE) && !(flags & (WINED3D_MAP_NOOVERWRITE | WINED3D_MAP_DISCARD))
++                && (buffer->locations & WINED3D_LOCATION_SYSMEM))
+                 || (!(flags & WINED3D_MAP_WRITE) && (buffer->locations & WINED3D_LOCATION_SYSMEM))
+                 || buffer->flags & WINED3D_BUFFER_PIN_SYSMEM)
+         {
