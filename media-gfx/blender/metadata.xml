@@ -60,6 +60,10 @@
 		<flag name="osl">
 			Add support for OpenShadingLanguage scripting.
 		</flag>
+		<flag name="tbb">
+			Enable multithreading with the Intel Threads Building Blocks through
+			<pkg>dev-cpp/tbb</pkg>.
+		</flag>
 		<flag name="test">
 			Build the provided unit tests.
 		</flag>
