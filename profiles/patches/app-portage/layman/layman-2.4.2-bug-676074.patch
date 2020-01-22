@@ -1,0 +1,11 @@
+--- a/layman/argsparser.py
++++ b/layman/argsparser.py
+@@ -364,6 +364,8 @@ class ArgsParser(BareConfig):
+                 protocol_filter = self.options[key]
+             if self.config.has_option('MAIN', 'protocol_filter'):
+                 protocol_filter = self.config.get('MAIN', 'protocol_filter')
++                if isinstance(protocol_filter, str) and protocol_filter == '[]':
++                    protocol_filter = []
+             if protocol_filter:
+                 if not isinstance(protocol_filter, list):
+                     protocol_filter = [e.strip() for e in protocol_filter.split(',')]
