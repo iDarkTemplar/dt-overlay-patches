@@ -8,7 +8,7 @@ inherit qt5-build
 DESCRIPTION="Cross-platform application development framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 ~sparc x86 ~amd64-fbsd"
+	KEYWORDS="amd64 arm ~arm64 ~hppa ppc ppc64 ~sparc x86"
 fi
 
 IUSE="examples icu systemd"
@@ -32,11 +32,6 @@ PDEPEND="
 	)
 "
 
-PATCHES=(
-	"${FILESDIR}/${PN}-5.9.2-examples.patch"
-	"${FILESDIR}/${PN}-5.12.3-qmake-update-libdirs-order.patch"
-)
-
 QT5_TARGET_SUBDIRS=(
 	src/tools/bootstrap
 	src/tools/moc
@@ -52,6 +47,13 @@ QT5_GENTOO_PRIVATE_CONFIG=(
 	!:sql
 	!:testlib
 	!:xml
+)
+
+PATCHES=(
+	"${FILESDIR}/${PN}-5.9.2-examples.patch"
+	"${FILESDIR}/${PN}-5.12.3-qmake-update-libdirs-order.patch"
+	"${FILESDIR}/${PN}-5.12.3-CVE-2020-0569.patch"
+	"${FILESDIR}/${PN}-5.12.3-CVE-2020-0570.patch"
 )
 
 src_prepare() {
