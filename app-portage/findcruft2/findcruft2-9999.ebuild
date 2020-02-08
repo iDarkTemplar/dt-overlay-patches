@@ -7,7 +7,7 @@ inherit git-r3
 DESCRIPTION="findcruft2 is a tool to find orphaned files for unmerged packages"
 HOMEPAGE="https://github.com/iDarkTemplar/findcruft2"
 
-EGIT_REPO_URI="git://github.com/iDarkTemplar/findcruft2.git https://github.com/iDarkTemplar/findcruft2.git"
+EGIT_REPO_URI="https://github.com/iDarkTemplar/findcruft2.git"
 PROPERTIES="live"
 
 LICENSE="GPL-2"
