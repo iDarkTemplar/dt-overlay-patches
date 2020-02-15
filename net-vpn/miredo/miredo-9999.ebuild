@@ -17,7 +17,7 @@ fi
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="amd64 x86"
+KEYWORDS=""
 IUSE="+caps nls"
 
 RDEPEND="sys-apps/iproute2
@@ -32,7 +32,7 @@ CONFIG_CHECK="~IPV6" #318777
 #tries to connect to external networks (#339180)
 RESTRICT="test"
 
-DOCS=( AUTHORS ChangeLog NEWS README TODO THANKS )
+DOCS=( AUTHORS ChangeLog.old NEWS README TODO THANKS )
 
 src_prepare() {
 	epatch "${FILESDIR}"/${PN}-1.2.5-configure-libcap.diff
@@ -51,7 +51,9 @@ src_configure() {
 		--disable-static \
 		--enable-miredo-user \
 		--localstatedir=/var \
-		$(use_with caps libcap)
+		--disable-rpath \
+		$(use_with caps libcap) \
+		$(use_enable nls)
 }
 
 src_install() {

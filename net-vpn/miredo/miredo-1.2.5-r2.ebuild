@@ -7,16 +7,23 @@ inherit autotools eutils linux-info user
 
 DESCRIPTION="Miredo is an open-source Teredo IPv6 tunneling software"
 HOMEPAGE="http://www.remlab.net/miredo/"
-SRC_URI="http://www.remlab.net/files/${PN}/${P}.tar.xz"
+
+if [[ ${PV} == *9999 ]]; then
+	inherit git-r3
+	EGIT_REPO_URI="https://git.remlab.net/git/miredo.git"
+else
+	SRC_URI="http://www.remlab.net/files/${PN}/${P}.tar.xz"
+fi
 
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="amd64 x86"
-IUSE="+caps"
+IUSE="+caps nls"
 
 RDEPEND="sys-apps/iproute2
 	dev-libs/judy
-	caps? ( sys-libs/libcap )"
+	caps? ( sys-libs/libcap )
+	nls? ( sys-devel/gettext )"
 DEPEND="${RDEPEND}
 	app-arch/xz-utils"
 
@@ -30,6 +37,11 @@ DOCS=( AUTHORS ChangeLog NEWS README TODO THANKS )
 src_prepare() {
 	epatch "${FILESDIR}"/${P}-configure-libcap.diff
 	epatch "${FILESDIR}"/${P}-ip-path.patch
+
+	if [[ ${PV} == *9999 ]]; then
+		./autogen.sh
+	fi
+
 	eautoreconf
 	eapply_user
 }
