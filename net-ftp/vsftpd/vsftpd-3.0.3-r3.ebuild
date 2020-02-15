@@ -1,4 +1,4 @@
-# Copyright 1999-2018 Gentoo Foundation
+# Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
@@ -11,11 +11,11 @@ SRC_URI="http://security.appspot.com/downloads/${P}.tar.gz"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="alpha amd64 ~arm ~hppa ia64 ppc ppc64 ~s390 ~sh sparc x86 ~x86-fbsd"
+KEYWORDS="~alpha amd64 arm hppa ia64 ppc ppc64 s390 sh sparc x86"
 IUSE="caps libressl pam tcpd ssl selinux xinetd"
 
 DEPEND="caps? ( >=sys-libs/libcap-2 )
-	pam? ( virtual/pam )
+	pam? ( sys-libs/pam )
 	tcpd? ( >=sys-apps/tcp-wrappers-7.6 )
 	ssl? (
 		!libressl? ( dev-libs/openssl:0= )
@@ -27,17 +27,31 @@ RDEPEND="${DEPEND}
 	xinetd? ( sys-apps/xinetd )"
 
 src_prepare() {
-	# kerberos patch. bug #335980
-	epatch "${FILESDIR}/${PN}-2.3.2-kerberos.patch"
+	local PATCHES=(
+		# kerberos patch. bug #335980
+		"${FILESDIR}/${PN}-2.3.2-kerberos.patch"
 
-	# Patch the source, config and the manpage to use /etc/vsftpd/
-	epatch "${FILESDIR}/${PN}-2.3.5-gentoo.patch"
+		# Patch the source, config and the manpage to use /etc/vsftpd/
+		"${FILESDIR}/${PN}-2.3.5-gentoo.patch"
 
-	# Fix building without the libcap
-	epatch "${FILESDIR}/${PN}-2.1.0-caps.patch"
+		# Fix building without the libcap
+		"${FILESDIR}/${PN}-2.1.0-caps.patch"
 
-	# Fix building on alpha. Bug #405829
-	epatch "${FILESDIR}/${PN}-3.0.2-alpha.patch"
+		# Fix building on alpha. Bug #405829
+		"${FILESDIR}/${PN}-3.0.2-alpha.patch"
+
+		#Bug #335977
+		"${FILESDIR}"/${PN}-3.0.0-Makefile.patch
+
+		#Bug #450536
+		"${FILESDIR}"/${PN}-3.0.2-remove-legacy-cap.patch
+
+		#Bug #630704
+		"${FILESDIR}"/${PN}-3.0.3-sparc.patch
+
+		# https://bugs.gentoo.org/443898
+		"${FILESDIR}"/vsftpd-disable-seccomp-sandbox.patch
+	)
 
 	# Configure vsftpd build defaults
 	use tcpd && echo "#define VSF_BUILD_TCPWRAPPERS" >> builddefs.h
@@ -47,34 +61,32 @@ src_prepare() {
 	# Ensure that we don't link against libcap unless asked
 	if ! use caps ; then
 		sed -i '/^#define VSF_SYSDEP_HAVE_LIBCAP$/ d' sysdeputil.c || die
-		epatch "${FILESDIR}"/${PN}-2.2.0-dont-link-caps.patch
+		eapply "${FILESDIR}"/${PN}-2.2.0-dont-link-caps.patch
 	fi
 
 	# Let portage control stripping
 	sed -i '/^LINK[[:space:]]*=[[:space:]]*/ s/-Wl,-s//' Makefile || die
 
-	#Bug #335977
-	epatch "${FILESDIR}"/${PN}-3.0.0-Makefile.patch
-
-	#Bug #450536
-	epatch "${FILESDIR}"/${PN}-3.0.2-remove-legacy-cap.patch
-
-	#Bug #630704
-	epatch "${FILESDIR}"/${PN}-3.0.3-sparc.patch
-
-	eapply_user
+	default
 }
 
 src_compile() {
+	# Override LIBS variable. Bug #508192
+	LIBS="-lcrypt"
+	use caps && LIBS+=" -lcap"
+	use pam && LIBS+=" -lpam"
+	use tcpd && LIBS+=" -lwrap"
+	use ssl && LIBS+=" -lssl -lcrypto"
+
 	CFLAGS="${CFLAGS}" \
 	CC="$(tc-getCC)" \
-	emake
+	emake LIBS="${LIBS}"
 }
 
 src_install() {
 	into /usr
 	doman ${PN}.conf.5 ${PN}.8
-	dosbin ${PN} || die "disbin failed"
+	dosbin ${PN}
 
 	dodoc AUDIT BENCHMARKS BUGS Changelog FAQ \
 		README README.security REWARD SIZE \
@@ -82,10 +94,10 @@ src_install() {
 	newdoc ${PN}.conf ${PN}.conf.example
 
 	docinto security
-	dodoc SECURITY/* || die "dodoc failed"
+	dodoc SECURITY/*
 
 	insinto "/usr/share/doc/${PF}/examples"
-	doins -r EXAMPLE/* || die "doins faileD"
+	doins -r EXAMPLE/*
 
 	insinto /etc/${PN}
 	newins ${PN}.conf{,.example}
