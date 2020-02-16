@@ -46,6 +46,9 @@
 		<flag name="ndof">
 			Enable NDOF input devices (SpaceNavigator and friends).
 		</flag>
+		<flag name="oceansim">
+			Enable Ocean Modifier.
+		</flag>
 		<flag name="opencl">
 			Allow OpenCL Graphics Acceleration. This may
 			require extra graphics card drivers.</flag>
