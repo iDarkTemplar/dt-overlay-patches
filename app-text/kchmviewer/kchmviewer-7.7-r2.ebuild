@@ -52,3 +52,11 @@ src_install() {
 	dobin bin/kchmviewer
 	domenu packages/kchmviewer.desktop
 }
+
+pkg_postinst() {
+	xdg_desktop_database_update
+}
+
+pkg_postrm() {
+	xdg_desktop_database_update
+}

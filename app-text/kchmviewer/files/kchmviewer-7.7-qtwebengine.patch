@@ -175,18 +175,30 @@ index 727f9d5..d5d3d8e 100644
    <tabstop>m_advViewSourceInternal</tabstop>
    <tabstop>m_advViewSourceExternal</tabstop>
 diff --git a/src/main.cpp b/src/main.cpp
-index b17d203..61f63a5 100644
+index b17d203..7a7bfeb 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
-@@ -23,6 +23,8 @@
+@@ -23,6 +23,9 @@
  #include "dbus_interface.h"
  #include "version.h"
  
 +#include <QWebEngineProfile>
++#include <QWebEngineUrlScheme>
 +
  #if !defined (WIN32)
  	#include <QtDBus/QtDBus>
  #endif
+@@ -67,6 +70,10 @@ int main( int argc, char ** argv )
+ 	QCoreApplication::setOrganizationDomain("kchmviewer.net");
+ 	QCoreApplication::setApplicationName("kchmviewer");
+ 
++	QWebEngineUrlScheme ms_its_scheme("ms-its");
++	ms_its_scheme.setSyntax(QWebEngineUrlScheme::Syntax::Path);
++	QWebEngineUrlScheme::registerScheme(ms_its_scheme);
++
+ 	// Configuration
+ 	pConfig = new Config();
+ 
 diff --git a/src/mainwindow.cpp b/src/mainwindow.cpp
 index bdcd4b8..dc28522 100644
 --- a/src/mainwindow.cpp
@@ -296,10 +308,25 @@ index d98d88b..6b6de04 100644
     <widget class="QMenu" name="menu_Bookmarks">
      <property name="title">
 diff --git a/src/src.pro b/src/src.pro
-index ae4222a..7d7489b 100644
+index e2386b3..7902f3a 100644
 --- a/src/src.pro
 +++ b/src/src.pro
-@@ -114,20 +114,10 @@ unix:!macx: {
+@@ -60,11 +60,12 @@ FORMS += tab_bookmarks.ui \
+     toolbareditor.ui
+ RESOURCES += resources/images.qrc
+ 
+-QT += webkit \
++QT += webengine \
+ 	xml \
+     network \
+     widgets \
+-    webkitwidgets \
++    webenginecore \
++    webenginewidgets \
+     printsupport
+ 
+ linux-g++*:{
+@@ -114,20 +115,10 @@ unix:!macx: {
  
  greaterThan(QT_MAJOR_VERSION, 4) {
      # Qt 5
@@ -325,7 +352,7 @@ index ae4222a..7d7489b 100644
      message("Qt4 is not supported anymore, please do not report any errors")
      QT += webkit webkitwidgets
 diff --git a/src/viewwindow_webengine.cpp b/src/viewwindow_webengine.cpp
-index 9db2d4c..90adb11 100644
+index 9db2d4c..4da65fd 100644
 --- a/src/viewwindow_webengine.cpp
 +++ b/src/viewwindow_webengine.cpp
 @@ -25,6 +25,7 @@
@@ -336,16 +363,34 @@ index 9db2d4c..90adb11 100644
  
  #include "config.h"
  #include "viewwindow_webengine.h"
-@@ -48,7 +49,7 @@ ViewWindow::ViewWindow( QWidget * parent )
+@@ -34,6 +35,8 @@
+ 
+ static const qreal ZOOM_FACTOR_CHANGE = 0.1;
+ 
++std::unique_ptr<DataProvider_QWebEngine> ViewWindow::g_provider;
++std::mutex ViewWindow::g_provider_lock;
+ 
+ ViewWindow::ViewWindow( QWidget * parent )
+     : QWebEngineView ( parent )
+@@ -47,8 +50,15 @@ ViewWindow::ViewWindow( QWidget * parent )
+ 
      // Use our network emulation layer. I don't know if we transfer the ownership when we install it, so we create
      // one per page. May be unnecessary.
-     m_provider = new DataProvider_QWebEngine( this );
+-    m_provider = new DataProvider_QWebEngine( this );
 -    page()->profile()->installUrlSchemeHandler( ::mainWindow->chmFile()->ebookURLscheme().toUtf8(), m_provider );
-+	page()->profile()->installUrlSchemeHandler("ms-its", m_provider);
++    {
++        std::lock_guard<std::mutex> provider_lock_guard(g_provider_lock);
++
++        if (!g_provider)
++        {
++            g_provider.reset(new DataProvider_QWebEngine(nullptr));
++	        page()->profile()->installUrlSchemeHandler("ms-its", g_provider.get());
++	    }
++	}
  
      // All links are going through us
      //page()->setLinkDelegationPolicy( QWebPage::DelegateAllLinks );
-@@ -206,7 +207,6 @@ int ViewWindow::getScrollbarPosition()
+@@ -206,7 +216,6 @@ int ViewWindow::getScrollbarPosition()
          QApplication::processEvents();
      }
  
@@ -353,7 +398,7 @@ index 9db2d4c..90adb11 100644
      return value;
  }
  
-@@ -248,16 +248,17 @@ void ViewWindow::contextMenuEvent(QContextMenuEvent *e)
+@@ -248,16 +257,17 @@ void ViewWindow::contextMenuEvent(QContextMenuEvent *e)
  {
      // From Qt Assistant
      QMenu *m = new QMenu(0);
@@ -380,7 +425,7 @@ index 9db2d4c..90adb11 100644
      ::mainWindow->setupPopupMenu( m );
      m->exec( e->globalPos() );
      delete m;
-@@ -278,7 +279,7 @@ void ViewWindow::onLoadFinished ( bool )
+@@ -278,7 +288,7 @@ void ViewWindow::onLoadFinished ( bool )
  
  void ViewWindow::applySettings()
  {
@@ -389,7 +434,7 @@ index 9db2d4c..90adb11 100644
  
      setup->setAttribute( QWebEngineSettings::AutoLoadImages, pConfig->m_browserEnableImages );
      setup->setAttribute( QWebEngineSettings::JavascriptEnabled, pConfig->m_browserEnableJS );
-@@ -288,3 +289,33 @@ void ViewWindow::applySettings()
+@@ -288,3 +298,33 @@ void ViewWindow::applySettings()
      //setup->setAttribute( QWebEngineSettings::LocalStorageDatabaseEnabled, pConfig->m_browserEnableLocalStorage );
      setup->setAttribute( QWebEngineSettings::LocalStorageEnabled, pConfig->m_browserEnableLocalStorage );
  }
@@ -424,10 +469,19 @@ index 9db2d4c..90adb11 100644
 +	return tab;
 +}
 diff --git a/src/viewwindow_webengine.h b/src/viewwindow_webengine.h
-index 1ab5a21..53c0fe0 100644
+index 1ab5a21..996e0e1 100644
 --- a/src/viewwindow_webengine.h
 +++ b/src/viewwindow_webengine.h
-@@ -49,6 +49,8 @@ class ViewWindow : public QWebEngineView
+@@ -20,6 +20,8 @@
+ #define VIEWWINDOW_WEBENGINE_H
+ 
+ #include <QWebEngineView>
++#include <memory>
++#include <mutex>
+ 
+ #include "kde-qt.h"
+ #include "dataprovider_qwebengine.h"
+@@ -49,6 +51,8 @@ class ViewWindow : public QWebEngineView
          // Apply the configuration settings (JS enabled etc) to the web renderer
          static  void    applySettings();
  
@@ -436,6 +490,16 @@ index 1ab5a21..53c0fe0 100644
          //! Invalidate current view, doing all the cleanups etc.
          void	invalidate();
  
+@@ -126,7 +130,8 @@ class ViewWindow : public QWebEngineView
+         int						m_storedScrollbarPosition;
+ 
+         // Data provider
+-        DataProvider_QWebEngine * m_provider;
++        static std::unique_ptr<DataProvider_QWebEngine> g_provider;
++        static std::mutex g_provider_lock;
+ };
+ 
+ #endif // VIEWWINDOW_WEBENGINE_H
 diff --git a/src/viewwindowmgr.cpp b/src/viewwindowmgr.cpp
 index 7a0b0e8..f7bac5f 100644
 --- a/src/viewwindowmgr.cpp
