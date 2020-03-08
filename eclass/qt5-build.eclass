@@ -676,7 +676,7 @@ qt5_base_configure() {
 # Helper function to get the various toolchain-related variables.
 qt5_qmake_args() {
 	echo \
-		QMAKE_AR=\"$(tc-getAR)\" \
+		QMAKE_AR=\"$(tc-getAR) cqs\" \
 		QMAKE_CC=\"$(tc-getCC)\" \
 		QMAKE_LINK_C=\"$(tc-getCC)\" \
 		QMAKE_LINK_C_SHLIB=\"$(tc-getCC)\" \
