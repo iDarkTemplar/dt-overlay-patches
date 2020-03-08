@@ -833,7 +833,7 @@ qt5_regenerate_global_configs() {
 
 	local qconfig_pri=${ROOT%/}${QT5_ARCHDATADIR}/mkspecs/qconfig.pri
 	local qconfig_pri_orig=${ROOT%/}${QT5_ARCHDATADIR}/mkspecs/gentoo/qconfig-qtcore.pri
-	if [[ -f ${qconfig_pri} && -f ${qconfig_pri_orig} ]]; then
+	if [[ -f ${qconfig_pri} ]]; then
 		local x qconfig_add= qconfig_remove=
 		local qt_config new_qt_config=
 		if [[ -f ${qconfig_pri_orig} ]]; then
@@ -860,7 +860,7 @@ qt5_regenerate_global_configs() {
 		sed -i -e "s/^QT_CONFIG\s*+=.*/QT_CONFIG +=${new_qt_config}/" \
 			"${qconfig_pri}" || eerror "Failed to sed QT_CONFIG in ${qconfig_pri}"
 	else
-		ewarn "${qconfig_pri} or ${qconfig_pri_orig} does not exist or is not a regular file"
+		ewarn "${qconfig_pri} does not exist or is not a regular file"
 	fi
 
 	einfo "Updating QT.global_private in qmodule.pri"
