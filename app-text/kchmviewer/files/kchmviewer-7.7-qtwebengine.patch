@@ -308,7 +308,7 @@ index d98d88b..6b6de04 100644
     <widget class="QMenu" name="menu_Bookmarks">
      <property name="title">
 diff --git a/src/src.pro b/src/src.pro
-index e2386b3..7902f3a 100644
+index ae4222a..6ad6b23 100644
 --- a/src/src.pro
 +++ b/src/src.pro
 @@ -60,11 +60,12 @@ FORMS += tab_bookmarks.ui \
@@ -352,10 +352,10 @@ index e2386b3..7902f3a 100644
      message("Qt4 is not supported anymore, please do not report any errors")
      QT += webkit webkitwidgets
 diff --git a/src/viewwindow_webengine.cpp b/src/viewwindow_webengine.cpp
-index 9db2d4c..4da65fd 100644
+index 9db2d4c..03ecf99 100644
 --- a/src/viewwindow_webengine.cpp
 +++ b/src/viewwindow_webengine.cpp
-@@ -25,6 +25,7 @@
+@@ -25,15 +25,19 @@
  #include <QWebEnginePage>
  #include <QWebEngineProfile>
  #include <QWebEngineSettings>
@@ -363,7 +363,10 @@ index 9db2d4c..4da65fd 100644
  
  #include "config.h"
  #include "viewwindow_webengine.h"
-@@ -34,6 +35,8 @@
+ #include "mainwindow.h"
++#include "navigationpanel.h"
+ #include "viewwindowmgr.h"
+ 
  
  static const qreal ZOOM_FACTOR_CHANGE = 0.1;
  
@@ -372,7 +375,7 @@ index 9db2d4c..4da65fd 100644
  
  ViewWindow::ViewWindow( QWidget * parent )
      : QWebEngineView ( parent )
-@@ -47,8 +50,15 @@ ViewWindow::ViewWindow( QWidget * parent )
+@@ -47,8 +51,15 @@ ViewWindow::ViewWindow( QWidget * parent )
  
      // Use our network emulation layer. I don't know if we transfer the ownership when we install it, so we create
      // one per page. May be unnecessary.
@@ -390,7 +393,23 @@ index 9db2d4c..4da65fd 100644
  
      // All links are going through us
      //page()->setLinkDelegationPolicy( QWebPage::DelegateAllLinks );
-@@ -206,7 +216,6 @@ int ViewWindow::getScrollbarPosition()
+@@ -60,10 +71,15 @@ ViewWindow::ViewWindow( QWidget * parent )
+     pal.setColor( QPalette::Inactive, QPalette::Highlight, pal.color(QPalette::Active, QPalette::Highlight) );
+     pal.setColor( QPalette::Inactive, QPalette::HighlightedText, pal.color(QPalette::Active, QPalette::HighlightedText) );
+     setPalette( pal );
++
++    connect(this, &QWebEngineView::urlChanged, [this] (const QUrl &url) {
++        ::mainWindow->navigator()->findUrlInContents(url);
++    });
+ }
+ 
+ ViewWindow::~ViewWindow()
+ {
++    disconnect(this, &QWebEngineView::urlChanged, nullptr, nullptr);
+ }
+ 
+ void ViewWindow::invalidate( )
+@@ -206,7 +222,6 @@ int ViewWindow::getScrollbarPosition()
          QApplication::processEvents();
      }
  
@@ -398,7 +417,7 @@ index 9db2d4c..4da65fd 100644
      return value;
  }
  
-@@ -248,16 +257,17 @@ void ViewWindow::contextMenuEvent(QContextMenuEvent *e)
+@@ -248,16 +263,17 @@ void ViewWindow::contextMenuEvent(QContextMenuEvent *e)
  {
      // From Qt Assistant
      QMenu *m = new QMenu(0);
@@ -425,7 +444,7 @@ index 9db2d4c..4da65fd 100644
      ::mainWindow->setupPopupMenu( m );
      m->exec( e->globalPos() );
      delete m;
-@@ -278,7 +288,7 @@ void ViewWindow::onLoadFinished ( bool )
+@@ -278,7 +294,7 @@ void ViewWindow::onLoadFinished ( bool )
  
  void ViewWindow::applySettings()
  {
@@ -434,7 +453,7 @@ index 9db2d4c..4da65fd 100644
  
      setup->setAttribute( QWebEngineSettings::AutoLoadImages, pConfig->m_browserEnableImages );
      setup->setAttribute( QWebEngineSettings::JavascriptEnabled, pConfig->m_browserEnableJS );
-@@ -288,3 +298,33 @@ void ViewWindow::applySettings()
+@@ -288,3 +304,33 @@ void ViewWindow::applySettings()
      //setup->setAttribute( QWebEngineSettings::LocalStorageDatabaseEnabled, pConfig->m_browserEnableLocalStorage );
      setup->setAttribute( QWebEngineSettings::LocalStorageEnabled, pConfig->m_browserEnableLocalStorage );
  }
