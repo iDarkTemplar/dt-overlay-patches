@@ -175,7 +175,7 @@ index 727f9d5..d5d3d8e 100644
    <tabstop>m_advViewSourceInternal</tabstop>
    <tabstop>m_advViewSourceExternal</tabstop>
 diff --git a/src/main.cpp b/src/main.cpp
-index b17d203..7a7bfeb 100644
+index b17d203..1e9fa6b 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
 @@ -23,6 +23,9 @@
@@ -188,13 +188,17 @@ index b17d203..7a7bfeb 100644
  #if !defined (WIN32)
  	#include <QtDBus/QtDBus>
  #endif
-@@ -67,6 +70,10 @@ int main( int argc, char ** argv )
+@@ -67,6 +70,14 @@ int main( int argc, char ** argv )
  	QCoreApplication::setOrganizationDomain("kchmviewer.net");
  	QCoreApplication::setApplicationName("kchmviewer");
  
 +	QWebEngineUrlScheme ms_its_scheme("ms-its");
 +	ms_its_scheme.setSyntax(QWebEngineUrlScheme::Syntax::Path);
 +	QWebEngineUrlScheme::registerScheme(ms_its_scheme);
++
++	QWebEngineUrlScheme epub_scheme("epub");
++	epub_scheme.setSyntax(QWebEngineUrlScheme::Syntax::Path);
++	QWebEngineUrlScheme::registerScheme(epub_scheme);
 +
  	// Configuration
  	pConfig = new Config();
@@ -352,7 +356,7 @@ index ae4222a..6ad6b23 100644
      message("Qt4 is not supported anymore, please do not report any errors")
      QT += webkit webkitwidgets
 diff --git a/src/viewwindow_webengine.cpp b/src/viewwindow_webengine.cpp
-index 9db2d4c..03ecf99 100644
+index 9db2d4c..47110e9 100644
 --- a/src/viewwindow_webengine.cpp
 +++ b/src/viewwindow_webengine.cpp
 @@ -25,15 +25,19 @@
@@ -375,7 +379,7 @@ index 9db2d4c..03ecf99 100644
  
  ViewWindow::ViewWindow( QWidget * parent )
      : QWebEngineView ( parent )
-@@ -47,8 +51,15 @@ ViewWindow::ViewWindow( QWidget * parent )
+@@ -47,8 +51,16 @@ ViewWindow::ViewWindow( QWidget * parent )
  
      // Use our network emulation layer. I don't know if we transfer the ownership when we install it, so we create
      // one per page. May be unnecessary.
@@ -388,12 +392,13 @@ index 9db2d4c..03ecf99 100644
 +        {
 +            g_provider.reset(new DataProvider_QWebEngine(nullptr));
 +	        page()->profile()->installUrlSchemeHandler("ms-its", g_provider.get());
++	        page()->profile()->installUrlSchemeHandler("epub", g_provider.get());
 +	    }
 +	}
  
      // All links are going through us
      //page()->setLinkDelegationPolicy( QWebPage::DelegateAllLinks );
-@@ -60,10 +71,15 @@ ViewWindow::ViewWindow( QWidget * parent )
+@@ -60,10 +72,15 @@ ViewWindow::ViewWindow( QWidget * parent )
      pal.setColor( QPalette::Inactive, QPalette::Highlight, pal.color(QPalette::Active, QPalette::Highlight) );
      pal.setColor( QPalette::Inactive, QPalette::HighlightedText, pal.color(QPalette::Active, QPalette::HighlightedText) );
      setPalette( pal );
@@ -409,7 +414,7 @@ index 9db2d4c..03ecf99 100644
  }
  
  void ViewWindow::invalidate( )
-@@ -206,7 +222,6 @@ int ViewWindow::getScrollbarPosition()
+@@ -206,7 +223,6 @@ int ViewWindow::getScrollbarPosition()
          QApplication::processEvents();
      }
  
@@ -417,7 +422,7 @@ index 9db2d4c..03ecf99 100644
      return value;
  }
  
-@@ -248,16 +263,17 @@ void ViewWindow::contextMenuEvent(QContextMenuEvent *e)
+@@ -248,16 +264,17 @@ void ViewWindow::contextMenuEvent(QContextMenuEvent *e)
  {
      // From Qt Assistant
      QMenu *m = new QMenu(0);
@@ -444,7 +449,7 @@ index 9db2d4c..03ecf99 100644
      ::mainWindow->setupPopupMenu( m );
      m->exec( e->globalPos() );
      delete m;
-@@ -278,7 +294,7 @@ void ViewWindow::onLoadFinished ( bool )
+@@ -278,7 +295,7 @@ void ViewWindow::onLoadFinished ( bool )
  
  void ViewWindow::applySettings()
  {
@@ -453,7 +458,7 @@ index 9db2d4c..03ecf99 100644
  
      setup->setAttribute( QWebEngineSettings::AutoLoadImages, pConfig->m_browserEnableImages );
      setup->setAttribute( QWebEngineSettings::JavascriptEnabled, pConfig->m_browserEnableJS );
-@@ -288,3 +304,33 @@ void ViewWindow::applySettings()
+@@ -288,3 +305,33 @@ void ViewWindow::applySettings()
      //setup->setAttribute( QWebEngineSettings::LocalStorageDatabaseEnabled, pConfig->m_browserEnableLocalStorage );
      setup->setAttribute( QWebEngineSettings::LocalStorageEnabled, pConfig->m_browserEnableLocalStorage );
  }
