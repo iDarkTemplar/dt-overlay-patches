@@ -10,7 +10,7 @@ SRC_URI="https://web.archive.org/web/20070114072052if_/http://www.icon-king.com/
 
 LICENSE="LGPL-2"
 SLOT="0"
-KEYWORDS="alpha amd64 ia64 ppc ppc64 sparc x86 ~x86-fbsd"
+KEYWORDS="alpha amd64 ia64 ppc ppc64 sparc x86"
 IUSE=""
 
 RESTRICT="strip binchecks"

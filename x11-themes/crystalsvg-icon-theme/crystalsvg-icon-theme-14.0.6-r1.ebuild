@@ -10,7 +10,7 @@ SRC_URI="https://mirror.git.trinitydesktop.org/cgit/tdelibs/snapshot/tdelibs-r${
 
 LICENSE="LGPL-2"
 SLOT="0"
-KEYWORDS="alpha amd64 ia64 ppc ppc64 sparc x86 ~x86-fbsd"
+KEYWORDS="alpha amd64 ia64 ppc ppc64 sparc x86"
 IUSE=""
 
 RESTRICT="strip binchecks"
