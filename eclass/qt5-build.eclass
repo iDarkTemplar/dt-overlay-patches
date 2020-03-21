@@ -6,18 +6,17 @@
 # qt@gentoo.org
 # @AUTHOR:
 # Davide Pesavento <pesa@gentoo.org>
-# @SUPPORTED_EAPIS: 6 7
+# @SUPPORTED_EAPIS: 7
 # @BLURB: Eclass for Qt5 split ebuilds.
 # @DESCRIPTION:
 # This eclass contains various functions that are used when building Qt5.
-# Requires EAPI 6.
+# Requires EAPI 7.
 
 if [[ ${CATEGORY} != dev-qt ]]; then
 	die "qt5-build.eclass is only to be used for building Qt 5"
 fi
 
 case ${EAPI} in
-	6)	inherit eapi7-ver ;;
 	7)	: ;;
 	*)	die "qt5-build.eclass: unsupported EAPI=${EAPI:-0}" ;;
 esac
@@ -63,6 +62,11 @@ esac
 # @DESCRIPTION:
 # Array variable containing source directories of examples that should be built.
 # All paths must be relative to ${S}.
+
+# @ECLASS-VARIABLE: QT5_GENERATE_DOCS
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# Boolean value. If set to any value, it indicates that documentation for current package must be generated.
 
 inherit estack flag-o-matic toolchain-funcs virtualx
 
@@ -124,15 +128,26 @@ BDEPEND="
 	dev-lang/perl
 	virtual/pkgconfig
 "
-case ${EAPI} in
-	6) DEPEND+=" ${BDEPEND}" ;;
-esac
 if [[ ${PN} != qttest ]]; then
 	DEPEND+=" test? ( ~dev-qt/qttest-${PV} )"
 fi
 RDEPEND="
 	dev-qt/qtchooser
 "
+
+if [ -n "${QT5_GENERATE_DOCS}" ] ; then
+	IUSE="${IUSE} doc"
+	BDEPEND="${BDEPEND}
+		doc? (
+			~dev-qt/qdoc-${PV}
+			~dev-qt/qtattributionsscanner-${PV}
+			~dev-qt/qthelp-${PV}
+		)
+		"
+	RDEPEND="${RDEPEND}
+		doc? ( !dev-qt/qt-docs )
+	"
+fi
 
 
 ######  Phase functions  ######
@@ -202,9 +217,13 @@ qt5-build_src_prepare() {
 qt5-build_src_configure() {
 	if [[ ${QT5_MODULE} == qtbase ]]; then
 		qt5_base_configure
-	fi
 
-	qt5_foreach_target_subdir qt5_qmake
+		if [[ -n ${QT5_TARGET_SUBDIRS[@]} ]]; then
+			qt5_foreach_target_subdir qt5_qmake
+		fi
+	else
+		qt5_foreach_target_subdir qt5_qmake
+	fi
 }
 
 # @FUNCTION: qt5-build_src_compile
@@ -212,6 +231,10 @@ qt5-build_src_configure() {
 # Runs emake in the target directories.
 qt5-build_src_compile() {
 	qt5_foreach_target_subdir emake
+
+	if [ -n "${QT5_GENERATE_DOCS}" ] && use doc ; then
+		qt5_foreach_target_doc_subdir emake docs
+	fi
 }
 
 # @FUNCTION: qt5-build_src_test
@@ -247,6 +270,10 @@ qt5-build_src_test() {
 # Runs emake install in the target directories.
 qt5-build_src_install() {
 	qt5_foreach_target_subdir emake INSTALL_ROOT="${D}" install
+
+	if [ -n "${QT5_GENERATE_DOCS}" ] && use doc ; then
+		qt5_foreach_target_doc_subdir emake INSTALL_ROOT="${D}" install_docs
+	fi
 
 	if [[ ${PN} == qtcore ]]; then
 		pushd "${QT5_BUILD_DIR}" >/dev/null || die
@@ -294,7 +321,7 @@ qt5-build_src_install() {
 	qt5_install_module_config
 
 	# prune libtool files
-	find "${D}" -name '*.la' -delete || die
+	find "${D}" -name '*.la' -type f -delete || die
 }
 
 # @FUNCTION: qt5-build_pkg_postinst
@@ -436,7 +463,7 @@ qt5_prepare_env() {
 # @INTERNAL
 # @DESCRIPTION:
 # Executes the command given as argument from inside each directory
-# listed in QT5_TARGET_SUBDIRS. Handles autotests subdirs automatically.
+# listed in QT5_TARGET_SUBDIRS and QT5_EXAMPLES_SUBDIRS. Handles autotests subdirs automatically.
 qt5_foreach_target_subdir() {
 	local QT5_FOREACH_DIRS=("")
 	[[ -n ${QT5_TARGET_SUBDIRS[@]} ]] && QT5_FOREACH_DIRS=("${QT5_TARGET_SUBDIRS[@]}")
@@ -449,6 +476,28 @@ qt5_foreach_target_subdir() {
 			[[ -d ${S}/${subdir} ]] || continue
 		fi
 
+		local msg="Running $* ${subdir:+in ${subdir}}"
+		einfo "${msg}"
+
+		mkdir -p "${QT5_BUILD_DIR}/${subdir}" || die -n || return $?
+		pushd "${QT5_BUILD_DIR}/${subdir}" >/dev/null || die -n || return $?
+
+		"$@" || die -n "${msg} failed" || return $?
+
+		popd >/dev/null || die -n || return $?
+	done
+}
+# @FUNCTION: qt5_foreach_target_doc_subdir
+# @INTERNAL
+# @DESCRIPTION:
+# Executes the command given as argument from inside each directory
+# listed in QT5_TARGET_SUBDIRS.
+qt5_foreach_target_doc_subdir() {
+	local QT5_FOREACH_DIRS=("")
+	[[ -n ${QT5_TARGET_SUBDIRS[@]} ]] && QT5_FOREACH_DIRS=("${QT5_TARGET_SUBDIRS[@]}")
+
+	local subdir=
+	for subdir in "${QT5_FOREACH_DIRS[@]}"; do
 		local msg="Running $* ${subdir:+in ${subdir}}"
 		einfo "${msg}"
 
@@ -577,7 +626,11 @@ qt5_base_configure() {
 		-no-freetype -no-harfbuzz
 		-no-openssl -no-libproxy
 		-no-xcb-xlib
-		-no-xcb-xinput -no-xkbcommon # bug 672340
+
+		# bug 672340
+		-no-xkbcommon
+		$([[ ${QT5_MINOR_VERSION} -lt 15 ]] && echo -no-xcb-xinput)
+		$([[ ${QT5_MINOR_VERSION} -ge 15 ]] && echo -no-bundled-xcb-xinput)
 
 		# cannot use -no-gif because there is no way to override it later
 		#-no-gif
@@ -624,7 +677,7 @@ qt5_base_configure() {
 
 		# disable undocumented X11-related flags, override in qtgui
 		# (not shown in ./configure -help output)
-		-no-xkb
+		$([[ ${QT5_MINOR_VERSION} -lt 15 ]] && echo -no-xkb)
 
 		# always enable session management support: it doesn't need extra deps
 		# at configure time and turning it off is dangerous, see bug 518262
@@ -651,7 +704,7 @@ qt5_base_configure() {
 		-no-gui -no-widgets
 
 		# QTBUG-76521, default will change to zstd in Qt6
-		$([[ ${QT5_MINOR_VERSION} -ge 13 ]] && echo -no-zstd)
+		-no-zstd
 
 		# module-specific options
 		"${myconf[@]}"
@@ -821,18 +874,18 @@ qt5_install_module_config() {
 qt5_regenerate_global_configs() {
 	einfo "Regenerating gentoo-qconfig.h"
 
-	find "${ROOT%/}${QT5_HEADERDIR}"/Gentoo \
+	find "${ROOT}${QT5_HEADERDIR}"/Gentoo \
 		-name '*-qconfig.h' -a \! -name 'gentoo-qconfig.h' -type f \
 		-execdir cat '{}' + | sort -u > "${T}"/gentoo-qconfig.h
 
 	[[ -s ${T}/gentoo-qconfig.h ]] || ewarn "Generated gentoo-qconfig.h is empty"
-	cp "${T}"/gentoo-qconfig.h "${ROOT%/}${QT5_HEADERDIR}"/Gentoo/gentoo-qconfig.h \
+	cp "${T}"/gentoo-qconfig.h "${ROOT}${QT5_HEADERDIR}"/Gentoo/gentoo-qconfig.h \
 		|| eerror "Failed to install new gentoo-qconfig.h"
 
 	einfo "Updating QT_CONFIG in qconfig.pri"
 
-	local qconfig_pri=${ROOT%/}${QT5_ARCHDATADIR}/mkspecs/qconfig.pri
-	local qconfig_pri_orig=${ROOT%/}${QT5_ARCHDATADIR}/mkspecs/gentoo/qconfig-qtcore.pri
+	local qconfig_pri=${ROOT}${QT5_ARCHDATADIR}/mkspecs/qconfig.pri
+	local qconfig_pri_orig=${ROOT}${QT5_ARCHDATADIR}/mkspecs/gentoo/qconfig-qtcore.pri
 	if [[ -f ${qconfig_pri} ]]; then
 		local x qconfig_add= qconfig_remove=
 		local qt_config new_qt_config=
@@ -845,7 +898,7 @@ qt5_regenerate_global_configs() {
 		# generate list of QT_CONFIG entries from the existing list,
 		# appending QCONFIG_ADD and excluding QCONFIG_REMOVE
 		eshopts_push -s nullglob
-		for x in "${ROOT%/}${QT5_ARCHDATADIR}"/mkspecs/gentoo/*-qconfig.pri; do
+		for x in "${ROOT}${QT5_ARCHDATADIR}"/mkspecs/gentoo/*-qconfig.pri; do
 			qconfig_add+=" $(sed -n 's/^QCONFIG_ADD=\s*//p' "${x}")"
 			qconfig_remove+=" $(sed -n 's/^QCONFIG_REMOVE=\s*//p' "${x}")"
 		done
@@ -865,8 +918,8 @@ qt5_regenerate_global_configs() {
 
 	einfo "Updating QT.global_private in qmodule.pri"
 
-	local qmodule_pri=${ROOT%/}${QT5_ARCHDATADIR}/mkspecs/qmodule.pri
-	local qmodule_pri_orig=${ROOT%/}${QT5_ARCHDATADIR}/mkspecs/gentoo/qmodule-qtcore.pri
+	local qmodule_pri=${ROOT}${QT5_ARCHDATADIR}/mkspecs/qmodule.pri
+	local qmodule_pri_orig=${ROOT}${QT5_ARCHDATADIR}/mkspecs/gentoo/qmodule-qtcore.pri
 	if [[ -f ${qmodule_pri} && -f ${qmodule_pri_orig} ]]; then
 		local x
 		local qprivateconfig_enabled= qprivateconfig_disabled=
@@ -877,7 +930,7 @@ qt5_regenerate_global_configs() {
 		qprivateconfig_orig_enabled="$(sed -n 's/^QT.global_private.enabled_features\s=\s*//p' "${qmodule_pri_orig}")"
 		qprivateconfig_orig_disabled="$(sed -n 's/^QT.global_private.disabled_features\s=\s*//p' "${qmodule_pri_orig}")"
 		eshopts_push -s nullglob
-		for x in "${ROOT%/}${QT5_ARCHDATADIR}"/mkspecs/gentoo/*-qmodule.pri; do
+		for x in "${ROOT}${QT5_ARCHDATADIR}"/mkspecs/gentoo/*-qmodule.pri; do
 			qprivateconfig_enabled+=" $(sed -n 's/^QT.global_private.enabled_features\s=\s*//p' "${x}")"
 			qprivateconfig_disabled+=" $(sed -n 's/^QT.global_private.disabled_features\s=\s*//p' "${x}")"
 		done
