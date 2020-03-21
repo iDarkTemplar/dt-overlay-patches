@@ -1,4 +1,4 @@
-From 553fea3be133c9b8ba06563641a961e3f731472c Mon Sep 17 00:00:00 2001
+From ec976a1f82bedfc110c8d777413f4353955ce7dc Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sat, 30 Mar 2019 19:25:50 +0300
 Subject: [PATCH 2/2] Dolphin: reintroduce tooltips without Baloo support
@@ -13,7 +13,7 @@ Tooltips contain only name of item and preview
  5 files changed, 36 insertions(+), 18 deletions(-)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 9bdd0b38e..4f995b2bf 100644
+index 22e0269a8..721f2b5db 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -100,6 +100,8 @@ set(dolphinprivate_LIB_SRCS
@@ -35,7 +35,7 @@ index 9bdd0b38e..4f995b2bf 100644
      )
  endif()
 diff --git a/src/settings/general/behaviorsettingspage.cpp b/src/settings/general/behaviorsettingspage.cpp
-index c7a909eca..d519d2851 100644
+index df7ea2113..80835926e 100644
 --- a/src/settings/general/behaviorsettingspage.cpp
 +++ b/src/settings/general/behaviorsettingspage.cpp
 @@ -79,11 +79,9 @@ BehaviorSettingsPage::BehaviorSettingsPage(const QUrl& url, QWidget* parent) :
@@ -81,10 +81,10 @@ index c7a909eca..d519d2851 100644
      m_renameInline->setChecked(GeneralSettings::renameInline());
      m_useTabForSplitViewSwitch->setChecked(GeneralSettings::useTabForSwitchingSplitView());
 diff --git a/src/views/dolphinview.cpp b/src/views/dolphinview.cpp
-index 5b00fa36d..155a76688 100644
+index 3437db7a7..cc01fd42c 100644
 --- a/src/views/dolphinview.cpp
 +++ b/src/views/dolphinview.cpp
-@@ -176,10 +176,8 @@ DolphinView::DolphinView(const QUrl& url, QWidget* parent) :
+@@ -177,10 +177,8 @@ DolphinView::DolphinView(const QUrl& url, QWidget* parent) :
      connect(selectionManager, &KItemListSelectionManager::selectionChanged,
              this, &DolphinView::slotSelectionChanged);
  
@@ -95,7 +95,7 @@ index 5b00fa36d..155a76688 100644
  
      m_versionControlObserver = new VersionControlObserver(this);
      m_versionControlObserver->setView(this);
-@@ -1037,9 +1035,7 @@ void DolphinView::slotItemHovered(int index)
+@@ -1039,9 +1037,7 @@ void DolphinView::slotItemHovered(int index)
          const QPoint pos = m_container->mapToGlobal(itemRect.topLeft().toPoint());
          itemRect.moveTo(pos);
  
@@ -105,13 +105,13 @@ index 5b00fa36d..155a76688 100644
      }
  
      emit requestItemInfo(item);
-@@ -1416,11 +1412,9 @@ void DolphinView::updateViewState()
+@@ -1432,11 +1428,9 @@ void DolphinView::updateViewState()
  
- void DolphinView::hideToolTip()
+ void DolphinView::hideToolTip(const ToolTipManager::HideBehavior behavior)
  {
 -#ifdef HAVE_BALOO
      if (GeneralSettings::showToolTips()) {
-         m_toolTipManager->hideToolTip();
+         m_toolTipManager->hideToolTip(behavior);
      }
 -#endif
  }
@@ -225,5 +225,5 @@ index b9dbd98a1..9c967d18b 100644
  
  #endif
 -- 
-2.21.0
+2.24.1
 
