@@ -1,0 +1,13 @@
+diff --git a/src/qdoc/clangcodeparser.cpp b/src/qdoc/clangcodeparser.cpp
+index 5e04c34..7c9757b 100644
+--- a/src/qdoc/clangcodeparser.cpp
++++ b/src/qdoc/clangcodeparser.cpp
+@@ -1054,6 +1054,8 @@ void ClangCodeParser::initializeParser(const Config &config)
+     for (const auto &p : args) {
+         if (p.startsWith(QLatin1String("-I")))
+             squeezedArgs << p.mid(2).trimmed();
++        else if (p.startsWith(QLatin1String("-isystem")))
++            squeezedArgs << p.mid(8).trimmed();
+         else
+             squeezedArgs << p;
+     }
