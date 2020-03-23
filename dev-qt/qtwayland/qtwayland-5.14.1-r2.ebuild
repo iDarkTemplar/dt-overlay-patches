@@ -29,10 +29,6 @@ DEPEND="
 "
 RDEPEND="${DEPEND}"
 
-PATCHES=(
-	"${FILESDIR}/${PN}-5.14.1-return.patch"
-)
-
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples")
 }

@@ -81,7 +81,6 @@ DEPEND="${RDEPEND}
 "
 
 PATCHES=(
-	"${FILESDIR}/${PN}-5.14.1-return.patch"
 	"${FILESDIR}/${P}-disable-fatal-warnings.patch" # bug 695446
 )
 
