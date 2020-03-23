@@ -1,4 +1,4 @@
-From ec976a1f82bedfc110c8d777413f4353955ce7dc Mon Sep 17 00:00:00 2001
+From 7b7c9324b3dda74f4d6cd340bd3d2a32384fcb1c Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sat, 30 Mar 2019 19:25:50 +0300
 Subject: [PATCH 2/2] Dolphin: reintroduce tooltips without Baloo support
