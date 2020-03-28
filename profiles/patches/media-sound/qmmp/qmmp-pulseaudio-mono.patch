@@ -1,0 +1,113 @@
+From 6fd2e6e6cd8f32d50ba3365ddbdf3bc8cc1913a8 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sat, 28 Mar 2020 13:43:07 +0300
+Subject: [PATCH] Pulseaudio: fix mono audio playback
+
+---
+ src/plugins/Input/flac/decoder_flac.cpp            |  2 +-
+ src/plugins/Input/mpeg/decoder_mad.cpp             |  2 +-
+ src/plugins/Input/opus/decoder_opus.cpp            |  2 +-
+ src/plugins/Input/vorbis/decoder_vorbis.cpp        |  2 +-
+ src/plugins/Input/wavpack/decoder_wavpack.cpp      |  2 +-
+ src/plugins/Output/pulseaudio/outputpulseaudio.cpp | 13 ++++++++++---
+ 6 files changed, 15 insertions(+), 8 deletions(-)
+
+diff --git a/src/plugins/Input/flac/decoder_flac.cpp b/src/plugins/Input/flac/decoder_flac.cpp
+index 679f08e..bad978c 100644
+--- a/src/plugins/Input/flac/decoder_flac.cpp
++++ b/src/plugins/Input/flac/decoder_flac.cpp
+@@ -601,7 +601,7 @@ ChannelMap DecoderFLAC::findChannelMap(int channels)
+     switch (channels)
+     {
+     case 1:
+-        map << Qmmp::CHAN_FRONT_LEFT;
++        map << Qmmp::CHAN_FRONT_CENTER;
+         break;
+     case 2:
+         map << Qmmp::CHAN_FRONT_LEFT
+diff --git a/src/plugins/Input/mpeg/decoder_mad.cpp b/src/plugins/Input/mpeg/decoder_mad.cpp
+index 4e984db..e2c1b05 100644
+--- a/src/plugins/Input/mpeg/decoder_mad.cpp
++++ b/src/plugins/Input/mpeg/decoder_mad.cpp
+@@ -102,7 +102,7 @@ bool DecoderMAD::initialize()
+     m_stream.sync = 0;
+     ChannelMap map;
+     if(m_channels == 1)
+-        map << Qmmp::CHAN_FRONT_LEFT;
++        map << Qmmp::CHAN_FRONT_CENTER;
+     else
+         map << Qmmp::CHAN_FRONT_LEFT << Qmmp::CHAN_FRONT_RIGHT;
+     configure(m_freq, map, Qmmp::PCM_FLOAT);
+diff --git a/src/plugins/Input/opus/decoder_opus.cpp b/src/plugins/Input/opus/decoder_opus.cpp
+index 20631f3..3691e06 100644
+--- a/src/plugins/Input/opus/decoder_opus.cpp
++++ b/src/plugins/Input/opus/decoder_opus.cpp
+@@ -162,7 +162,7 @@ ChannelMap DecoderOpus::findChannelMap(int channels)
+     switch (channels)
+     {
+     case 1:
+-        map << Qmmp::CHAN_FRONT_LEFT;
++        map << Qmmp::CHAN_FRONT_CENTER;
+         break;
+     case 2:
+         map << Qmmp::CHAN_FRONT_LEFT
+diff --git a/src/plugins/Input/vorbis/decoder_vorbis.cpp b/src/plugins/Input/vorbis/decoder_vorbis.cpp
+index 37f7951..26c9178 100644
+--- a/src/plugins/Input/vorbis/decoder_vorbis.cpp
++++ b/src/plugins/Input/vorbis/decoder_vorbis.cpp
+@@ -220,7 +220,7 @@ ChannelMap DecoderVorbis::findChannelMap(int channels)
+     switch (channels)
+     {
+     case 1:
+-        map << Qmmp::CHAN_FRONT_LEFT;
++        map << Qmmp::CHAN_FRONT_CENTER;
+         break;
+     case 2:
+         map << Qmmp::CHAN_FRONT_LEFT
+diff --git a/src/plugins/Input/wavpack/decoder_wavpack.cpp b/src/plugins/Input/wavpack/decoder_wavpack.cpp
+index a9daaf2..1233937 100644
+--- a/src/plugins/Input/wavpack/decoder_wavpack.cpp
++++ b/src/plugins/Input/wavpack/decoder_wavpack.cpp
+@@ -279,7 +279,7 @@ ChannelMap DecoderWavPack::findChannelMap(int channels)
+     switch (channels)
+     {
+     case 1:
+-        map << Qmmp::CHAN_FRONT_LEFT;
++        map << Qmmp::CHAN_FRONT_CENTER;
+         break;
+     case 2:
+         map << Qmmp::CHAN_FRONT_LEFT
+diff --git a/src/plugins/Output/pulseaudio/outputpulseaudio.cpp b/src/plugins/Output/pulseaudio/outputpulseaudio.cpp
+index 9b7d77e..b94ff1c 100644
+--- a/src/plugins/Output/pulseaudio/outputpulseaudio.cpp
++++ b/src/plugins/Output/pulseaudio/outputpulseaudio.cpp
+@@ -35,7 +35,6 @@ OutputPulseAudio::OutputPulseAudio(): Output()
+     m_stream = nullptr;
+ 
+     m_pa_channels[Qmmp::CHAN_NULL] = PA_CHANNEL_POSITION_INVALID;
+-    m_pa_channels[Qmmp::CHAN_FRONT_CENTER] = PA_CHANNEL_POSITION_MONO;
+     m_pa_channels[Qmmp::CHAN_FRONT_LEFT] = PA_CHANNEL_POSITION_FRONT_LEFT;
+     m_pa_channels[Qmmp::CHAN_FRONT_RIGHT] = PA_CHANNEL_POSITION_FRONT_RIGHT;
+     m_pa_channels[Qmmp::CHAN_REAR_LEFT] = PA_CHANNEL_POSITION_REAR_LEFT;
+@@ -117,8 +116,16 @@ bool OutputPulseAudio::initialize(quint32 freq, ChannelMap map, Qmmp::AudioForma
+ 
+     pa_channel_map pa_map;
+     pa_map.channels = map.count();
+-    for(int i = 0; i < map.count(); i++)
+-        pa_map.map[i] = m_pa_channels[map.value(i)];
++
++    if ((map.count() == 1) && (map.value(0) == Qmmp::CHAN_FRONT_CENTER))
++    {
++        pa_map.map[0] = PA_CHANNEL_POSITION_MONO;
++    }
++    else
++    {
++        for(int i = 0; i < map.count(); i++)
++            pa_map.map[i] = m_pa_channels[map.value(i)];
++    }
+ 
+     if(!(m_stream = pa_stream_new(m_ctx, "Qmmp", &ss, &pa_map)))
+     {
+-- 
+2.24.1
+
