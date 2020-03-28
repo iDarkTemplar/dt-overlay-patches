@@ -3,6 +3,7 @@
 
 EAPI=7
 
+QT5_GENERATE_DOCS="true"
 PYTHON_COMPAT=( python2_7 )
 inherit multiprocessing python-any-r1 qt5-build
 
@@ -103,6 +104,9 @@ src_prepare() {
 	qt_use_disable_mod designer webenginewidgets src/plugins/plugins.pro
 
 	qt_use_disable_mod widgets widgets src/src.pro
+
+	# documentation generation uses python2
+	sed -i -e 's:QMAKE_PYTHON2 = python$:QMAKE_PYTHON2 = python2:' mkspecs/features/functions.prf || die
 
 	qt5-build_src_prepare
 }
