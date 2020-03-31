@@ -11,7 +11,7 @@ HOMEPAGE="https://github.com/iDarkTemplar/dt-lua-milter"
 SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 LICENSE="AGPL-3+"
 SLOT="0"
-KEYWORDS="amd64 x86 ~x86-fbsd"
+KEYWORDS="amd64 x86"
 IUSE="+openrc"
 
 DEPEND="

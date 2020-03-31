@@ -11,8 +11,8 @@ HOMEPAGE="https://github.com/iDarkTemplar/dtmd"
 SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 LICENSE="LGPL-3+"
 SLOT="0"
-KEYWORDS="amd64 x86 ~x86-fbsd"
-IUSE="+console +cxx +openrc qt5 +syslog udev kernel_linux kernel_FreeBSD"
+KEYWORDS="amd64 x86"
+IUSE="+console +cxx +openrc qt5 +syslog udev"
 
 REQUIRED_USE="
 	qt5? ( cxx )
@@ -27,12 +27,8 @@ DEPEND="
 		dev-qt/qtwidgets:5
 	)
 
-	kernel_linux? (
-		udev? ( virtual/udev )
-		!udev? ( sys-apps/util-linux )
-	)
-
-	kernel_FreeBSD? ( sys-freebsd/freebsd-lib )
+	udev? ( virtual/udev )
+	!udev? ( sys-apps/util-linux )
 	"
 
 RDEPEND="
