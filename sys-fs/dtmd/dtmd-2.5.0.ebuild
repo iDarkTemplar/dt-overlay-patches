@@ -19,7 +19,7 @@ REQUIRED_USE="
 	"
 
 DEPEND="
-	dev-libs/dt-command:=
+	>=dev-libs/dt-command-2.0.0:=
 
 	qt5? (
 		dev-qt/qtcore:5

@@ -15,7 +15,7 @@ KEYWORDS="amd64 x86 ~amd64-fbsd ~x86-fbsd"
 IUSE=""
 
 DEPEND="
-	dev-libs/dt-command:=
+	>=dev-libs/dt-command-2.0.0:=
 	x11-libs/libX11
 	x11-libs/libXi
 	x11-libs/libXtst
