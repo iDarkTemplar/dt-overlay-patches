@@ -11,16 +11,16 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 ~arm ~arm64 ~hppa ppc ppc64 ~sparc x86"
 fi
 
-IUSE="gles2 +ssl vulkan"
+IUSE="gles2-only +ssl vulkan"
 
 DEPEND="
 	~dev-qt/qtcore-${PV}
-	~dev-qt/qtgui-${PV}[gles2=,vulkan=]
-	~dev-qt/qtwidgets-${PV}[gles2=]
+	~dev-qt/qtgui-${PV}[gles2-only=,vulkan=]
+	~dev-qt/qtwidgets-${PV}[gles2-only=]
 	~dev-qt/qtnetwork-${PV}[ssl=]
 	~dev-qt/qtconcurrent-${PV}
 	~dev-qt/qtdbus-${PV}
-	~dev-qt/qtopengl-${PV}[gles2=]
+	~dev-qt/qtopengl-${PV}[gles2-only=]
 	~dev-qt/qtprintsupport-${PV}
 	~dev-qt/qtsql-${PV}
 	~dev-qt/qttest-${PV}
@@ -35,7 +35,7 @@ RDEPEND="${DEPEND}"
 src_configure() {
 	local myconf=(
 		-dbus-linked
-		-opengl $(usex gles2 es2 desktop)
+		-opengl $(usex gles2-only es2 desktop)
 		$(qt_use vulkan)
 		-gui
 		$(usex ssl -openssl-linked '')

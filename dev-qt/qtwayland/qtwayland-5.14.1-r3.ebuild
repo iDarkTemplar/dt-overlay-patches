@@ -8,7 +8,7 @@ inherit qt5-build
 DESCRIPTION="Wayland platform plugin for Qt"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 ~arm ~arm64 ~hppa ppc ppc64 x86"
+	KEYWORDS="amd64 ~arm arm64 ~hppa ppc ppc64 x86"
 fi
 
 IUSE="examples vulkan X"
@@ -22,6 +22,7 @@ DEPEND="
 	>=x11-libs/libxkbcommon-0.2.0
 	vulkan? ( dev-util/vulkan-headers )
 	X? (
+		~dev-qt/qtgui-${PV}[-gles2-only]
 		x11-libs/libX11
 		x11-libs/libXcomposite
 	)

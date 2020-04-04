@@ -11,16 +11,16 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 ~arm ~arm64 ~hppa ppc ppc64 ~sparc x86"
 fi
 
-IUSE="gles2 vulkan"
+IUSE="gles2-only vulkan"
 
 DEPEND="
 	~dev-qt/qtcore-${PV}
-	~dev-qt/qtgui-${PV}[gles2=,vulkan=]
-	~dev-qt/qtwidgets-${PV}[gles2=]
+	~dev-qt/qtgui-${PV}[gles2-only=,vulkan=]
+	~dev-qt/qtwidgets-${PV}[gles2-only=]
 	~dev-qt/qtnetwork-${PV}
 	~dev-qt/qtconcurrent-${PV}
 	~dev-qt/qtdbus-${PV}
-	~dev-qt/qtopengl-${PV}[gles2=]
+	~dev-qt/qtopengl-${PV}[gles2-only=]
 	~dev-qt/qtprintsupport-${PV}
 	~dev-qt/qtsql-${PV}
 	~dev-qt/qttest-${PV}
@@ -34,7 +34,7 @@ QT5_TARGET_SUBDIRS=(
 
 src_configure() {
 	local myconf=(
-		-opengl $(usex gles2 es2 desktop)
+		-opengl $(usex gles2-only es2 desktop)
 		$(qt_use vulkan)
 	)
 	qt5-build_src_configure

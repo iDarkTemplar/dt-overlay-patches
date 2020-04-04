@@ -9,15 +9,15 @@ inherit qt5-build
 DESCRIPTION="Printing support library for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 ~arm ~arm64 ~hppa ppc ppc64 ~sparc x86"
+	KEYWORDS="amd64 ~arm arm64 ~hppa ppc ppc64 ~sparc x86"
 fi
 
-IUSE="cups doc examples gles2"
+IUSE="cups doc examples gles2-only"
 
 RDEPEND="
 	~dev-qt/qtcore-${PV}
-	~dev-qt/qtgui-${PV}[gles2=]
-	~dev-qt/qtwidgets-${PV}[gles2=]
+	~dev-qt/qtgui-${PV}[gles2-only=]
+	~dev-qt/qtwidgets-${PV}[gles2-only=]
 	cups? ( >=net-print/cups-1.4 )
 "
 DEPEND="${RDEPEND}
@@ -26,10 +26,10 @@ DEPEND="${RDEPEND}
 
 PDEPEND="
 	doc? (
-		~dev-qt/qtbase-doc-${PV}
+		~dev-qt/qtbase-doc-${PV}[gles2-only=]
 	)
 	examples? (
-		~dev-qt/qtbase-examples-${PV}
+		~dev-qt/qtbase-examples-${PV}[gles2-only=]
 	)
 "
 
@@ -45,7 +45,7 @@ QT5_GENTOO_CONFIG=(
 src_configure() {
 	local myconf=(
 		$(qt_use cups)
-		-opengl $(usex gles2 es2 desktop)
+		-opengl $(usex gles2-only es2 desktop)
 	)
 	qt5-build_src_configure
 }

@@ -29,7 +29,7 @@ RDEPEND="${DEPEND}
 
 PDEPEND="
 	doc? (
-		~dev-qt/qtbase-doc-${PV}
+		~dev-qt/qtbase-doc-${PV}[ssl=]
 	)
 	examples? (
 		~dev-qt/qtbase-examples-${PV}

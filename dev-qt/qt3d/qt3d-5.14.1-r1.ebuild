@@ -8,11 +8,11 @@ inherit qt5-build
 DESCRIPTION="3D rendering module for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 ~arm64 x86"
+	KEYWORDS="amd64 arm64 x86"
 fi
 
 # TODO: tools
-IUSE="examples gamepad gles2 qml"
+IUSE="examples gamepad gles2-only qml"
 
 REQUIRED_USE="examples? ( qml )"
 
@@ -25,7 +25,7 @@ DEPEND="
 	doc? ( ~dev-qt/qdoc-${PV}[qml?] )
 	examples? ( !dev-qt/qt3d-examples )
 	gamepad? ( ~dev-qt/qtgamepad-${PV} )
-	qml? ( ~dev-qt/qtdeclarative-${PV}[gles2=] )
+	qml? ( ~dev-qt/qtdeclarative-${PV}[gles2-only=] )
 "
 RDEPEND="${DEPEND}"
 
