@@ -1,0 +1,51 @@
+From de45f9ebb62fa0c9119d3fb8ce565c9dff5e476a Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Tue, 7 Apr 2020 19:01:08 +0300
+Subject: [PATCH 3/3] Workaround for logout confirmation message box issue
+
+---
+ src/dolphinmainwindow.cpp | 7 +++++++
+ src/dolphinmainwindow.h   | 2 ++
+ 2 files changed, 9 insertions(+)
+
+diff --git a/src/dolphinmainwindow.cpp b/src/dolphinmainwindow.cpp
+index 70f7856a4..0de5ca27f 100644
+--- a/src/dolphinmainwindow.cpp
++++ b/src/dolphinmainwindow.cpp
+@@ -469,6 +469,12 @@ void DolphinMainWindow::showEvent(QShowEvent* event)
+ 
+ void DolphinMainWindow::closeEvent(QCloseEvent* event)
+ {
++    // Workaround for Qt >= 5.14.0: if close event was already processed and accepted, skip processing it again
++    if (m_closeEventAccepted) {
++        KXmlGuiWindow::closeEvent(event);
++        return;
++    }
++
+     // Find out if Dolphin is closed directly by the user or
+     // by the session manager because the session is closed
+     bool closedByUser = true;
+@@ -574,6 +580,7 @@ void DolphinMainWindow::closeEvent(QCloseEvent* event)
+ 
+     GeneralSettings::setVersion(CurrentDolphinVersion);
+     GeneralSettings::self()->save();
++    m_closeEventAccepted = true;
+ 
+     KXmlGuiWindow::closeEvent(event);
+ }
+diff --git a/src/dolphinmainwindow.h b/src/dolphinmainwindow.h
+index 3d86340d6..6be1ac38c 100644
+--- a/src/dolphinmainwindow.h
++++ b/src/dolphinmainwindow.h
+@@ -633,6 +633,8 @@ private:
+ 
+     KToolBarPopupAction* m_backAction;
+     KToolBarPopupAction* m_forwardAction;
++
++    bool m_closeEventAccepted = false;
+ };
+ 
+ inline DolphinViewContainer* DolphinMainWindow::activeViewContainer() const
+-- 
+2.24.1
+
