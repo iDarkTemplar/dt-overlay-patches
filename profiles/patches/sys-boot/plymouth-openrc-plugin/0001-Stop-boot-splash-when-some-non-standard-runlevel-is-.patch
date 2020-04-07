@@ -1,0 +1,37 @@
+From 13b833ee03b1ffef9afe0679b231ebcf6cf00d80 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Tue, 7 Apr 2020 20:59:41 +0300
+Subject: [PATCH] Stop boot splash when some non-standard runlevel is hit
+
+This works better if booting runlevel isn't marked as default,
+but may break with stacked runlevels.
+---
+ plymouth.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/plymouth.c b/plymouth.c
+index e9c925b..f582900 100644
+--- a/plymouth.c
++++ b/plymouth.c
+@@ -169,7 +169,6 @@ int rc_plugin_hook(RC_HOOK hook, const char *name)
+     int rv = 0;
+     char* runlevel = rc_runlevel_get();
+     const char* bootlevel = getenv("RC_BOOTLEVEL");
+-    const char* defaultlevel = getenv("RC_DEFAULTLEVEL");
+ 
+ #ifdef DEBUG
+     einfo("hook=%d name=%s runlvl=%s plyd=%d", hook, name, runlevel,
+@@ -231,7 +230,9 @@ int rc_plugin_hook(RC_HOOK hook, const char *name)
+ 
+     case RC_HOOK_RUNLEVEL_START_OUT:
+         /* Stop the Plymouth daemon right after default runlevel is started. */
+-        if(strcmp(name, defaultlevel) == 0) {
++        if((strcmp(name, RC_LEVEL_SYSINIT) != 0)
++                && (strcmp(name, bootlevel) != 0)
++                && (strcmp(name, RC_LEVEL_SHUTDOWN) != 0)) {
+             DBG("ply_quit(PLY_MODE_BOOT)");
+             if(!ply_quit(PLY_MODE_BOOT))
+                 rv = 1;
+-- 
+2.24.1
+
