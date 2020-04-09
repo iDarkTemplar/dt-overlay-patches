@@ -1,5 +1,15 @@
+From e232f3dc7b834e78abba4279bc02d7b90bfb2eed Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Thu, 9 Apr 2020 00:35:11 +0300
+Subject: [PATCH] Implement exec action for sysvinit
+
+---
+ src/init.c | 141 +++++++++++++++++++++++++++++++++++------------------
+ src/init.h |   1 +
+ 2 files changed, 94 insertions(+), 48 deletions(-)
+
 diff --git a/src/init.c b/src/init.c
-index 2d59955..0161aff 100644
+index 0a56111..56036cd 100644
 --- a/src/init.c
 +++ b/src/init.c
 @@ -173,6 +173,7 @@ struct actions {
@@ -10,7 +20,48 @@ index 2d59955..0161aff 100644
    { NULL,	   0		},
  };
  
-@@ -1011,7 +1012,7 @@ void init_freeenv(char **e)
+@@ -1004,6 +1005,40 @@ void init_freeenv(char **e)
+ }
+ 
+ 
++static
++void reopen_pipe_fd(void)
++{
++  struct stat st;
++
++  /*
++   *	Now finally try to open /run/initctl if pipe_fd is -1
++   *    if it is -2, then we leave it closed
++   */
++  if (pipe_fd == -1) {
++	if ((pipe_fd = open(INIT_FIFO, O_RDWR|O_NONBLOCK)) >= 0) {
++		fstat(pipe_fd, &st);
++		if (!S_ISFIFO(st.st_mode)) {
++			initlog(L_VB, "%s is not a fifo", INIT_FIFO);
++			close(pipe_fd);
++			pipe_fd = -1;
++		}
++	}
++	if (pipe_fd >= 0) {
++		/*
++		 *	Don't use fd's 0, 1 or 2.
++		 */
++		(void) dup2(pipe_fd, PIPE_FD);
++		close(pipe_fd);
++		pipe_fd = PIPE_FD;
++
++		/*
++		 *	Return to caller - we'll be back later.
++		 */
++	}
++  }
++}
++
++
+ /*
+  *	Fork and execute.
+  *
+@@ -1011,7 +1046,7 @@ void init_freeenv(char **e)
   *
   */
  static
@@ -19,7 +70,7 @@ index 2d59955..0161aff 100644
  {
    char *args[16];		/* Argv array */
    char buf[136];		/* Line buffer */
-@@ -1020,7 +1021,7 @@ pid_t spawn(CHILD *ch, int *res)
+@@ -1020,9 +1055,10 @@ pid_t spawn(CHILD *ch, int *res)
    time_t t;			/* System time */
    int oldAlarm;			/* Previous alarm value */
    char *proc = ch->process;	/* Command line */
@@ -27,8 +78,11 @@ index 2d59955..0161aff 100644
 +  pid_t pid = -1, pgrp;		/* child, console process group. */
    sigset_t nmask, omask;	/* For blocking SIGCHLD */
    struct sigaction sa;
++  int pipefd_closed = 0;
  
-@@ -1120,29 +1121,34 @@ pid_t spawn(CHILD *ch, int *res)
+   *res = -1;
+   buf[sizeof(buf) - 1] = 0;
+@@ -1120,29 +1156,37 @@ pid_t spawn(CHILD *ch, int *res)
  	/*
  	 *	Block sigchild while forking.
  	 */
@@ -43,27 +97,25 @@ index 2d59955..0161aff 100644
  
 -	if ((pid = fork()) == 0) {
 +	if ((!do_fork) || ((pid = fork()) == 0)) {
- 
--		close(0);
--		close(1);
--		close(2);
--		if (pipe_fd >= 0)
--                {
--                    close(pipe_fd);
--                    pipe_fd = -1;
--                }
++
 +		if (do_fork) {
 +			close(0);
 +			close(1);
 +			close(2);
++		}
+ 
+-		close(0);
+-		close(1);
+-		close(2);
+ 		if (pipe_fd >= 0)
+                 {
+                     close(pipe_fd);
+                     pipe_fd = -1;
++                    pipefd_closed = 1;
+                 }
  
 -  		sigprocmask(SIG_SETMASK, &omask, NULL);
-+			if (pipe_fd >= 0)
-+			{
-+				close(pipe_fd);
-+				pipe_fd = -1;
-+			}
-+
++		if (do_fork) {
 +			sigprocmask(SIG_SETMASK, &omask, NULL);
 +		}
  
@@ -77,7 +129,7 @@ index 2d59955..0161aff 100644
  			int ftty;	/* Handler for tty controlling */
  			/*
  			 *	We fork once extra. This is so that we can
-@@ -1224,7 +1230,9 @@ pid_t spawn(CHILD *ch, int *res)
+@@ -1224,7 +1268,9 @@ pid_t spawn(CHILD *ch, int *res)
  
    		} else { /* parent */
  			int fd;
@@ -88,7 +140,7 @@ index 2d59955..0161aff 100644
  			if ((fd = console_open(O_RDWR|O_NOCTTY)) < 0) {
  				initlog(L_VB, "open(%s): %s", console_dev,
  					strerror(errno));
-@@ -1257,8 +1265,10 @@ pid_t spawn(CHILD *ch, int *res)
+@@ -1257,8 +1303,10 @@ pid_t spawn(CHILD *ch, int *res)
  		 * This is for compatibility with *very*
  		 * old getties - probably it can be taken out.
  		 */
@@ -101,7 +153,7 @@ index 2d59955..0161aff 100644
  
    		/* Reset all the signals, set up environment */
    		for(f = 1; f < NSIG; f++) SETSIG(sa, f, SIG_DFL, SA_RESTART);
-@@ -1280,16 +1290,31 @@ pid_t spawn(CHILD *ch, int *res)
+@@ -1280,16 +1328,35 @@ pid_t spawn(CHILD *ch, int *res)
  		}
    		initlog(L_VB, "cannot execute \"%s\"", args[1]);
  
@@ -121,25 +173,29 @@ index 2d59955..0161aff 100644
 +			 */
 +
 +			initlog(L_VB, "cannot execute \"%s\", continuing to next action", args[1]);
++
++			if (pipefd_closed)
++			{
++				reopen_pipe_fd();
++			}
 +		 }
    	}
-+
  	*res = pid;
 -  	sigprocmask(SIG_SETMASK, &omask, NULL);
  
 -	INITDBG(L_VB, "Started id %s (pid %d)", ch->id, pid);
 +	if (do_fork) {
 +		sigprocmask(SIG_SETMASK, &omask, NULL);
- 
--	if (pid == -1) {
++
 +		INITDBG(L_VB, "Started id %s (pid %d)", ch->id, pid);
 +	}
-+
+ 
+-	if (pid == -1) {
 +	if (do_fork && (pid == -1)) {
  		initlog(L_VB, "cannot fork, retry..");
  		do_sleep(5);
  		continue;
-@@ -1329,8 +1354,11 @@ void startup(CHILD *ch)
+@@ -1329,8 +1396,11 @@ void startup(CHILD *ch)
  		case ONDEMAND:
  		case RESPAWN:
    			ch->flags |= RUNNING;
@@ -152,7 +208,41 @@ index 2d59955..0161aff 100644
  	}
  }
  
-@@ -2811,7 +2839,7 @@ void init_main(void)
+@@ -2386,32 +2456,7 @@ void check_init_fifo(void)
+ 	}
+   }
+ 
+-  /*
+-   *	Now finally try to open /run/initctl if pipe_fd is -1
+-   *    if it is -2, then we leave it closed
+-   */
+-  if (pipe_fd == -1) {
+-	if ((pipe_fd = open(INIT_FIFO, O_RDWR|O_NONBLOCK)) >= 0) {
+-		fstat(pipe_fd, &st);
+-		if (!S_ISFIFO(st.st_mode)) {
+-			initlog(L_VB, "%s is not a fifo", INIT_FIFO);
+-			close(pipe_fd);
+-			pipe_fd = -1;
+-		}
+-	}
+-	if (pipe_fd >= 0) {
+-		/*
+-		 *	Don't use fd's 0, 1 or 2.
+-		 */
+-		(void) dup2(pipe_fd, PIPE_FD);
+-		close(pipe_fd);
+-		pipe_fd = PIPE_FD;
+-
+-		/*
+-		 *	Return to caller - we'll be back later.
+-		 */
+-	}
+-  }
++	reopen_pipe_fd();
+ 
+   /* Wait for data to appear, _if_ the pipe was opened. */
+   if (pipe_fd >= 0) while(!quit) {
+@@ -2811,7 +2856,7 @@ void init_main(void)
  	if (emerg_shell) {
  		pid_t rc;
  		SETSIG(sa, SIGCHLD, SIG_DFL, SA_RESTART);
@@ -162,10 +252,10 @@ index 2d59955..0161aff 100644
  				if (rc < 0 && errno == ECHILD)
  					break;
 diff --git a/src/init.h b/src/init.h
-index 9763140..17a3f0d 100644
+index 7a35706..0510d43 100644
 --- a/src/init.h
 +++ b/src/init.h
-@@ -78,6 +78,7 @@ void wall(const char *text, int remote);
+@@ -86,6 +86,7 @@ void wall(const char *text, int remote);
  #define SYSINIT		       13
  #define POWERFAILNOW           14
  #define KBREQUEST               15
@@ -173,3 +263,6 @@ index 9763140..17a3f0d 100644
  
  /* Information about a process in the in-core inittab */
  typedef struct _child_ {
+-- 
+2.24.1
+
