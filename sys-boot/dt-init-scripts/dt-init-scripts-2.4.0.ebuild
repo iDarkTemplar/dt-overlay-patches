@@ -12,7 +12,8 @@ SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar
 LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="amd64 x86"
-IUSE="fbsplash luks pm-utils rngd swsusp"
+IUSE="fbsplash luks openrc plymouth pm-utils rngd swsusp"
+REQUIRED_USE="openrc? ( plymouth )"
 
 COMMONDEPEND="
 	fbsplash? (
@@ -41,6 +42,14 @@ RDEPEND="$COMMONDEPEND
 		app-crypt/pinentry[ncurses]
 		sys-apps/util-linux
 		app-arch/sharutils
+	)
+
+	plymouth? (
+		sys-boot/plymouth[-udev]
+
+		openrc? (
+			sys-boot/plymouth-openrc-plugin
+		)
 	)
 
 	pm-utils? (
@@ -119,6 +128,14 @@ src_install() {
 
 		insinto /usr/share/dt-init-scripts/hooks
 		doins "${S}/hooks/luks"
+	fi
+
+	if use plymouth ; then
+		exeinto /usr/libexec/dt-init-scripts/modules
+		doexe "${S}/modules/plymouth"
+
+		insinto /usr/share/dt-init-scripts/hooks
+		doins "${S}/hooks/plymouth"
 	fi
 
 	if use pm-utils || use swsusp ; then
