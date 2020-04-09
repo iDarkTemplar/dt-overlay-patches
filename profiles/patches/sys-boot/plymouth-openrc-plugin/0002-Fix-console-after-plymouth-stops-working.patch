@@ -1,0 +1,57 @@
+From a9e357a8c0732fe3f71f4e8aab40782ad892c785 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Thu, 9 Apr 2020 21:18:52 +0300
+Subject: [PATCH 2/2] Fix console after plymouth stops working
+
+---
+ plymouth.c | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
+
+diff --git a/plymouth.c b/plymouth.c
+index f582900..45a4ddc 100644
+--- a/plymouth.c
++++ b/plymouth.c
+@@ -95,6 +95,16 @@ bool ply_ping()
+ }
+ 
+ 
++bool ply_wait()
++{
++    return (system("/bin/plymouth --wait") == 0);
++}
++
++bool restart_consolefont()
++{
++    return (system("/etc/init.d/consolefont restart") == 0);
++}
++
+ bool ply_quit(int mode)
+ {
+     int rv = 0;
+@@ -234,8 +244,22 @@ int rc_plugin_hook(RC_HOOK hook, const char *name)
+                 && (strcmp(name, bootlevel) != 0)
+                 && (strcmp(name, RC_LEVEL_SHUTDOWN) != 0)) {
+             DBG("ply_quit(PLY_MODE_BOOT)");
+-            if(!ply_quit(PLY_MODE_BOOT))
++            if(!ply_quit(PLY_MODE_BOOT)) {
++                rv = 1;
++                break;
++            }
++
++            if(!ply_wait()) {
+                 rv = 1;
++                break;
++            }
++
++            if (rc_service_exists("consolefont") && (rc_service_state("consolefont") == RC_SERVICE_STARTED)) {
++                if (!restart_consolefont()) {
++                    rv = 1;
++                    break;
++                }
++            }
+         }
+         break;
+ 
+-- 
+2.24.1
+
