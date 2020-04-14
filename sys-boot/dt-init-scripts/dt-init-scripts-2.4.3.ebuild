@@ -12,7 +12,7 @@ SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar
 LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="amd64 x86"
-IUSE="fbsplash luks openrc plymouth pm-utils rngd swsusp"
+IUSE="fbsplash luks openrc plymouth rngd swsusp"
 REQUIRED_USE="openrc? ( plymouth )"
 
 COMMONDEPEND="
@@ -52,10 +52,6 @@ RDEPEND="$COMMONDEPEND
 		)
 	)
 
-	pm-utils? (
-		sys-power/pm-utils
-	)
-
 	rngd? (
 		sys-apps/rng-tools
 	)
@@ -83,6 +79,7 @@ src_install() {
 	dodir /usr/libexec/dt-init-scripts/modules
 	exeinto /usr/libexec/dt-init-scripts/modules
 	doexe "${S}/modules/base"
+	doexe "${S}/modules/suspend"
 
 	dodir /usr/share/dt-init-scripts/helpers
 	insinto /usr/share/dt-init-scripts/helpers
@@ -98,6 +95,7 @@ src_install() {
 	dodir /usr/share/dt-init-scripts/hooks
 	insinto /usr/share/dt-init-scripts/hooks
 	doins "${S}/hooks/base"
+	doins "${S}/hooks/suspend"
 
 	dosbin "${S}/generate_hooks_initramfs"
 	dosbin "${S}/shutdown-newroot-prepare"
@@ -136,14 +134,6 @@ src_install() {
 
 		insinto /usr/share/dt-init-scripts/hooks
 		doins "${S}/hooks/plymouth"
-	fi
-
-	if use pm-utils || use swsusp ; then
-		exeinto /usr/libexec/dt-init-scripts/modules
-		doexe "${S}/modules/suspend"
-
-		insinto /usr/share/dt-init-scripts/hooks
-		doins "${S}/hooks/suspend"
 	fi
 
 	if use rngd ; then
