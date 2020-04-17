@@ -1,40 +1,31 @@
-From 594227ee3c11bc1821161248f88d31af71d09dbe Mon Sep 17 00:00:00 2001
+From dae0d14ee4cb66c93c280ea9a7c28cbd367a169a Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
-Date: Sun, 12 Apr 2020 16:24:36 +0300
+Date: Mon, 13 Apr 2020 00:33:55 +0300
 Subject: [PATCH] Implement qthotkey plugin
 
 Global hotkeys plugin for qt5 interface
 based on hotkey plugin for gtk interface.
 ---
- acinclude.m4           |   2 +-
- configure.ac           |  10 +-
- src/qthotkey/Makefile  |  19 ++
- src/qthotkey/gui.cc    | 329 +++++++++++++++++++
- src/qthotkey/gui.h     |  60 ++++
- src/qthotkey/plugin.cc | 696 +++++++++++++++++++++++++++++++++++++++++
- src/qthotkey/plugin.h  |  50 +++
- 7 files changed, 1164 insertions(+), 2 deletions(-)
+ configure.ac             |  10 +-
+ extra.mk.in              |   2 +
+ meson.build              |   2 +-
+ src/meson.build          |   4 +
+ src/qthotkey/Makefile    |  13 +
+ src/qthotkey/gui.cc      | 333 +++++++++++++++++++
+ src/qthotkey/gui.h       |  67 ++++
+ src/qthotkey/meson.build |  12 +
+ src/qthotkey/plugin.cc   | 700 +++++++++++++++++++++++++++++++++++++++
+ src/qthotkey/plugin.h    |  53 +++
+ 10 files changed, 1194 insertions(+), 2 deletions(-)
  create mode 100644 src/qthotkey/Makefile
  create mode 100644 src/qthotkey/gui.cc
  create mode 100644 src/qthotkey/gui.h
+ create mode 100644 src/qthotkey/meson.build
  create mode 100644 src/qthotkey/plugin.cc
  create mode 100644 src/qthotkey/plugin.h
 
-diff --git a/acinclude.m4 b/acinclude.m4
-index 5e25b37b9..b7c71487f 100644
---- a/acinclude.m4
-+++ b/acinclude.m4
-@@ -218,7 +218,7 @@ AC_ARG_ENABLE(qt,
- if test $USE_QT = yes ; then
-     PKG_CHECK_MODULES([QTCORE], [Qt5Core >= 5.2])
-     PKG_CHECK_VAR([QTBINPATH], [Qt5Core >= 5.2], [host_bins])
--    PKG_CHECK_MODULES([QT], [Qt5Core Qt5Gui Qt5Widgets >= 5.2])
-+    PKG_CHECK_MODULES([QT], [Qt5Core Qt5Gui Qt5Widgets Qt5X11Extras >= 5.2])
-     AC_DEFINE([USE_QT], [1], [Define if Qt support enabled])
- 
-     # needed if Qt was built with -reduce-relocations
 diff --git a/configure.ac b/configure.ac
-index c7f8c85c9..5337df031 100644
+index 870f74dd9..88db88d93 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -103,7 +103,7 @@ check_allowed () {
@@ -68,15 +59,58 @@ index c7f8c85c9..5337df031 100644
      echo
  fi
  
+diff --git a/extra.mk.in b/extra.mk.in
+index 25baa8299..10c173034 100644
+--- a/extra.mk.in
++++ b/extra.mk.in
+@@ -83,6 +83,8 @@ QTOPENGL_CFLAGS ?= @QTOPENGL_CFLAGS@
+ QTOPENGL_LIBS ?= @QTOPENGL_LIBS@
+ QTNETWORK_CFLAGS ?= @QTNETWORK_CFLAGS@
+ QTNETWORK_LIBS ?= @QTNETWORK_LIBS@
++QTX11EXTRAS_CFLAGS ?= @QTX11EXTRAS_CFLAGS@
++QTX11EXTRAS_LIBS ?= @QTX11EXTRAS_LIBS@
+ VORBIS_CFLAGS ?= @VORBIS_CFLAGS@
+ VORBIS_LIBS ?= @VORBIS_LIBS@
+ WAVPACK_CFLAGS ?= @WAVPACK_CFLAGS@
+diff --git a/meson.build b/meson.build
+index acc70748b..55fd5e737 100644
+--- a/meson.build
++++ b/meson.build
+@@ -42,9 +42,9 @@ xml_dep = dependency('libxml-2.0')
+ if get_option('qt')
+   qt_req = '>= 5.2'
+   qt_dep = dependency('qt5', version: qt_req, required: true, modules: ['Core', 'Widgets', 'Gui'])
++  qtx11extras_dep = dependency('qt5', version: qt_req, modules: ['X11Extras'])
+ endif
+ 
+-
+ cdaudio_enabled = false
+ if get_option('cdaudio')
+   libcdio_dep = dependency('libcdio', version: '>= 0.70', required: false)
+diff --git a/src/meson.build b/src/meson.build
+index b1c10f77f..c0be32639 100644
+--- a/src/meson.build
++++ b/src/meson.build
+@@ -102,6 +102,10 @@ if get_option('qt')
+   if get_option('moonstone')
+     subdir('moonstone')
+   endif
++
++  if qtx11extras_dep.found()
++    subdir('qthotkey')
++  endif
+ endif
+ 
+ 
 diff --git a/src/qthotkey/Makefile b/src/qthotkey/Makefile
 new file mode 100644
-index 000000000..70fb02a35
+index 000000000..c933e8732
 --- /dev/null
 +++ b/src/qthotkey/Makefile
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,13 @@
 +PLUGIN = qthotkey${PLUGIN_SUFFIX}
 +
-+SRCS = plugin.cc gui.cc moc_plugin.cc moc_gui.cc
++SRCS = plugin.cc gui.cc
 +
 +include ../../buildsys.mk
 +include ../../extra.mk
@@ -85,20 +119,14 @@ index 000000000..70fb02a35
 +
 +LD = ${CXX}
 +CFLAGS += ${PLUGIN_CFLAGS}
-+CPPFLAGS += ${PLUGIN_CPPFLAGS} ${QT_CFLAGS} -I../.. -I..
-+LIBS += ${QT_LIBS} -lX11
-+
-+moc_%.cc: %.h
-+	moc $< -o $@
-+
-+rc_%.cc: %.qrc
-+	rcc $< -o $@
++CPPFLAGS += ${PLUGIN_CPPFLAGS} ${QT_CFLAGS} ${QTX11EXTRAS_CFLAGS}  -I../.. -I..
++LIBS += ${QT_LIBS} ${QTX11EXTRAS_LIBS} -lX11 -laudqt
 diff --git a/src/qthotkey/gui.cc b/src/qthotkey/gui.cc
 new file mode 100644
-index 000000000..4d6a0ee5e
+index 000000000..a981a63c1
 --- /dev/null
 +++ b/src/qthotkey/gui.cc
-@@ -0,0 +1,329 @@
+@@ -0,0 +1,333 @@
 +/*
 + *  This file is part of audacious-hotkey plugin for audacious
 + *
@@ -138,9 +166,6 @@ index 000000000..4d6a0ee5e
 +#include "plugin.h"
 +#include "gui.h"
 +
-+#include <libaudcore/i18n.h>
-+#include <libaudcore/preferences.h>
-+
 +#include <QtCore/QStringList>
 +#include <QtGui/QKeyEvent>
 +#include <QtGui/QMouseEvent>
@@ -148,37 +173,42 @@ index 000000000..4d6a0ee5e
 +#include <QtWidgets/QStyle>
 +#include <QtX11Extras/QX11Info>
 +
++#include <libaudcore/i18n.h>
++#include <libaudcore/preferences.h>
++#include <libaudcore/templates.h>
++
++#include <libaudqt/libaudqt.h>
++
 +#include <X11/XKBlib.h>
 +
-+static void destroy_callback();
-+static void ok_callback();
++namespace GlobalHotkeys {
 +
-+static QPrefWidget *last_instance = nullptr;
++static PrefWidget *last_instance = nullptr;
 +
-+static const char *event_desc[EVENT_MAX] = {
-+	[EVENT_PREV_TRACK] = N_("Previous track"),
-+	[EVENT_PLAY] = N_("Play"),
-+	[EVENT_PAUSE] = N_("Pause/Resume"),
-+	[EVENT_STOP] = N_("Stop"),
-+	[EVENT_NEXT_TRACK] = N_("Next track"),
-+	[EVENT_FORWARD] = N_("Step forward"),
-+	[EVENT_BACKWARD] = N_("Step backward"),
-+	[EVENT_MUTE] = N_("Mute"),
-+	[EVENT_VOL_UP] = N_("Volume up"),
-+	[EVENT_VOL_DOWN] = N_("Volume down"),
-+	[EVENT_JUMP_TO_FILE] = N_("Jump to file"),
-+	[EVENT_TOGGLE_WIN] = N_("Toggle player window(s)"),
-+	[EVENT_SHOW_AOSD] = N_("Show On-Screen-Display"),
-+	[EVENT_TOGGLE_REPEAT] = N_("Toggle repeat"),
-+	[EVENT_TOGGLE_SHUFFLE] = N_("Toggle shuffle"),
-+	[EVENT_TOGGLE_STOP] = N_("Toggle stop after current"),
-+	[EVENT_RAISE] = N_("Raise player window(s)")
++static const char *event_desc[static_cast<int>(Event::Max)] = {
++	[static_cast<int>(Event::PrevTrack)] = N_("Previous track"),
++	[static_cast<int>(Event::Play)] = N_("Play"),
++	[static_cast<int>(Event::Pause)] = N_("Pause/Resume"),
++	[static_cast<int>(Event::Stop)] = N_("Stop"),
++	[static_cast<int>(Event::NextTrack)] = N_("Next track"),
++	[static_cast<int>(Event::Forward)] = N_("Step forward"),
++	[static_cast<int>(Event::Backward)] = N_("Step backward"),
++	[static_cast<int>(Event::Mute)] = N_("Mute"),
++	[static_cast<int>(Event::VolumeUp)] = N_("Volume up"),
++	[static_cast<int>(Event::VolumeDown)] = N_("Volume down"),
++	[static_cast<int>(Event::JumpToFile)] = N_("Jump to file"),
++	[static_cast<int>(Event::ToggleWindow)] = N_("Toggle player window(s)"),
++	[static_cast<int>(Event::ShowAOSD)] = N_("Show On-Screen-Display"),
++	[static_cast<int>(Event::ToggleRepeat)] = N_("Toggle repeat"),
++	[static_cast<int>(Event::ToggleShuffle)] = N_("Toggle shuffle"),
++	[static_cast<int>(Event::ToggleStop)] = N_("Toggle stop after current"),
++	[static_cast<int>(Event::Raise)] = N_("Raise player window(s)")
 +};
 +
-+class QLineKeyEdit: public QLineEdit
++class LineKeyEdit: public QLineEdit
 +{
 +public:
-+	explicit QLineKeyEdit(QWidget *parent, HotkeyConfiguration &hotkey)
++	explicit LineKeyEdit(QWidget *parent, HotkeyConfiguration &hotkey)
 +		: QLineEdit(parent),
 +		m_hotkey(hotkey)
 +	{
@@ -191,7 +221,7 @@ index 000000000..4d6a0ee5e
 +
 +		if ((key == 0) && (mask == 0))
 +		{
-+			text = QString::fromLocal8Bit(_("(none)"));
++			text = audqt::translate_str("(none)");
 +		}
 +		else
 +		{
@@ -211,7 +241,7 @@ index 000000000..4d6a0ee5e
 +				text = QString::fromLocal8Bit(XKeysymToString(keysym));
 +			}
 +
-+			for (int j = 0; j < sizeof(modifiers)/sizeof(modifiers[0]); ++j)
++			for (int j = 0; j < aud::n_elems(modifiers); ++j)
 +			{
 +				if (mask & modifiers[j])
 +				{
@@ -250,17 +280,17 @@ index 000000000..4d6a0ee5e
 +	delete button;
 +}
 +
-+QPrefWidget::QPrefWidget(QWidget *parent)
++PrefWidget::PrefWidget(QWidget *parent)
 +	: QWidget(parent),
 +	main_widget_layout(new QVBoxLayout(this)),
 +	information_pixmap(new QLabel(this)),
-+	information_label(new QLabel(QString::fromLocal8Bit(_("Press a key combination inside a text field.")), this)),
++	information_label(new QLabel(audqt::translate_str("Press a key combination inside a text field."), this)),
 +	information_layout(new QHBoxLayout()),
-+	group_box(new QGroupBox(QString::fromLocal8Bit(_("Hotkeys:")), this)),
++	group_box(new QGroupBox(audqt::translate_str("Hotkeys:"), this)),
 +	group_box_layout(new QGridLayout(group_box)),
-+	action_label(new QLabel(QString::fromLocal8Bit(_("<b>Action:</b>")), group_box)),
-+	key_binding_label(new QLabel(QString::fromLocal8Bit(_("<b>Key Binding:</b>")), group_box)),
-+	add_button(new QPushButton(QIcon::fromTheme(QLatin1String("list-add")), QString::fromLocal8Bit(_("_Add")), this)),
++	action_label(new QLabel(audqt::translate_str("<b>Action:</b>"), group_box)),
++	key_binding_label(new QLabel(audqt::translate_str("<b>Key Binding:</b>"), group_box)),
++	add_button(new QPushButton(audqt::get_icon("list-add"), audqt::translate_str("_Add"), this)),
 +	add_button_layout(new QHBoxLayout)
 +{
 +	int icon_size = QApplication::style()->pixelMetric(QStyle::PM_MessageBoxIconSize);
@@ -299,7 +329,7 @@ index 000000000..4d6a0ee5e
 +	last_instance = this;
 +}
 +
-+QPrefWidget::~QPrefWidget()
++PrefWidget::~PrefWidget()
 +{
 +	delete information_layout;
 +
@@ -316,7 +346,7 @@ index 000000000..4d6a0ee5e
 +	}
 +}
 +
-+void QPrefWidget::add_event_control(const HotkeyConfiguration *hotkey)
++void PrefWidget::add_event_control(const HotkeyConfiguration *hotkey)
 +{
 +	KeyControls *control = new KeyControls;
 +
@@ -335,22 +365,22 @@ index 000000000..4d6a0ee5e
 +	{
 +		control->hotkey.key = 0;
 +		control->hotkey.mask = 0;
-+		control->hotkey.event = static_cast<EVENT>(0);
++		control->hotkey.event = static_cast<Event>(0);
 +	}
 +
 +	control->combobox = new QComboBox(group_box);
 +
-+	for (int i = 0; i < EVENT_MAX; ++i)
++	for (int i = 0; i < static_cast<int>(Event::Max); ++i)
 +	{
-+		control->combobox->addItem(QString::fromLocal8Bit(_(event_desc[i])));
++		control->combobox->addItem(audqt::translate_str(event_desc[i]));
 +	}
 +
 +	if (hotkey != nullptr)
 +	{
-+		control->combobox->setCurrentIndex(hotkey->event);
++		control->combobox->setCurrentIndex(static_cast<int>(hotkey->event));
 +	}
 +
-+	control->keytext = new QLineKeyEdit(group_box, control->hotkey);
++	control->keytext = new LineKeyEdit(group_box, control->hotkey);
 +	control->keytext->setFocus(Qt::OtherFocusReason);
 +
 +	if (hotkey != nullptr)
@@ -359,7 +389,7 @@ index 000000000..4d6a0ee5e
 +	}
 +
 +	control->button = new QToolButton(group_box);
-+	control->button->setIcon(QIcon::fromTheme(QLatin1String("edit-delete")));
++	control->button->setIcon(audqt::get_icon("edit-delete"));
 +
 +	int row = group_box_layout->rowCount();
 +
@@ -376,7 +406,7 @@ index 000000000..4d6a0ee5e
 +	});
 +}
 +
-+QList<HotkeyConfiguration> QPrefWidget::getConfig() const
++QList<HotkeyConfiguration> PrefWidget::getConfig() const
 +{
 +	QList<HotkeyConfiguration> result;
 +
@@ -386,7 +416,7 @@ index 000000000..4d6a0ee5e
 +
 +		hotkey.key = control->hotkey.key;
 +		hotkey.mask = control->hotkey.mask;
-+		hotkey.event = static_cast<EVENT>(control->combobox->currentIndex());
++		hotkey.event = static_cast<Event>(control->combobox->currentIndex());
 +
 +		result.push_back(hotkey);
 +	}
@@ -394,21 +424,16 @@ index 000000000..4d6a0ee5e
 +	return result;
 +}
 +
-+void *make_config_widget()
++void* PrefWidget::make_config_widget()
 +{
 +	ungrab_keys();
 +
-+	QWidget *main_widget = new QPrefWidget;
++	QWidget *main_widget = new PrefWidget;
 +
 +	return main_widget;
 +}
 +
-+void destroy_callback()
-+{
-+	grab_keys();
-+}
-+
-+void ok_callback()
++void PrefWidget::ok_callback()
 +{
 +	if (last_instance != nullptr)
 +	{
@@ -418,22 +443,29 @@ index 000000000..4d6a0ee5e
 +	}
 +}
 +
++void PrefWidget::destroy_callback()
++{
++	grab_keys();
++}
++
 +static const PreferencesWidget hotkey_widgets[] = {
-+	WidgetCustomQt(make_config_widget)
++	WidgetCustomQt(PrefWidget::make_config_widget)
 +};
 +
 +const PluginPreferences hotkey_prefs = {
 +	{hotkey_widgets},
 +	nullptr,  // init
-+	ok_callback,
-+	destroy_callback
++	PrefWidget::ok_callback,
++	PrefWidget::destroy_callback
 +};
++
++} /* namespace GlobalHotkeys */
 diff --git a/src/qthotkey/gui.h b/src/qthotkey/gui.h
 new file mode 100644
-index 000000000..e215c308b
+index 000000000..2897c21c1
 --- /dev/null
 +++ b/src/qthotkey/gui.h
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,67 @@
 +#ifndef _GUI_H_INCLUDED_
 +#define _GUI_H_INCLUDED_
 +
@@ -451,14 +483,17 @@ index 000000000..e215c308b
 +
 +#include "plugin.h"
 +
-+class QLineKeyEdit;
 +struct PluginPreferences;
++
++namespace GlobalHotkeys {
++
++class LineKeyEdit;
 +
 +extern const PluginPreferences hotkey_prefs;
 +
 +struct KeyControls {
 +	QComboBox *combobox;
-+	QLineKeyEdit *keytext;
++	LineKeyEdit *keytext;
 +	QToolButton *button;
 +
 +	HotkeyConfiguration hotkey;
@@ -466,15 +501,17 @@ index 000000000..e215c308b
 +	~KeyControls();
 +};
 +
-+class QPrefWidget: public QWidget
++class PrefWidget: public QWidget
 +{
-+	Q_OBJECT;
-+
 +public:
-+	explicit QPrefWidget(QWidget *parent = nullptr);
-+	~QPrefWidget();
++	explicit PrefWidget(QWidget *parent = nullptr);
++	~PrefWidget();
 +
 +	QList<HotkeyConfiguration> getConfig() const;
++
++	static void* make_config_widget();
++	static void ok_callback();
++	static void destroy_callback();
 +
 +private:
 +	QVBoxLayout *main_widget_layout;
@@ -493,13 +530,33 @@ index 000000000..e215c308b
 +	void add_event_control(const HotkeyConfiguration *hotkey);
 +};
 +
++} /* namespace GlobalHotkeys */
++
 +#endif
+diff --git a/src/qthotkey/meson.build b/src/qthotkey/meson.build
+new file mode 100644
+index 000000000..a923ebdbf
+--- /dev/null
++++ b/src/qthotkey/meson.build
+@@ -0,0 +1,12 @@
++qthotkey_sources = [
++  'gui.cc',
++  'plugin.cc'
++]
++
++
++shared_module('qthotkey',
++  qthotkey_sources,
++  dependencies: [audacious_dep, qt_dep, audqt_dep, qtx11extras_dep],
++  install: true,
++  install_dir: general_plugin_dir
++)
 diff --git a/src/qthotkey/plugin.cc b/src/qthotkey/plugin.cc
 new file mode 100644
-index 000000000..bd46dde56
+index 000000000..a3f68d27b
 --- /dev/null
 +++ b/src/qthotkey/plugin.cc
-@@ -0,0 +1,696 @@
+@@ -0,0 +1,700 @@
 +/*
 + *  This file is part of audacious-hotkey plugin for audacious
 + *
@@ -539,18 +596,11 @@ index 000000000..bd46dde56
 +#include "plugin.h"
 +#include "gui.h"
 +
-+#include <stdlib.h>
-+
 +#include <QtCore/QCoreApplication>
 +#include <QtCore/QString>
 +#include <QtCore/QTimer>
 +#include <QtCore/QAbstractNativeEventFilter>
 +#include <QtX11Extras/QX11Info>
-+
-+#include <X11/XF86keysym.h>
-+#include <X11/Xlib.h>
-+#include <X11/keysym.h>
-+#include <xcb/xproto.h>
 +
 +#include <libaudcore/drct.h>
 +#include <libaudcore/hook.h>
@@ -558,6 +608,17 @@ index 000000000..bd46dde56
 +#include <libaudcore/interface.h>
 +#include <libaudcore/plugin.h>
 +#include <libaudcore/runtime.h>
++
++#include <libaudqt/libaudqt.h>
++
++#include <X11/XF86keysym.h>
++#include <X11/Xlib.h>
++#include <X11/keysym.h>
++#include <xcb/xproto.h>
++
++#include <stdlib.h>
++
++namespace GlobalHotkeys {
 +
 +class GlobalHotkeys: public GeneralPlugin, public QAbstractNativeEventFilter
 +{
@@ -572,21 +633,14 @@ index 000000000..bd46dde56
 +		PluginQtOnly
 +	};
 +
-+	GlobalHotkeys()
-+		: GeneralPlugin(info, false)
-+	{
-+	}
++	GlobalHotkeys();
 +
 +	bool init() override;
 +	void cleanup() override;
 +
 +private:
-+	bool real_init();
-+
 +	bool nativeEventFilter(const QByteArray &eventType, void *message, long *result) override;
 +};
-+
-+EXPORT GlobalHotkeys aud_plugin_instance;
 +
 +/* global vars */
 +static PluginConfig plugin_cfg;
@@ -613,34 +667,8 @@ index 000000000..bd46dde56
 +	return &plugin_cfg;
 +}
 +
-+/*
-+ * plugin activated
-+ */
-+bool GlobalHotkeys::init()
-+{
-+	/* delay real initialization until qapplication is created */
-+	QTimer::singleShot(0, [this] () { this->real_init(); });
-+
-+	return true;
-+}
-+
-+bool GlobalHotkeys::real_init()
-+{
-+	if (!QX11Info::isPlatformX11())
-+	{
-+		AUDERR ("Global Hotkey plugin only supports X11.\n");
-+		return false;
-+	}
-+
-+	load_config();
-+	grab_keys();
-+	QCoreApplication::instance()->installNativeEventFilter(this);
-+
-+	return true;
-+}
-+
 +/* handle keys */
-+bool handle_keyevent (EVENT event)
++bool handle_keyevent (Event event)
 +{
 +	int current_volume, old_volume;
 +	static int volume_static = 0;
@@ -664,7 +692,7 @@ index 000000000..bd46dde56
 +	switch (event)
 +	{
 +	/* mute the playback */
-+	case EVENT_MUTE:
++	case Event::Mute:
 +		{
 +			if (!mute)
 +			{
@@ -683,7 +711,7 @@ index 000000000..bd46dde56
 +		break;
 +
 +	/* decrease volume */
-+	case EVENT_VOL_DOWN:
++	case Event::VolumeDown:
 +		{
 +			if (mute)
 +			{
@@ -708,7 +736,7 @@ index 000000000..bd46dde56
 +		break;
 +
 +	/* increase volume */
-+	case EVENT_VOL_UP:
++	case Event::VolumeUp:
 +		{
 +			if (mute)
 +			{
@@ -733,7 +761,7 @@ index 000000000..bd46dde56
 +		break;
 +
 +	/* play */
-+	case EVENT_PLAY:
++	case Event::Play:
 +		{
 +			aud_drct_play();
 +			return true;
@@ -741,7 +769,7 @@ index 000000000..bd46dde56
 +		break;
 +
 +	/* pause */
-+	case EVENT_PAUSE:
++	case Event::Pause:
 +		{
 +			aud_drct_play_pause();
 +			return true;
@@ -749,7 +777,7 @@ index 000000000..bd46dde56
 +		break;
 +
 +	/* stop */
-+	case EVENT_STOP:
++	case Event::Stop:
 +		{
 +			aud_drct_stop();
 +			return true;
@@ -757,7 +785,7 @@ index 000000000..bd46dde56
 +		break;
 +
 +	/* prev track */
-+	case EVENT_PREV_TRACK:
++	case Event::PrevTrack:
 +		{
 +			aud_drct_pl_prev();
 +			return true;
@@ -765,7 +793,7 @@ index 000000000..bd46dde56
 +		break;
 +
 +	/* next track */
-+	case EVENT_NEXT_TRACK:
++	case Event::NextTrack:
 +		{
 +			aud_drct_pl_next();
 +			return true;
@@ -773,7 +801,7 @@ index 000000000..bd46dde56
 +		break;
 +
 +	/* forward */
-+	case EVENT_FORWARD:
++	case Event::Forward:
 +		{
 +			aud_drct_seek(aud_drct_get_time() + aud_get_int("step_size") * 1000);
 +			return true;
@@ -781,7 +809,7 @@ index 000000000..bd46dde56
 +		break;
 +
 +	/* backward */
-+	case EVENT_BACKWARD:
++	case Event::Backward:
 +		{
 +			aud_drct_seek(aud_drct_get_time() - aud_get_int("step_size") * 1000);
 +			return true;
@@ -789,7 +817,7 @@ index 000000000..bd46dde56
 +		break;
 +
 +	/* Open Jump-To-File dialog */
-+	case EVENT_JUMP_TO_FILE:
++	case Event::JumpToFile:
 +		if (!aud_get_headless_mode())
 +		{
 +			aud_ui_show_jump_to_song();
@@ -798,7 +826,7 @@ index 000000000..bd46dde56
 +		break;
 +
 +	/* Toggle Windows */
-+	case EVENT_TOGGLE_WIN:
++	case Event::ToggleWindow:
 +		if (!aud_get_headless_mode())
 +		{
 +			aud_ui_show(!aud_ui_is_shown());
@@ -807,46 +835,50 @@ index 000000000..bd46dde56
 +		break;
 +
 +	/* Show OSD through AOSD plugin*/
-+	case  EVENT_SHOW_AOSD:
++	case  Event::ShowAOSD:
 +		{
 +			hook_call("aosd toggle", nullptr);
 +			return true;
 +		}
 +		break;
 +
-+	case EVENT_TOGGLE_REPEAT:
++	case Event::ToggleRepeat:
 +		{
 +			aud_toggle_bool("repeat");
 +			return true;
 +		}
 +		break;
 +
-+	case EVENT_TOGGLE_SHUFFLE:
++	case Event::ToggleShuffle:
 +		{
 +			aud_toggle_bool("shuffle");
 +			return true;
 +		}
 +		break;
 +
-+	case EVENT_TOGGLE_STOP:
++	case Event::ToggleStop:
 +		{
 +			aud_toggle_bool("stop_after_current_song");
 +			return true;
 +		}
 +		break;
 +
-+	case EVENT_RAISE:
++	case Event::Raise:
 +		{
 +			aud_ui_show(true);
 +			return true;
 +		}
++		break;
++
++	/* silence warning */
++	case Event::Max:
 +		break;
 +	}
 +
 +	return false;
 +}
 +
-+void add_hotkey(QList<HotkeyConfiguration> &hotkeys_list, KeySym keysym, int mask, EVENT event)
++void add_hotkey(QList<HotkeyConfiguration> &hotkeys_list, KeySym keysym, int mask, Event event)
 +{
 +	KeyCode keycode;
 +	HotkeyConfiguration hotkey;
@@ -871,14 +903,14 @@ index 000000000..bd46dde56
 +
 +void load_defaults()
 +{
-+	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioPrev, 0, EVENT_PREV_TRACK);
-+	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioPlay, 0, EVENT_PLAY);
-+	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioPause, 0, EVENT_PAUSE);
-+	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioStop, 0, EVENT_STOP);
-+	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioNext, 0, EVENT_NEXT_TRACK);
-+	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioMute, 0, EVENT_MUTE);
-+	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioRaiseVolume, 0, EVENT_VOL_UP);
-+	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioLowerVolume, 0, EVENT_VOL_DOWN);
++	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioPrev, 0, Event::PrevTrack);
++	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioPlay, 0, Event::Play);
++	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioPause, 0, Event::Pause);
++	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioStop, 0, Event::Stop);
++	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioNext, 0, Event::NextTrack);
++	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioMute, 0, Event::Mute);
++	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioRaiseVolume, 0, Event::VolumeUp);
++	add_hotkey(plugin_cfg.hotkeys_list, XF86XK_AudioLowerVolume, 0, Event::VolumeDown);
 +}
 +
 +/* load plugin configuration */
@@ -897,7 +929,7 @@ index 000000000..bd46dde56
 +
 +			hotkey.key = aud_get_int("globalHotkey", QString::fromLatin1("Hotkey_%1_key").arg(i).toLocal8Bit().data());
 +			hotkey.mask = aud_get_int("globalHotkey", QString::fromLatin1("Hotkey_%1_mask").arg(i).toLocal8Bit().data());
-+			hotkey.event = static_cast<EVENT>(aud_get_int("globalHotkey", QString::fromLatin1("Hotkey_%1_event").arg(i).toLocal8Bit().data()));
++			hotkey.event = static_cast<Event>(aud_get_int("globalHotkey", QString::fromLatin1("Hotkey_%1_event").arg(i).toLocal8Bit().data()));
 +
 +			plugin_cfg.hotkeys_list.push_back(hotkey);
 +		}
@@ -915,7 +947,7 @@ index 000000000..bd46dde56
 +		{
 +			aud_set_int("globalHotkey", QString::fromLatin1("Hotkey_%1_key").arg(max).toLocal8Bit().data(), hotkey.key);
 +			aud_set_int("globalHotkey", QString::fromLatin1("Hotkey_%1_mask").arg(max).toLocal8Bit().data(), hotkey.mask);
-+			aud_set_int("globalHotkey", QString::fromLatin1("Hotkey_%1_event").arg(max).toLocal8Bit().data(), hotkey.event);
++			aud_set_int("globalHotkey", QString::fromLatin1("Hotkey_%1_event").arg(max).toLocal8Bit().data(), static_cast<int>(hotkey.event));
 +			++max;
 +		}
 +	}
@@ -923,11 +955,36 @@ index 000000000..bd46dde56
 +	aud_set_int("globalHotkey", "NumHotkeys", max);
 +}
 +
++GlobalHotkeys::GlobalHotkeys()
++	: GeneralPlugin(info, false)
++{
++}
++
++bool GlobalHotkeys::init()
++{
++	audqt::init();
++
++	if (!QX11Info::isPlatformX11())
++	{
++		AUDERR("Global Hotkey plugin only supports X11.\n");
++		audqt::cleanup();
++		return false;
++	}
++
++	load_config();
++	grab_keys();
++	QCoreApplication::instance()->installNativeEventFilter(this);
++
++	return true;
++}
++
 +void GlobalHotkeys::cleanup()
 +{
 +	QCoreApplication::instance()->removeNativeEventFilter(this);
 +	ungrab_keys();
 +	plugin_cfg.hotkeys_list.clear();
++
++	audqt::cleanup();
 +}
 +
 +bool GlobalHotkeys::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
@@ -1196,62 +1253,69 @@ index 000000000..bd46dde56
 +
 +	grabbed = 0;
 +}
++
++} /* namespace GlobalHotkeys */
++
++EXPORT GlobalHotkeys::GlobalHotkeys aud_plugin_instance;
 diff --git a/src/qthotkey/plugin.h b/src/qthotkey/plugin.h
 new file mode 100644
-index 000000000..e72925d94
+index 000000000..53e878284
 --- /dev/null
 +++ b/src/qthotkey/plugin.h
-@@ -0,0 +1,50 @@
+@@ -0,0 +1,53 @@
 +#ifndef _PLUGIN_H_INCLUDED_
 +#define _PLUGIN_H_INCLUDED_
 +
 +#include <QtCore/QList>
 +
-+typedef enum {
-+	EVENT_PREV_TRACK = 0,
-+	EVENT_PLAY,
-+	EVENT_PAUSE,
-+	EVENT_STOP,
-+	EVENT_NEXT_TRACK,
++namespace GlobalHotkeys {
 +
-+	EVENT_FORWARD,
-+	EVENT_BACKWARD,
-+	EVENT_MUTE,
-+	EVENT_VOL_UP,
-+	EVENT_VOL_DOWN,
-+	EVENT_JUMP_TO_FILE,
-+	EVENT_TOGGLE_WIN,
-+	EVENT_SHOW_AOSD,
++enum class Event {
++	PrevTrack = 0,
++	Play,
++	Pause,
++	Stop,
++	NextTrack,
 +
-+	EVENT_TOGGLE_REPEAT,
-+	EVENT_TOGGLE_SHUFFLE,
-+	EVENT_TOGGLE_STOP,
++	Forward,
++	Backward,
++	Mute,
++	VolumeUp,
++	VolumeDown,
++	JumpToFile,
++	ToggleWindow,
++	ShowAOSD,
 +
-+	EVENT_RAISE,
++	ToggleRepeat,
++	ToggleShuffle,
++	ToggleStop,
 +
-+	EVENT_MAX
-+} EVENT;
++	Raise,
 +
++	Max
++};
 +
 +struct HotkeyConfiguration {
 +	unsigned key, mask;
-+	EVENT event;
++	Event event;
 +};
 +
-+typedef struct {
++struct PluginConfig {
 +	/* keyboard */
 +	QList<HotkeyConfiguration> hotkeys_list;
-+} PluginConfig;
++};
 +
 +void load_config();
 +void save_config();
 +PluginConfig* get_config();
-+bool handle_keyevent(EVENT event);
++bool handle_keyevent(Event event);
 +
 +void grab_keys();
 +void ungrab_keys();
 +
++} /* namespace GlobalHotkeys */
++
 +#endif
 -- 
-2.24.1
+2.25.3
 
