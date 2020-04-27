@@ -22,7 +22,7 @@ RDEPEND="
 	tools? (
 		media-libs/flac:*
 		media-sound/wavpack:*
-		virtual/ffmpeg:*
+		media-video/ffmpeg:*
 		media-sound/mac:*
 		media-sound/alac_decoder
 	)"
