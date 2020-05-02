@@ -1,4 +1,4 @@
-From dae0d14ee4cb66c93c280ea9a7c28cbd367a169a Mon Sep 17 00:00:00 2001
+From 0cb576dd6d4297faeabdfa2db89356d630c6380a Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Mon, 13 Apr 2020 00:33:55 +0300
 Subject: [PATCH] Implement qthotkey plugin
@@ -11,12 +11,12 @@ based on hotkey plugin for gtk interface.
  meson.build              |   2 +-
  src/meson.build          |   4 +
  src/qthotkey/Makefile    |  13 +
- src/qthotkey/gui.cc      | 333 +++++++++++++++++++
+ src/qthotkey/gui.cc      | 334 +++++++++++++++++++
  src/qthotkey/gui.h       |  67 ++++
  src/qthotkey/meson.build |  12 +
  src/qthotkey/plugin.cc   | 700 +++++++++++++++++++++++++++++++++++++++
- src/qthotkey/plugin.h    |  53 +++
- 10 files changed, 1194 insertions(+), 2 deletions(-)
+ src/qthotkey/plugin.h    |  58 ++++
+ 10 files changed, 1200 insertions(+), 2 deletions(-)
  create mode 100644 src/qthotkey/Makefile
  create mode 100644 src/qthotkey/gui.cc
  create mode 100644 src/qthotkey/gui.h
@@ -25,15 +25,15 @@ based on hotkey plugin for gtk interface.
  create mode 100644 src/qthotkey/plugin.h
 
 diff --git a/configure.ac b/configure.ac
-index 870f74dd9..88db88d93 100644
+index af34140e3..da9a77ea4 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -103,7 +103,7 @@ check_allowed () {
                  AC_MSG_ERROR([--enable-$1 cannot be used without --enable-gtk])
              fi
              ;;
--        ampache|qtaudio|qtglspectrum)
-+        ampache|qtaudio|qtglspectrum|qthotkey)
+-        ampache|qtaudio|qtglspectrum|streamtuner)
++        ampache|qtaudio|qtglspectrum|streamtuner|qthotkey)
              plugin_allowed=$USE_QT
              if test $plugin_allowed = no -a $2 = yes ; then
                  AC_MSG_ERROR([--enable-$1 cannot be used without --enable-qt])
@@ -53,7 +53,7 @@ index 870f74dd9..88db88d93 100644
  
 @@ -844,6 +851,7 @@ if test "x$USE_QT" = "xyes" ; then
      echo "  Status Icon:                            yes"
-     echo "  Stream Tuner:                           $have_streamtuner"
+     echo "  Stream Tuner (experimental):            $have_streamtuner"
      echo "  VU Meter:                               yes"
 +    echo "  X11 Global Hotkeys:                     $have_qthotkey"
      echo
@@ -73,14 +73,14 @@ index 25baa8299..10c173034 100644
  VORBIS_LIBS ?= @VORBIS_LIBS@
  WAVPACK_CFLAGS ?= @WAVPACK_CFLAGS@
 diff --git a/meson.build b/meson.build
-index acc70748b..55fd5e737 100644
+index acc70748b..2017dd1b0 100644
 --- a/meson.build
 +++ b/meson.build
 @@ -42,9 +42,9 @@ xml_dep = dependency('libxml-2.0')
  if get_option('qt')
    qt_req = '>= 5.2'
    qt_dep = dependency('qt5', version: qt_req, required: true, modules: ['Core', 'Widgets', 'Gui'])
-+  qtx11extras_dep = dependency('qt5', version: qt_req, modules: ['X11Extras'])
++  qtx11extras_dep = dependency('qt5', version: qt_req, required: false, modules: ['X11Extras'])
  endif
  
 -
@@ -88,12 +88,12 @@ index acc70748b..55fd5e737 100644
  if get_option('cdaudio')
    libcdio_dep = dependency('libcdio', version: '>= 0.70', required: false)
 diff --git a/src/meson.build b/src/meson.build
-index b1c10f77f..c0be32639 100644
+index c6ec1935a..e6f5fae82 100644
 --- a/src/meson.build
 +++ b/src/meson.build
-@@ -102,6 +102,10 @@ if get_option('qt')
-   if get_option('moonstone')
-     subdir('moonstone')
+@@ -90,6 +90,10 @@ if get_option('qt')
+   if get_option('vumeter')
+     subdir('vumeter-qt')
    endif
 +
 +  if qtx11extras_dep.found()
@@ -123,10 +123,10 @@ index 000000000..c933e8732
 +LIBS += ${QT_LIBS} ${QTX11EXTRAS_LIBS} -lX11 -laudqt
 diff --git a/src/qthotkey/gui.cc b/src/qthotkey/gui.cc
 new file mode 100644
-index 000000000..a981a63c1
+index 000000000..ebdf5219f
 --- /dev/null
 +++ b/src/qthotkey/gui.cc
-@@ -0,0 +1,333 @@
+@@ -0,0 +1,334 @@
 +/*
 + *  This file is part of audacious-hotkey plugin for audacious
 + *
@@ -167,6 +167,7 @@ index 000000000..a981a63c1
 +#include "gui.h"
 +
 +#include <QtCore/QStringList>
++#include <QtCore/QMap>
 +#include <QtGui/QKeyEvent>
 +#include <QtGui/QMouseEvent>
 +#include <QtWidgets/QApplication>
@@ -185,24 +186,24 @@ index 000000000..a981a63c1
 +
 +static PrefWidget *last_instance = nullptr;
 +
-+static const char *event_desc[static_cast<int>(Event::Max)] = {
-+	[static_cast<int>(Event::PrevTrack)] = N_("Previous track"),
-+	[static_cast<int>(Event::Play)] = N_("Play"),
-+	[static_cast<int>(Event::Pause)] = N_("Pause/Resume"),
-+	[static_cast<int>(Event::Stop)] = N_("Stop"),
-+	[static_cast<int>(Event::NextTrack)] = N_("Next track"),
-+	[static_cast<int>(Event::Forward)] = N_("Step forward"),
-+	[static_cast<int>(Event::Backward)] = N_("Step backward"),
-+	[static_cast<int>(Event::Mute)] = N_("Mute"),
-+	[static_cast<int>(Event::VolumeUp)] = N_("Volume up"),
-+	[static_cast<int>(Event::VolumeDown)] = N_("Volume down"),
-+	[static_cast<int>(Event::JumpToFile)] = N_("Jump to file"),
-+	[static_cast<int>(Event::ToggleWindow)] = N_("Toggle player window(s)"),
-+	[static_cast<int>(Event::ShowAOSD)] = N_("Show On-Screen-Display"),
-+	[static_cast<int>(Event::ToggleRepeat)] = N_("Toggle repeat"),
-+	[static_cast<int>(Event::ToggleShuffle)] = N_("Toggle shuffle"),
-+	[static_cast<int>(Event::ToggleStop)] = N_("Toggle stop after current"),
-+	[static_cast<int>(Event::Raise)] = N_("Raise player window(s)")
++static const QMap<Event, const char*> event_desc = {
++	{ Event::PrevTrack, N_("Previous track") },
++	{ Event::Play, N_("Play") },
++	{ Event::Pause, N_("Pause/Resume") },
++	{ Event::Stop, N_("Stop") },
++	{ Event::NextTrack, N_("Next track") },
++	{ Event::Forward, N_("Step forward") },
++	{ Event::Backward, N_("Step backward") },
++	{ Event::Mute, N_("Mute") },
++	{ Event::VolumeUp, N_("Volume up") },
++	{ Event::VolumeDown, N_("Volume down") },
++	{ Event::JumpToFile, N_("Jump to file") },
++	{ Event::ToggleWindow, N_("Toggle player window(s)") },
++	{ Event::ShowAOSD, N_("Show On-Screen-Display") },
++	{ Event::ToggleRepeat, N_("Toggle repeat") },
++	{ Event::ToggleShuffle, N_("Toggle shuffle") },
++	{ Event::ToggleStop, N_("Toggle stop after current") },
++	{ Event::Raise, N_("Raise player window(s)") },
 +};
 +
 +class LineKeyEdit: public QLineEdit
@@ -370,9 +371,9 @@ index 000000000..a981a63c1
 +
 +	control->combobox = new QComboBox(group_box);
 +
-+	for (int i = 0; i < static_cast<int>(Event::Max); ++i)
++	for (const auto &desc_item: event_desc)
 +	{
-+		control->combobox->addItem(audqt::translate_str(event_desc[i]));
++		control->combobox->addItem(audqt::translate_str(desc_item));
 +	}
 +
 +	if (hotkey != nullptr)
@@ -1259,10 +1260,10 @@ index 000000000..a3f68d27b
 +EXPORT GlobalHotkeys::GlobalHotkeys aud_plugin_instance;
 diff --git a/src/qthotkey/plugin.h b/src/qthotkey/plugin.h
 new file mode 100644
-index 000000000..53e878284
+index 000000000..0a8da58a0
 --- /dev/null
 +++ b/src/qthotkey/plugin.h
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,58 @@
 +#ifndef _PLUGIN_H_INCLUDED_
 +#define _PLUGIN_H_INCLUDED_
 +
@@ -1270,6 +1271,11 @@ index 000000000..53e878284
 +
 +namespace GlobalHotkeys {
 +
++/*
++ * Values in this enum must not be skipped and must start with 0,
++ * otherwise event_desc in gui.cc and it's use must be updated.
++ * All values except for Event::Max must be present in event_desc map.
++ */
 +enum class Event {
 +	PrevTrack = 0,
 +	Play,
@@ -1317,5 +1323,5 @@ index 000000000..53e878284
 +
 +#endif
 -- 
-2.25.3
+2.26.2
 
