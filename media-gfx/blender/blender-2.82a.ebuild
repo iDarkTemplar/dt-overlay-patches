@@ -97,6 +97,7 @@ DEPEND="${RDEPEND}
 	doc? (
 		app-doc/doxygen[dot]
 		dev-python/sphinx[latex]
+		dev-python/sphinx_rtd_theme
 		dev-texlive/texlive-bibtexextra
 		dev-texlive/texlive-fontsextra
 		dev-texlive/texlive-fontutils
