@@ -21,7 +21,7 @@ SLOT="0"
 LICENSE="|| ( GPL-2 BL )"
 KEYWORDS="~amd64 ~x86"
 IUSE="+bullet +dds +elbeem +openexr collada color-management \
-	cuda cycles debug doc ffmpeg fftw headless jack jemalloc jpeg2k libav \
+	cuda cycles debug doc ffmpeg fftw headless jack jemalloc jpeg2k \
 	llvm man ndof nls oceansim openal opencl openimageio openmp opensubdiv openvdb \
 	osl sdl sndfile +tbb test tiff valgrind"
 
@@ -56,7 +56,6 @@ RDEPEND="${PYTHON_DEPS}
 	color-management? ( media-libs/opencolorio )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
 	ffmpeg? ( media-video/ffmpeg:=[x264,mp3,encode,theora,jpeg2k?] )
-	libav? ( >=media-video/libav-11.3:=[x264,mp3,encode,theora,jpeg2k?] )
 	fftw? ( sci-libs/fftw:3.0= )
 	!headless? (
 		x11-libs/libX11
@@ -96,8 +95,13 @@ DEPEND="${RDEPEND}
 	>=dev-cpp/eigen-3.2.8:3
 	virtual/pkgconfig
 	doc? (
-		app-doc/doxygen[-nodot(-),dot(+),latex]
+		app-doc/doxygen[dot]
 		dev-python/sphinx[latex]
+		dev-texlive/texlive-bibtexextra
+		dev-texlive/texlive-fontsextra
+		dev-texlive/texlive-fontutils
+		dev-texlive/texlive-latex
+		dev-texlive/texlive-latexextra
 	)
 	nls? ( sys-devel/gettext )"
 
