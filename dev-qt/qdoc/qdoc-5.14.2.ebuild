@@ -14,7 +14,7 @@ fi
 IUSE="doc qml"
 
 DEPEND="
-	~dev-qt/qtcore-${PV}
+	~dev-qt/qtcore-${PV}:5=
 	sys-devel/clang:=
 	qml? ( ~dev-qt/qtdeclarative-${PV} )
 	doc? ( !dev-qt/qt-docs )
@@ -26,10 +26,6 @@ BDEPEND="
 		~dev-qt/qthelp-${PV}
 	)
 "
-
-PATCHES=(
-	"${FILESDIR}/${PN}-5.14.1-includes.patch"
-)
 
 QT5_TARGET_SUBDIRS=(
 	src/qdoc
@@ -50,6 +46,7 @@ src_configure() {
 	# run in the root directory. bug 676948; same fix as bug 633776
 	mkdir -p "${QT5_BUILD_DIR}"/src/qdoc || die
 	qt5_qmake "${QT5_BUILD_DIR}"
+	cp src/qdoc/qtqdoc-config.pri "${QT5_BUILD_DIR}"/src/qdoc || die
 	qt5-build_src_configure
 }
 

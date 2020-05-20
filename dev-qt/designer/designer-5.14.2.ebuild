@@ -15,8 +15,8 @@ fi
 IUSE="declarative examples webkit"
 
 DEPEND="
-	~dev-qt/qtcore-${PV}
-	~dev-qt/qtgui-${PV}
+	~dev-qt/qtcore-${PV}:5=
+	~dev-qt/qtgui-${PV}:5=
 	~dev-qt/qtnetwork-${PV}
 	~dev-qt/qtprintsupport-${PV}
 	~dev-qt/qtwidgets-${PV}

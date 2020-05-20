@@ -26,8 +26,6 @@ DEPEND="${RDEPEND}
 	~dev-qt/qtnetwork-${PV}
 "
 
-PATCHES=( "${FILESDIR}/${P}-errno.patch" )
-
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples/bluetooth")
 }

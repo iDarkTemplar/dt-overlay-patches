@@ -3,7 +3,7 @@
 
 EAPI=7
 QT5_MODULE="qtbase"
-inherit qt5-build
+inherit linux-info qt5-build
 
 DESCRIPTION="Cross-platform application development framework"
 
@@ -11,7 +11,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 ~arm ~arm64 ~hppa ppc ppc64 ~sparc x86"
 fi
 
-IUSE="doc examples icu systemd"
+IUSE="doc examples icu old-kernel systemd"
 
 DEPEND="
 	dev-libs/double-conversion:=
@@ -54,8 +54,18 @@ QT5_GENTOO_PRIVATE_CONFIG=(
 PATCHES=(
 	"${FILESDIR}/${PN}-5.14.1-examples.patch"
 	"${FILESDIR}/${PN}-5.14.1-qmake-update-libdirs-order.patch"
-	"${FILESDIR}/${P}-cmake-macro-backward-compat.patch" # bug 703306
+	"${FILESDIR}/${PN}-5.14.1-cmake-macro-backward-compat.patch" # bug 703306
+	"${FILESDIR}/${P}-QLibrary-deadlock.patch" # QTBUG-83207
 )
+
+pkg_pretend() {
+	use kernel_linux || return
+	get_running_version
+	if kernel_is -lt 3 17 && ! use old-kernel; then
+		ewarn "The running kernel is older than 3.17. USE=old-kernel is needed for"
+		ewarn "dev-qt/qtcore to function on this kernel properly. See Bug #669994."
+	fi
+}
 
 src_prepare() {
 	# don't add -O3 to CXXFLAGS, bug 549140
@@ -73,6 +83,10 @@ src_configure() {
 		$(qt_use icu)
 		$(qt_use !icu iconv)
 		$(qt_use systemd journald)
+	)
+	use old-kernel && myconf+=(
+		-no-feature-renameat2 # needs Linux 3.16, bug 669994
+		-no-feature-getentropy # needs Linux 3.17, bug 669994
 	)
 	qt5-build_src_configure
 }

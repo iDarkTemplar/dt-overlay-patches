@@ -35,6 +35,11 @@ PDEPEND="
 	)
 "
 
+PATCHES=(
+	"${FILESDIR}/${P}-QQuickItemView-fix-maxXY-extent.patch" # QTBUG-83890
+	"${FILESDIR}/${P}-fix-subpixel-positioned-text.patch" # QTBUG-49646
+)
+
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples")
 }

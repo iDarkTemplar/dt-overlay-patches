@@ -5,7 +5,7 @@ EAPI=7
 QT5_MODULE="qtbase"
 inherit qt5-build
 
-DESCRIPTION="Qt5 module for inter-process communication over the D-Bus protocol"
+DESCRIPTION="Multi-threading concurrence support library for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 ~arm ~arm64 ~hppa ppc ppc64 ~sparc x86"
@@ -14,8 +14,7 @@ fi
 IUSE="doc examples"
 
 DEPEND="
-	~dev-qt/qtcore-${PV}
-	>=sys-apps/dbus-1.4.20
+	~dev-qt/qtcore-${PV}:5=
 "
 RDEPEND="${DEPEND}"
 
@@ -29,24 +28,5 @@ PDEPEND="
 "
 
 QT5_TARGET_SUBDIRS=(
-	src/dbus
-	src/tools/qdbusxml2cpp
-	src/tools/qdbuscpp2xml
+	src/concurrent
 )
-
-QT5_GENTOO_CONFIG=(
-	:dbus
-	:dbus-linked:
-)
-
-QT5_GENTOO_PRIVATE_CONFIG=(
-	:dbus
-	:dbus-linked
-)
-
-src_configure() {
-	local myconf=(
-		-dbus-linked
-	)
-	qt5-build_src_configure
-}

@@ -3,9 +3,10 @@
 
 EAPI=7
 QT5_MODULE="qtbase"
+VIRTUALX_REQUIRED="test"
 inherit qt5-build
 
-DESCRIPTION="Multi-threading concurrence support library for the Qt5 framework"
+DESCRIPTION="Unit testing library for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 ~arm ~arm64 ~hppa ppc ppc64 ~sparc x86"
@@ -13,10 +14,15 @@ fi
 
 IUSE="doc examples"
 
-DEPEND="
-	~dev-qt/qtcore-${PV}
+RDEPEND="
+	~dev-qt/qtcore-${PV}:5=
 "
-RDEPEND="${DEPEND}"
+DEPEND="${RDEPEND}
+	test? (
+		~dev-qt/qtgui-${PV}
+		~dev-qt/qtxml-${PV}
+	)
+"
 
 PDEPEND="
 	doc? (
@@ -28,5 +34,9 @@ PDEPEND="
 "
 
 QT5_TARGET_SUBDIRS=(
-	src/concurrent
+	src/testlib
+)
+
+QT5_GENTOO_PRIVATE_CONFIG=(
+	:testlib
 )
