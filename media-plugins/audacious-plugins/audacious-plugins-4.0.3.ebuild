@@ -110,6 +110,7 @@ S="${WORKDIR}/${MY_P}"
 PATCHES=(
 	"${FILESDIR}/${P}-qthotkey-plugin.patch"
 	"${FILESDIR}/${P}-display-channels.patch"
+	"${FILESDIR}/${P}-skins-qt-dragndrop.patch"
 )
 
 pkg_setup() {
