@@ -1,0 +1,250 @@
+From 503c2a42cccd17dbdafdd254b082a2dc6e5136f6 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sat, 23 May 2020 20:50:25 +0300
+Subject: [PATCH] Audio file format plugins: set channels information
+
+---
+ src/aac/aac.cc                  |  2 ++
+ src/adplug/adplug-xmms.cc       |  1 +
+ src/amidiplug/amidi-plug.cc     | 10 +++++-----
+ src/cdaudio/cdaudio-ng.cc       |  1 +
+ src/console/Audacious_Driver.cc |  1 +
+ src/ffaudio/ffaudio-core.cc     |  5 +++++
+ src/flac/metadata.cc            |  3 +++
+ src/metronom/metronom.cc        |  1 +
+ src/modplug/modplugbmp.cc       |  1 +
+ src/mpg123/mpg123.cc            |  1 +
+ src/openmpt/mpt.cc              |  1 +
+ src/psf/plugin.cc               |  1 +
+ src/tonegen/tonegen.cc          |  1 +
+ src/vtx/vtx.cc                  |  2 ++
+ src/wavpack/wavpack.cc          |  2 ++
+ src/xsf/plugin.cc               |  1 +
+ 16 files changed, 29 insertions(+), 5 deletions(-)
+
+diff --git a/src/aac/aac.cc b/src/aac/aac.cc
+index 3ae8aa802..8cf94d222 100644
+--- a/src/aac/aac.cc
++++ b/src/aac/aac.cc
+@@ -269,6 +269,8 @@ bool AACDecoder::read_tag (const char * filename, VFSFile & file, Tuple & tuple,
+         tuple.set_int (Tuple::Length, length);
+     if (bitrate > 0)
+         tuple.set_int (Tuple::Bitrate, bitrate);
++    if (channels > 0)
++        tuple.set_int (Tuple::Channels, channels);
+ 
+     tuple.fetch_stream_info (file);
+ 
+diff --git a/src/adplug/adplug-xmms.cc b/src/adplug/adplug-xmms.cc
+index 3f4e67ed0..4d54149a6 100644
+--- a/src/adplug/adplug-xmms.cc
++++ b/src/adplug/adplug-xmms.cc
+@@ -166,6 +166,7 @@ bool AdPlugXMMS::read_tag (const char * filename, VFSFile & file, Tuple & tuple,
+   tuple.set_str (Tuple::Codec, p->gettype().c_str());
+   tuple.set_str (Tuple::Quality, _("sequenced"));
+   tuple.set_int (Tuple::Length, p->songlength (plr.subsong));
++  tuple.set_int (Tuple::Channels, 2);
+   delete p;
+ 
+   return true;
+diff --git a/src/amidiplug/amidi-plug.cc b/src/amidiplug/amidi-plug.cc
+index 21dfcc11c..ac429569f 100644
+--- a/src/amidiplug/amidi-plug.cc
++++ b/src/amidiplug/amidi-plug.cc
+@@ -141,6 +141,10 @@ bool AMIDIPlug::is_our_file (const char * filename, VFSFile & file)
+     return false;
+ }
+ 
++static int s_samplerate, s_channels;
++static int s_bufsize;
++static int16_t * s_buf;
++
+ bool AMIDIPlug::read_tag (const char * filename, VFSFile & file, Tuple & tuple,
+  Index<char> * image)
+ {
+@@ -150,15 +154,11 @@ bool AMIDIPlug::read_tag (const char * filename, VFSFile & file, Tuple & tuple,
+ 
+     tuple.set_str (Tuple::Codec, "MIDI");
+     tuple.set_int (Tuple::Length, mf.length / 1000);
++    tuple.set_int (Tuple::Channels, s_channels);
+ 
+     return true;
+ }
+ 
+-
+-static int s_samplerate, s_channels;
+-static int s_bufsize;
+-static int16_t * s_buf;
+-
+ bool AMIDIPlug::audio_init ()
+ {
+     int bitdepth;
+diff --git a/src/cdaudio/cdaudio-ng.cc b/src/cdaudio/cdaudio-ng.cc
+index ebd7f99df..6fd02de14 100644
+--- a/src/cdaudio/cdaudio-ng.cc
++++ b/src/cdaudio/cdaudio-ng.cc
+@@ -399,6 +399,7 @@ bool CDAudio::read_tag (const char * filename, VFSFile & file, Tuple & tuple,
+         tuple.set_int (Tuple::Track, trackno);
+         tuple.set_int (Tuple::Length, calculate_track_length
+          (trackinfo[trackno].startlsn, trackinfo[trackno].endlsn));
++        tuple.set_int (Tuple::Channels, 2);
+ 
+         if (trackinfo[trackno].name)
+             tuple.set_str (Tuple::Title, trackinfo[trackno].name);
+diff --git a/src/console/Audacious_Driver.cc b/src/console/Audacious_Driver.cc
+index 2ed01a292..9a9f879b8 100644
+--- a/src/console/Audacious_Driver.cc
++++ b/src/console/Audacious_Driver.cc
+@@ -192,6 +192,7 @@ bool ConsolePlugin::read_tag(const char *filename, VFSFile &file, Tuple &tuple,
+         tuple.set_subtunes(info.track_count, nullptr);
+ 
+     tuple.set_int (Tuple::Length, get_track_length (info));
++    tuple.set_int (Tuple::Channels, 2);
+ 
+     return true;
+ }
+diff --git a/src/ffaudio/ffaudio-core.cc b/src/ffaudio/ffaudio-core.cc
+index 62ca93b2b..76bf0cf8b 100644
+--- a/src/ffaudio/ffaudio-core.cc
++++ b/src/ffaudio/ffaudio-core.cc
+@@ -431,8 +431,13 @@ bool FFaudio::read_tag (const char * filename, VFSFile & file, Tuple & tuple, In
+     if (! find_codec (ic.get (), & cinfo))
+         return false;
+ 
++    ScopedContext context (cinfo);
++    if (LOG (avcodec_open2, context.ptr, cinfo.codec, nullptr) < 0)
++        return false;
++
+     tuple.set_int (Tuple::Length, ic->duration / 1000);
+     tuple.set_int (Tuple::Bitrate, ic->bit_rate / 1000);
++    tuple.set_int (Tuple::Channels, context->channels);
+ 
+     if (cinfo.codec->long_name)
+         tuple.set_str (Tuple::Codec, cinfo.codec->long_name);
+diff --git a/src/flac/metadata.cc b/src/flac/metadata.cc
+index 07ee9c15b..f3b811203 100644
+--- a/src/flac/metadata.cc
++++ b/src/flac/metadata.cc
+@@ -337,6 +337,9 @@ bool FLACng::read_tag (const char * filename, VFSFile & file, Tuple & tuple, Ind
+ 
+                     tuple.set_int (Tuple::Bitrate, (bitrate + 500) / 1000);
+                 }
++
++                if (metadata->data.stream_info.channels > 0)
++                    tuple.set_int(Tuple::Channels, metadata->data.stream_info.channels);
+                 break;
+             }
+ 
+diff --git a/src/metronom/metronom.cc b/src/metronom/metronom.cc
+index 458442fe1..a3274cedb 100644
+--- a/src/metronom/metronom.cc
++++ b/src/metronom/metronom.cc
+@@ -227,6 +227,7 @@ bool Metronome::read_tag(const char *filename, VFSFile &file, Tuple &tuple, Inde
+         return false;
+ 
+     tuple.set_str(Tuple::Title, desc);
++    tuple.set_int(Tuple::Channels, 1);
+     return true;
+ }
+ 
+diff --git a/src/modplug/modplugbmp.cc b/src/modplug/modplugbmp.cc
+index da700de30..154e6d45c 100644
+--- a/src/modplug/modplugbmp.cc
++++ b/src/modplug/modplugbmp.cc
+@@ -320,6 +320,7 @@ bool ModplugXMMS::read_tag (const char * filename, VFSFile & file, Tuple & tuple
+     tuple.set_str (Tuple::Codec, tmps);
+     tuple.set_str (Tuple::Quality, _("sequenced"));
+     tuple.set_int (Tuple::Length, lSoundFile->GetSongTime() * 1000);
++    tuple.set_int (Tuple::Channels, lSoundFile->GetNumChannels());
+ 
+     const char *tmps2 = lSoundFile->GetTitle();
+     // Chop any leading spaces off. They are annoying in the playlist.
+diff --git a/src/mpg123/mpg123.cc b/src/mpg123/mpg123.cc
+index a3c9bfbb6..f1254236e 100644
+--- a/src/mpg123/mpg123.cc
++++ b/src/mpg123/mpg123.cc
+@@ -249,6 +249,7 @@ static bool read_mpg123_info(const char * filename, VFSFile & file,
+ 
+     tuple.set_int(Tuple::Bitrate, s.info.bitrate);
+     tuple.set_str(Tuple::Codec, make_format_string(&s.info));
++    tuple.set_int(Tuple::Channels, s.channels);
+ 
+     const char * chan_str = (s.channels == 2)
+                                 ? _("Stereo")
+diff --git a/src/openmpt/mpt.cc b/src/openmpt/mpt.cc
+index b4a6e92c7..0101b521d 100644
+--- a/src/openmpt/mpt.cc
++++ b/src/openmpt/mpt.cc
+@@ -91,6 +91,7 @@ public:
+ 
+         tuple.set_int(Tuple::Length, mpt.duration());
+         tuple.set_str(Tuple::Title, mpt.title());
++        tuple.set_int(Tuple::Channels, mpt.channels());
+ 
+         return true;
+     }
+diff --git a/src/psf/plugin.cc b/src/psf/plugin.cc
+index 0772eecab..6acb4dc78 100644
+--- a/src/psf/plugin.cc
++++ b/src/psf/plugin.cc
+@@ -160,6 +160,7 @@ bool PSFPlugin::read_tag(const char *filename, VFSFile &file, Tuple &tuple, Inde
+     tuple.set_str(Tuple::Copyright, c->inf_copy);
+     tuple.set_str(Tuple::Quality, _("sequenced"));
+     tuple.set_str(Tuple::Codec, "PlayStation 1/2 Audio");
++    tuple.set_int(Tuple::Channels, 2);
+ 
+     free(c);
+ 
+diff --git a/src/tonegen/tonegen.cc b/src/tonegen/tonegen.cc
+index 8bf25037d..6c74d9299 100644
+--- a/src/tonegen/tonegen.cc
++++ b/src/tonegen/tonegen.cc
+@@ -153,6 +153,7 @@ bool ToneGen::read_tag(const char *filename, VFSFile &file, Tuple &tuple, Index<
+         return false;
+ 
+     tuple.set_str(Tuple::Title, title);
++    tuple.set_int(Tuple::Channels, 1);
+     return true;
+ }
+ 
+diff --git a/src/vtx/vtx.cc b/src/vtx/vtx.cc
+index 9078b33e0..c4655fed9 100644
+--- a/src/vtx/vtx.cc
++++ b/src/vtx/vtx.cc
+@@ -91,6 +91,8 @@ bool VTXPlugin::read_tag(const char *filename, VFSFile &file, Tuple &tuple, Inde
+ 
+     tuple.set_int(Tuple::Year, tmp.hdr.year);
+ 
++    tuple.set_int(Tuple::Channels, chans);
++
+     return true;
+ }
+ 
+diff --git a/src/wavpack/wavpack.cc b/src/wavpack/wavpack.cc
+index cd51d924e..7dde5015f 100644
+--- a/src/wavpack/wavpack.cc
++++ b/src/wavpack/wavpack.cc
+@@ -239,6 +239,8 @@ bool WavpackPlugin::read_tag (const char * filename, VFSFile & file, Tuple & tup
+ 
+     tuple.set_str (Tuple::Quality, wv_get_quality (ctx));
+ 
++    tuple.set_int (Tuple::Channels,  WavpackGetNumChannels(ctx));
++
+     WavpackCloseFile(ctx);
+ 
+     if (! file.fseek (0, VFS_SEEK_SET))
+diff --git a/src/xsf/plugin.cc b/src/xsf/plugin.cc
+index 54b4da760..889e0760f 100644
+--- a/src/xsf/plugin.cc
++++ b/src/xsf/plugin.cc
+@@ -105,6 +105,7 @@ bool XSFPlugin::read_tag(const char *filename, VFSFile &file, Tuple &tuple, Inde
+ 	tuple.set_str(Tuple::Copyright, c->inf_copy);
+ 	tuple.set_str(Tuple::Quality, _("sequenced"));
+ 	tuple.set_str(Tuple::Codec, "GBA/Nintendo DS Audio");
++	tuple.set_int(Tuple::Channels, 2);
+ 
+ 	free(c);
+ 
+-- 
+2.26.2
+

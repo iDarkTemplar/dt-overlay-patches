@@ -1,0 +1,68 @@
+From fc67c7b83caadf44fbd5c4eee867ba9d30803b49 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sat, 23 May 2020 17:32:45 +0300
+Subject: [PATCH] Track information widget: display channels count
+
+---
+ src/libaudcore/tuple.cc     | 5 +++++
+ src/libaudcore/tuple.h      | 1 +
+ src/libaudqt/info-widget.cc | 1 +
+ 3 files changed, 7 insertions(+)
+
+diff --git a/src/libaudcore/tuple.cc b/src/libaudcore/tuple.cc
+index 7d710b417..81c52c84f 100644
+--- a/src/libaudcore/tuple.cc
++++ b/src/libaudcore/tuple.cc
+@@ -147,6 +147,7 @@ static const struct
+ 
+     {"description", Tuple::String, -1},
+     {"musicbrainz-id", Tuple::String, -1},
++    {"channels", Tuple::Int, -1},
+ 
+     /* fallbacks */
+     {nullptr, Tuple::String, -1},
+@@ -170,6 +171,7 @@ static const FieldDictEntry field_dict[] = {
+     {"artist", Tuple::Artist},
+     {"audio-file", Tuple::AudioFile},
+     {"bitrate", Tuple::Bitrate},
++    {"channels", Tuple::Channels},
+     {"codec", Tuple::Codec},
+     {"comment", Tuple::Comment},
+     {"composer", Tuple::Composer},
+@@ -574,6 +576,9 @@ EXPORT void Tuple::set_format(const char * format, int chans, int rate,
+ 
+     if (brate > 0)
+         set_int(Bitrate, brate);
++
++    if (chans > 0)
++        set_int(Channels, chans);
+ }
+ 
+ EXPORT void Tuple::set_subtunes(short n_subtunes, const short * subtunes)
+diff --git a/src/libaudcore/tuple.h b/src/libaudcore/tuple.h
+index 0ec1ac1fa..ea19dfd36 100644
+--- a/src/libaudcore/tuple.h
++++ b/src/libaudcore/tuple.h
+@@ -105,6 +105,7 @@ public:
+         /* TODO: reorder these at next ABI break! */
+         Description,   /* Track description */
+         MusicBrainzID, /* MusicBrainz identifier */
++        Channels, /* Track channels count */
+ 
+         n_fields
+     };
+diff --git a/src/libaudqt/info-widget.cc b/src/libaudqt/info-widget.cc
+index 0baa2fd16..0401709b9 100644
+--- a/src/libaudqt/info-widget.cc
++++ b/src/libaudqt/info-widget.cc
+@@ -64,6 +64,7 @@ static const TupleFieldMap tuple_field_map[] = {
+     {N_("Codec"), Tuple::Codec, false},
+     {N_("Quality"), Tuple::Quality, false},
+     {N_("Bitrate"), Tuple::Bitrate, false},
++    {N_("Channels"), Tuple::Channels, false},
+     {N_("MusicBrainz ID"), Tuple::MusicBrainzID, false}};
+ 
+ static const TupleFieldMap * to_field_map(const QModelIndex & index)
+-- 
+2.26.2
+
