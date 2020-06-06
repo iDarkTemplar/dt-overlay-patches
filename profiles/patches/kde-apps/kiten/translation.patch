@@ -1,0 +1,13 @@
+diff --git a/po/ru/kiten.po b/po/ru/kiten.po
+index 455ec1c..bf8f640 100644
+--- a/po/ru/kiten.po
++++ b/po/ru/kiten.po
+@@ -658,7 +658,7 @@ msgstr[3] "найден %1 kanji"
+ #: kanjibrowser/kanjibrowserview.cpp:216
+ #, kde-format
+ msgid "About %1"
+-msgstr "О программе %1"
++msgstr "О Kanji %1"
+ 
+ #: kanjibrowser/kanjibrowserview.cpp:234
+ #, kde-format
