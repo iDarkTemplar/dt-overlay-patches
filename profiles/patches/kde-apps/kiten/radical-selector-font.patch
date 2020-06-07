@@ -1,0 +1,103 @@
+diff --git a/radselect/radical_selector.ui b/radselect/radical_selector.ui
+index 6dddf0f..8de2454 100644
+--- a/radselect/radical_selector.ui
++++ b/radselect/radical_selector.ui
+@@ -54,11 +54,6 @@
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+-        <property name="font">
+-         <font>
+-          <pointsize>25</pointsize>
+-         </font>
+-        </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+diff --git a/radselect/radselectconfig.kcfg b/radselect/radselectconfig.kcfg
+index a723a6e..1416623 100644
+--- a/radselect/radselectconfig.kcfg
++++ b/radselect/radselectconfig.kcfg
+@@ -4,8 +4,17 @@
+       xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+       http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
+ 	<include>kfontrequester.h</include>
++  <include>QFontDatabase</include>
++  <include>qfont.h</include>
+   <kcfgfile name="kitenradselectrc"/>
+   <group name="Options">
++    <entry key="resultListFont" type="Font">
++      <code>
++        QFont resultListFnt = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
++        resultListFnt.setPointSize( 25 );
++      </code>
++      <default>resultListFnt</default>
++    </entry>
+     <entry key="font" type="Font"></entry>
+     <entry key="closeOnSearch" type="Bool">
+       <label>Do we close this program when searching?</label>
+diff --git a/radselect/radselectprefdialog.ui b/radselect/radselectprefdialog.ui
+index efb2113..c61a91f 100644
+--- a/radselect/radselectprefdialog.ui
++++ b/radselect/radselectprefdialog.ui
+@@ -26,11 +26,37 @@
+         </widget>
+       </item>
+       <item>
+-        <layout class="QHBoxLayout" >
++        <layout class="QGridLayout" >
+           <property name="margin" >
+              <number>0</number>
+           </property>
+-          <item>
++          <item row="0" column="0">
++             <widget class="QLabel" name="resultListFontSize_label" >
++                <property name="text" >
++                  <string>Search Results Font:</string>
++                </property>
++                <property name="toolTip" stdset="0" >
++                  <string>The font for the main kanji/kana entry in list view</string>
++                </property>
++                <property name="whatsThis" stdset="0" >
++                  <string>Use this to adjust the result list font</string>
++                </property>
++             </widget>
++          </item>
++          <item row="0" column="1">
++             <widget class="KFontRequester" name="kcfg_resultListFont" >
++                <property name="sampleText" >
++                  <string>漢字 かな</string>
++                </property>
++                <property name="toolTip" stdset="0" >
++                  <string>The font for the main kanji/kana entry in list view</string>
++                </property>
++                <property name="whatsThis" stdset="0" >
++                  <string>Use this to adjust the result list font</string>
++                </property>
++             </widget>
++          </item>
++          <item row="1" column="0">
+              <widget class="QLabel" name="fontSize_label" >
+                 <property name="text" >
+                   <string>Button Font:</string>
+@@ -43,7 +69,7 @@
+                 </property>
+              </widget>
+           </item>
+-          <item>
++          <item row="1" column="1">
+              <widget class="KFontRequester" name="kcfg_font" >
+                 <property name="sampleText" >
+                   <string>漢字 かな</string>
+diff --git a/radselect/radselectview.cpp b/radselect/radselectview.cpp
+index be6ecbc..6b0b164 100644
+--- a/radselect/radselectview.cpp
++++ b/radselect/radselectview.cpp
+@@ -209,6 +209,7 @@ void RadSelectView::loadSettings()
+ {
+   //TODO: Add preferences for what to do on single/double click
+   //Suggested options: Lookup in Kiten, Add to Search Bar, Copy to Clipboard
++  selected_radicals->setFont( RadSelectConfigSkeleton::self()->resultListFont() );
+   m_buttongrid->setFont( RadSelectConfigSkeleton::self()->font() );
+ }
+ 
