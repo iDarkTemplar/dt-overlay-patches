@@ -62,6 +62,7 @@ RDEPEND="dev-libs/glib:2
 	xml? (
 		app-text/iso-codes
 		dev-libs/libxml2
+		dev-libs/json-c
 	)"
 DEPEND="${RDEPEND}
 	dev-util/glib-utils
@@ -102,7 +103,7 @@ src_configure() {
 		-DENABLE_GIR=$(usex introspection)
 		-DENABLE_GTK2_IM_MODULE=$(usex gtk2)
 		-DENABLE_GTK3_IM_MODULE=$(usex gtk3)
-		-DENABLE_LIBXML2=$(usex xml)
+		-DENABLE_XKB=$(usex xml)
 		-DENABLE_LUA=$(usex lua)
 		-DENABLE_OPENCC=$(usex opencc)
 		-DENABLE_PANGO=$(usex pango)
