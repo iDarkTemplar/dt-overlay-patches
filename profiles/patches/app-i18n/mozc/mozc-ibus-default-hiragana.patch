@@ -1,0 +1,16 @@
+diff --git a/unix/ibus/property_handler.cc b/unix/ibus/property_handler.cc
+index e852b3bd..169dd5e4 100644
+--- a/unix/ibus/property_handler.cc
++++ b/unix/ibus/property_handler.cc
+@@ -79,11 +79,7 @@ bool GetDisabled(IBusEngine *engine) {
+ // https://github.com/google/mozc/issues/201
+ // On IBus 1.4.x, IBus expects that an IME should always be turned on and
+ // IME on/off keys are handled by IBus itself rather than each IME.
+-#if IBUS_CHECK_VERSION(1, 5, 0)
+-const bool kActivatedOnLaunch = false;
+-#else
+ const bool kActivatedOnLaunch = true;
+-#endif  // IBus>=1.5.0
+ 
+ }  // namespace
+ 
