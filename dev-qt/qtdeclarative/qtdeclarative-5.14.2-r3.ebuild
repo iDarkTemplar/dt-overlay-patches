@@ -38,6 +38,7 @@ PDEPEND="
 PATCHES=(
 	"${FILESDIR}/${P}-QQuickItemView-fix-maxXY-extent.patch" # QTBUG-83890
 	"${FILESDIR}/${P}-fix-subpixel-positioned-text.patch" # QTBUG-49646
+	"${FILESDIR}/${P}-QQuickMouseArea-stuck-in-pressed-state.patch" # QTBUG-74987
 )
 
 pkg_setup() {

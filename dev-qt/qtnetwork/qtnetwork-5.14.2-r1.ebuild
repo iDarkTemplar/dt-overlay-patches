@@ -53,6 +53,10 @@ QT5_GENTOO_PRIVATE_CONFIG=(
 	:network
 )
 
+PATCHES=(
+	"${FILESDIR}/${P}-CVE-2020-13962.patch" # bug 727604, QTBUG-83450
+)
+
 pkg_setup() {
 	use connman && QT5_TARGET_SUBDIRS+=(src/plugins/bearer/connman)
 	use networkmanager && QT5_TARGET_SUBDIRS+=(src/plugins/bearer/networkmanager)

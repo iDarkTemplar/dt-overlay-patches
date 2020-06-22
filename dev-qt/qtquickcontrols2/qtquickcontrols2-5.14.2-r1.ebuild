@@ -25,6 +25,10 @@ RDEPEND="${DEPEND}
 	~dev-qt/qtgraphicaleffects-${PV}
 "
 
+PATCHES=(
+	"${FILESDIR}/${P}-account-for-scale-before-positioning.patch" # QTBUG-73687
+)
+
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples")
 }

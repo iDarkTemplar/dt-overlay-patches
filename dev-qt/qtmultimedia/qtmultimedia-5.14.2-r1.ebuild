@@ -41,6 +41,10 @@ DEPEND="${RDEPEND}
 	gstreamer? ( x11-base/xorg-proto )
 "
 
+PATCHES=(
+	"${FILESDIR}/${P}-gstreamer-buffering.patch" # QTBUG-83417
+)
+
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples")
 }
