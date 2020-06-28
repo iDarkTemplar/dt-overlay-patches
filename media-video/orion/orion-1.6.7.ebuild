@@ -35,6 +35,7 @@ PATCHES=(
 	"${FILESDIR}"/${P}-dont-use-broken-font.patch
 	"${FILESDIR}"/${P}-change-default-view.patch
 	"${FILESDIR}"/${P}-revert-topbar-hiding-at-screen-edge.patch
+	"${FILESDIR}"/${P}-hide-headers-only-in-player-view.patch
 )
 
 src_configure() {
