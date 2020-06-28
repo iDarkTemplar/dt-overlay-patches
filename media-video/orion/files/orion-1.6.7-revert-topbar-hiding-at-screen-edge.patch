@@ -1,0 +1,87 @@
+From 28c531168b0564cce9c7a1d4c0f0c5fab2558632 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sun, 28 Jun 2020 12:30:34 +0300
+Subject: [PATCH] Revert "topbar hiding at screen edge"
+
+This reverts commit e7a552fd5507e3f64ba24bb0758dfcccb116c2dc.
+---
+ src/qml/PlayerView.qml | 18 +++++++++++++++++-
+ src/qml/TopBar.qml     | 26 +-------------------------
+ 2 files changed, 18 insertions(+), 26 deletions(-)
+
+diff --git a/src/qml/PlayerView.qml b/src/qml/PlayerView.qml
+index 73ba152..949aa85 100644
+--- a/src/qml/PlayerView.qml
++++ b/src/qml/PlayerView.qml
+@@ -40,6 +40,14 @@ Page {
+     property int lastSetPosition
+     property bool headersVisible: true
+ 
++    onHeadersVisibleChanged: {
++        if (root.visible) {
++            pArea.hoverEnabled = false
++            topbar.visible = headersVisible
++            disableTimer.restart()
++        }
++    }
++
+     Material.theme: rootWindow.Material.theme
+ 
+     //Renderer interface
+@@ -504,7 +512,15 @@ Page {
+             hideTimer.restart()
+         }
+ 
+-        onReleased: playerArea.forceActiveFocus()
++        Timer {
++            id: disableTimer
++            interval: 200
++            running: false
++            onTriggered:{
++                pArea.hoverEnabled = true
++            }
++        }
++
+         onVisibleChanged: refreshHeaders()
+         onPositionChanged: refreshHeaders()
+         
+diff --git a/src/qml/TopBar.qml b/src/qml/TopBar.qml
+index 1f6f6ba..4d70b87 100644
+--- a/src/qml/TopBar.qml
++++ b/src/qml/TopBar.qml
+@@ -21,31 +21,7 @@ import app.orion 1.0
+ ToolBar {
+     id: root
+     property alias currentIndex : tab.currentIndex
+-    visible : !appFullScreen || hovered || windowTop.containsMouse
+-
+-    // 1px topmost popup allows to detect when mouse is at top of the screen while fullscreen
+-    // even while other Popups (e.g. chat) are present
+-    Popup {
+-        z: -1 // behind normal popups
+-        parent: app.view
+-        modal: false
+-        dim: false
+-        visible: appFullScreen && !isMobile()
+-        closePolicy: Popup.NoAutoClose
+-        height: 1
+-        width: parent.width
+-        background: Item {}
+-        enter: Transition {}
+-        exit: Transition {}
+-        padding: 0
+-        MouseArea {
+-            id: windowTop
+-            width: parent.width
+-            height: parent.height
+-            hoverEnabled: true
+-            preventStealing: true
+-        }
+-    }
++    visible : !appFullScreen
+ 
+     //Base font color
+     Material.foreground: Material.Grey
+-- 
+2.26.2
+
