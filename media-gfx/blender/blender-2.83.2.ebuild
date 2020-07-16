@@ -53,7 +53,7 @@ RDEPEND="${PYTHON_DEPS}
 	virtual/libintl
 	virtual/opengl
 	collada? ( >=media-libs/opencollada-1.6.18:= )
-	color-management? ( media-libs/opencolorio )
+	color-management? ( media-libs/opencolorio:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
 	ffmpeg? ( media-video/ffmpeg:=[x264,mp3,encode,theora,jpeg2k?] )
 	fftw? ( sci-libs/fftw:3.0= )
@@ -74,7 +74,7 @@ RDEPEND="${PYTHON_DEPS}
 	nls? ( virtual/libiconv )
 	openal? ( media-libs/openal )
 	opencl? ( virtual/opencl )
-	openimageio? ( >=media-libs/openimageio-1.7.0 )
+	openimageio? ( >=media-libs/openimageio-1.7.0:= )
 	openexr? (
 		>=media-libs/ilmbase-2.2.0:=
 		>=media-libs/openexr-2.2.0:=
