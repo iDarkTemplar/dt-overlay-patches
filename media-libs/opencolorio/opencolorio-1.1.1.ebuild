@@ -13,7 +13,7 @@ HOMEPAGE="https://opencolorio.org/"
 SRC_URI="https://github.com/imageworks/OpenColorIO/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="BSD"
-SLOT="0"
+SLOT="0/1"
 KEYWORDS="amd64 x86"
 IUSE="cpu_flags_x86_sse2 doc opengl python static-libs test"
 REQUIRED_USE="
@@ -23,7 +23,7 @@ REQUIRED_USE="
 RDEPEND="
 	opengl? (
 		media-libs/lcms:2
-		media-libs/openimageio
+		media-libs/openimageio:=
 		media-libs/glew:=
 		media-libs/freeglut
 		virtual/opengl
