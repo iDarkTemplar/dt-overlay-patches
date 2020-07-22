@@ -150,6 +150,8 @@ usr/share/applications/wine-uninstaller.desktop
 usr/share/applications/wine-winecfg.desktop"
 
 PATCHES=(
+	"${FILESDIR}/${MY_PN}-5.13-bug-49590-part-1.patch"
+	"${FILESDIR}/${MY_PN}-5.13-bug-49590-part-2.patch"
 	"${PATCHDIR}/patches/${MY_PN}-5.0-winegcc.patch" #260726
 	"${PATCHDIR}/patches/${MY_PN}-4.7-multilib-portage.patch" #395615
 	"${PATCHDIR}/patches/${MY_PN}-2.0-multislot-apploader.patch" #310611
