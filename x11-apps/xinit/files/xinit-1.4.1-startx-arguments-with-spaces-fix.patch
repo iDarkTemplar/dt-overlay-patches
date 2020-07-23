@@ -1,0 +1,97 @@
+From 750dc88356555d954836f417c86342b1142f424e Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Thu, 23 Jul 2020 13:29:00 +0300
+Subject: [PATCH] startx: allow to properly process spaces
+
+---
+ Makefile.am  |  1 +
+ configure.ac |  1 +
+ startx.cpp   | 17 ++++++++++-------
+ 3 files changed, 12 insertions(+), 7 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 8b09369..b5c9f88 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -50,6 +50,7 @@ PROGCPPDEFS = \
+ 
+ CPP_FILES_FLAGS = \
+ 	-DXINITDIR=$(XINITDIR) $(PROGCPPDEFS) -DLIBDIR=$(libdir) \
++	-DBASH_SHELL_CMD=$(BASH_SHELL_CMD) \
+ 	-DSHELL_CMD=$(SHELL_CMD) $(STARTX_COOKIE_FLAGS) \
+ 	-D__libexecdir__="$(libexecdir)" \
+ 	-D__bindir__="$(bindir)" \
+diff --git a/configure.ac b/configure.ac
+index 3530b7e..5acf3c4 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -174,6 +174,7 @@ AC_SUBST(STARTX_COOKIE_FLAGS)
+ 
+ # Additional substitutions in startx, xinitrc & man pages
+ SHELL_CMD="/bin/sh"
++BASH_SHELL_CMD="/bin/bash"
+ XSERVERNAME="Xorg"
+ XCONFIGFILE="xorg.conf"
+ XCONFIGFILEMAN='${XCONFIGFILE} (${FILE_MAN_SUFFIX})'
+diff --git a/startx.cpp b/startx.cpp
+index dbc4cae..e448d22 100644
+--- a/startx.cpp
++++ b/startx.cpp
+@@ -1,4 +1,4 @@
+-XCOMM!SHELL_CMD
++XCOMM!BASH_SHELL_CMD
+ 
+ XCOMM
+ XCOMM This is just a sample implementation of a slightly less primitive
+@@ -147,13 +147,13 @@ while [ x"$1" != x ]; do
+ 	    if [ x"$client" = x ] && [ x"$clientargs" = x ]; then
+ 		client="$1"
+ 	    else
+-		clientargs="$clientargs $1"
++		clientargs="$clientargs \"$1\""
+ 	    fi
+ 	else
+ 	    if [ x"$server" = x ] && [ x"$serverargs" = x ]; then
+ 		server="$1"
+ 	    else
+-		serverargs="$serverargs $1"
++		serverargs="$serverargs \"$1\""
+ 	    fi
+ 	fi
+ 	;;
+@@ -162,14 +162,14 @@ while [ x"$1" != x ]; do
+ 	;;
+     *)
+ 	if [ "$whoseargs" = "client" ]; then
+-	    clientargs="$clientargs $1"
++	    clientargs="$clientargs \"$1\""
+ 	else
+ 	    XCOMM display must be the FIRST server argument
+ 	    if [ x"$serverargs" = x ] && @@
+ 		 expr "$1" : ':[0-9][0-9]*$' > /dev/null 2>&1; then
+ 		display="$1"
+ 	    else
+-		serverargs="$serverargs $1"
++		serverargs="$serverargs \"$1\""
+ 	    fi
+ 	fi
+ 	;;
+@@ -313,10 +313,13 @@ EOF
+     done
+ fi
+ 
++eval "clientargsarray=($clientargs)"
++eval "serverargsarray=($serverargs)"
++
+ #if defined(__APPLE__) || defined(__CYGWIN__)
+-eval XINIT \"$client\" $clientargs -- \"$server\" $display $serverargs
++eval XINIT \"$client\" \"${clientargsarray[@]}\" -- \"$server\" $display \"${serverargsarray[@]}\"
+ #else
+-XINIT "$client" $clientargs -- "$server" $display $serverargs
++XINIT "$client" "${clientargsarray[@]}" -- "$server" $display "${serverargsarray[@]}"
+ #endif
+ retval=$?
+ 
+-- 
+2.26.2
+
