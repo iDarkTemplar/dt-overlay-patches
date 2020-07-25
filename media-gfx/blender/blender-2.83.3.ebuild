@@ -44,7 +44,7 @@ RDEPEND="${PYTHON_DEPS}
 		dev-python/requests[${PYTHON_MULTI_USEDEP}]
 	' python3_7 python3_8)
 	media-libs/freetype
-	media-libs/glew:*
+	media-libs/glew:=
 	media-libs/libpng:0=
 	media-libs/libsamplerate
 	sys-libs/zlib
