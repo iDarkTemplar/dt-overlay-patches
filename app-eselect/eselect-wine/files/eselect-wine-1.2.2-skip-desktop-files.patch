@@ -1,0 +1,28 @@
+From bf870c7d2c52daa1a12f262e2cc3a93816092250 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sun, 26 Jul 2020 10:46:09 +0300
+Subject: [PATCH] Don't create desktop entry
+
+---
+ wine.eselect | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/wine.eselect b/wine.eselect
+index d39eef9..a2d4af0 100644
+--- a/wine.eselect
++++ b/wine.eselect
+@@ -872,11 +872,6 @@ set_symlinks() {
+ 	store_config "${CONFIG_DIR}/links/${v}" "include" "${link}"
+ 
+ 
+-	local desktop="${EPREFIX}/usr/share/applications/wine${v_arg#-}.desktop"
+-	cp "${wine_app}/wine.desktop" "${desktop}" || die "Failed to copy desktop file"
+-	sed -i "s:Exec=.*:Exec=wine${v_arg#-} start /unix %f:" ${desktop} || die "Failed to edit desktop file"
+-	desktop_database_update || die "Failed to update xorg desktop database"
+-
+ 	)
+ 	unset_dir_env
+ }
+-- 
+2.26.2
+
