@@ -30,7 +30,7 @@ src_install() {
 	keepdir /etc/eselect/wine
 
 	insinto /usr/share/eselect/modules
-	doins "${S}"/wine.eselect wine.eselect
+	doins wine.eselect
 }
 
 pkg_postinst() {
