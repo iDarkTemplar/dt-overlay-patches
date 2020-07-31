@@ -1,7 +1,7 @@
-From 7b7c9324b3dda74f4d6cd340bd3d2a32384fcb1c Mon Sep 17 00:00:00 2001
+From 4c41b86c9e8b7c8bde05fd435c36be3bf1d6f9dd Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sat, 30 Mar 2019 19:25:50 +0300
-Subject: [PATCH 2/2] Dolphin: reintroduce tooltips without Baloo support
+Subject: [PATCH 2/3] Dolphin: reintroduce tooltips without Baloo support
 
 Tooltips contain only name of item and preview
 ---
@@ -13,19 +13,19 @@ Tooltips contain only name of item and preview
  5 files changed, 36 insertions(+), 18 deletions(-)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 22e0269a8..721f2b5db 100644
+index 143a99057..ee048b2f1 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -100,6 +100,8 @@ set(dolphinprivate_LIB_SRCS
+@@ -99,6 +99,8 @@ set(dolphinprivate_LIB_SRCS
+     views/dolphinview.cpp
      views/dolphinviewactionhandler.cpp
      views/draganddrophelper.cpp
-     views/renamedialog.cpp
 +    views/tooltips/dolphinfilemetadatawidget.cpp
 +    views/tooltips/tooltipmanager.cpp
      views/versioncontrol/updateitemstatesthread.cpp
      views/versioncontrol/versioncontrolobserver.cpp
      views/viewmodecontroller.cpp
-@@ -115,8 +117,6 @@ ecm_qt_declare_logging_category(dolphinprivate_LIB_SRCS HEADER dolphindebug.h ID
+@@ -114,8 +116,6 @@ ecm_qt_declare_logging_category(dolphinprivate_LIB_SRCS HEADER dolphindebug.h ID
  if(HAVE_BALOO)
      set(dolphinprivate_LIB_SRCS
          ${dolphinprivate_LIB_SRCS}
@@ -35,7 +35,7 @@ index 22e0269a8..721f2b5db 100644
      )
  endif()
 diff --git a/src/settings/general/behaviorsettingspage.cpp b/src/settings/general/behaviorsettingspage.cpp
-index df7ea2113..80835926e 100644
+index 30883c5da..6e913ccfd 100644
 --- a/src/settings/general/behaviorsettingspage.cpp
 +++ b/src/settings/general/behaviorsettingspage.cpp
 @@ -79,11 +79,9 @@ BehaviorSettingsPage::BehaviorSettingsPage(const QUrl& url, QWidget* parent) :
@@ -81,10 +81,10 @@ index df7ea2113..80835926e 100644
      m_renameInline->setChecked(GeneralSettings::renameInline());
      m_useTabForSplitViewSwitch->setChecked(GeneralSettings::useTabForSwitchingSplitView());
 diff --git a/src/views/dolphinview.cpp b/src/views/dolphinview.cpp
-index 3437db7a7..cc01fd42c 100644
+index 2caa8ec68..592039ba7 100644
 --- a/src/views/dolphinview.cpp
 +++ b/src/views/dolphinview.cpp
-@@ -177,10 +177,8 @@ DolphinView::DolphinView(const QUrl& url, QWidget* parent) :
+@@ -178,10 +178,8 @@ DolphinView::DolphinView(const QUrl& url, QWidget* parent) :
      connect(selectionManager, &KItemListSelectionManager::selectionChanged,
              this, &DolphinView::slotSelectionChanged);
  
@@ -95,7 +95,7 @@ index 3437db7a7..cc01fd42c 100644
  
      m_versionControlObserver = new VersionControlObserver(this);
      m_versionControlObserver->setView(this);
-@@ -1039,9 +1037,7 @@ void DolphinView::slotItemHovered(int index)
+@@ -1088,9 +1086,7 @@ void DolphinView::slotItemHovered(int index)
          const QPoint pos = m_container->mapToGlobal(itemRect.topLeft().toPoint());
          itemRect.moveTo(pos);
  
@@ -105,7 +105,7 @@ index 3437db7a7..cc01fd42c 100644
      }
  
      emit requestItemInfo(item);
-@@ -1432,11 +1428,9 @@ void DolphinView::updateViewState()
+@@ -1481,11 +1477,9 @@ void DolphinView::updateViewState()
  
  void DolphinView::hideToolTip(const ToolTipManager::HideBehavior behavior)
  {
@@ -225,5 +225,5 @@ index b9dbd98a1..9c967d18b 100644
  
  #endif
 -- 
-2.24.1
+2.26.2
 

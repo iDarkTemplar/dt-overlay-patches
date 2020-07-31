@@ -1,7 +1,7 @@
-From f2f90a82e1973f6a313a91d6999a274f24f01a11 Mon Sep 17 00:00:00 2001
+From 06992a3cefba1d93bf810182474f59a771fc4458 Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sat, 30 Mar 2019 18:38:24 +0300
-Subject: [PATCH 1/2] Dolphin: reintroduce information panel without Baloo
+Subject: [PATCH 1/3] Dolphin: reintroduce information panel without Baloo
 
 This panel is unconfigurable and contains only preview
 ---
@@ -13,10 +13,10 @@ This panel is unconfigurable and contains only preview
  5 files changed, 50 insertions(+), 17 deletions(-)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 617d59480..22e0269a8 100644
+index 02a43a209..143a99057 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -203,6 +203,10 @@ set(dolphinstatic_SRCS
+@@ -202,6 +202,10 @@ set(dolphinstatic_SRCS
      dolphintabwidget.cpp
      trash/dolphintrash.cpp
      filterbar/filterbar.cpp
@@ -27,7 +27,7 @@ index 617d59480..22e0269a8 100644
      panels/places/placespanel.cpp
      panels/places/placesitem.cpp
      panels/places/placesitemlistgroupheader.cpp
-@@ -246,16 +250,6 @@ set(dolphinstatic_SRCS
+@@ -245,16 +249,6 @@ set(dolphinstatic_SRCS
      global.cpp
  )
  
@@ -45,10 +45,10 @@ index 617d59480..22e0269a8 100644
      panels/folders/dolphin_folderspanelsettings.kcfgc
      panels/information/dolphin_informationpanelsettings.kcfgc
 diff --git a/src/dolphinmainwindow.cpp b/src/dolphinmainwindow.cpp
-index 56ea93e10..70f7856a4 100644
+index dd1dcdac5..9151b1df9 100644
 --- a/src/dolphinmainwindow.cpp
 +++ b/src/dolphinmainwindow.cpp
-@@ -1587,8 +1587,6 @@ void DolphinMainWindow::setupDockWidgets()
+@@ -1656,8 +1656,6 @@ void DolphinMainWindow::setupDockWidgets()
      infoDock->setLocked(lock);
      infoDock->setObjectName(QStringLiteral("infoDock"));
      infoDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
@@ -57,7 +57,7 @@ index 56ea93e10..70f7856a4 100644
      InformationPanel* infoPanel = new InformationPanel(infoDock);
      infoPanel->setCustomContextMenuActions({lockLayoutAction});
      connect(infoPanel, &InformationPanel::urlActivated, this, &DolphinMainWindow::handleUrl);
-@@ -1604,13 +1602,11 @@ void DolphinMainWindow::setupDockWidgets()
+@@ -1673,13 +1671,11 @@ void DolphinMainWindow::setupDockWidgets()
              infoPanel, &InformationPanel::setSelection);
      connect(this, &DolphinMainWindow::requestItemInfo,
              infoPanel, &InformationPanel::requestDelayedItemInfo);
@@ -71,7 +71,7 @@ index 56ea93e10..70f7856a4 100644
      actionCollection()->action(QStringLiteral("show_information_panel"))
          ->setWhatsThis(xi18nc("@info:whatsthis", "<para> This toggles the "
          "<emphasis>information</emphasis> panel at the right side of the "
-@@ -1618,7 +1614,6 @@ void DolphinMainWindow::setupDockWidgets()
+@@ -1687,7 +1683,6 @@ void DolphinMainWindow::setupDockWidgets()
          "about the items your mouse is hovering over or about the selected "
          "items. Otherwise it informs you about the currently viewed folder.<nl/>"
          "For single items a preview of their contents is provided.</para>"));
@@ -79,7 +79,7 @@ index 56ea93e10..70f7856a4 100644
      infoDock->setWhatsThis(xi18nc("@info:whatsthis", "<para>This panel "
          "provides in-depth information about the items your mouse is "
          "hovering over or about the selected items. Otherwise it informs "
-@@ -1785,9 +1780,7 @@ void DolphinMainWindow::setupDockWidgets()
+@@ -1854,9 +1849,7 @@ void DolphinMainWindow::setupDockWidgets()
      panelsMenu->setDelayed(false);
      const KActionCollection* ac = actionCollection();
      panelsMenu->addAction(ac->action(QStringLiteral("show_places_panel")));
@@ -90,7 +90,7 @@ index 56ea93e10..70f7856a4 100644
      panelsMenu->addAction(ac->action(QStringLiteral("show_terminal_panel")));
      panelsMenu->addSeparator();
 diff --git a/src/panels/information/informationpanel.cpp b/src/panels/information/informationpanel.cpp
-index e6c3bf32a..8386ef372 100644
+index 23e7f1922..73f4cacad 100644
 --- a/src/panels/information/informationpanel.cpp
 +++ b/src/panels/information/informationpanel.cpp
 @@ -27,7 +27,9 @@
@@ -137,12 +137,12 @@ index e6c3bf32a..8386ef372 100644
  
  void InformationPanel::showItemInfo()
 diff --git a/src/panels/information/informationpanelcontent.cpp b/src/panels/information/informationpanelcontent.cpp
-index 417ca709c..c3b99d6c1 100644
+index 5c7c7c3f1..d1c411a44 100644
 --- a/src/panels/information/informationpanelcontent.cpp
 +++ b/src/panels/information/informationpanelcontent.cpp
-@@ -28,10 +28,16 @@
- #include <KSeparator>
+@@ -29,10 +29,16 @@
  #include <KStringHandler>
+ #include <QPainterPath>
  
 +#ifndef HAVE_BALOO
 +#include <KFileItem>
@@ -157,7 +157,7 @@ index 417ca709c..c3b99d6c1 100644
  
  #include <panels/places/placesitem.h>
  #include <panels/places/placesitemmodel.h>
-@@ -66,7 +72,9 @@ InformationPanelContent::InformationPanelContent(QWidget* parent) :
+@@ -67,7 +73,9 @@ InformationPanelContent::InformationPanelContent(QWidget* parent) :
      m_preview(nullptr),
      m_phononWidget(nullptr),
      m_nameLabel(nullptr),
@@ -167,7 +167,7 @@ index 417ca709c..c3b99d6c1 100644
      m_metaDataArea(nullptr),
      m_placesItemModel(nullptr),
      m_isVideo(false)
-@@ -110,6 +118,7 @@ InformationPanelContent::InformationPanelContent(QWidget* parent) :
+@@ -111,6 +119,7 @@ InformationPanelContent::InformationPanelContent(QWidget* parent) :
      const bool previewsShown = InformationPanelSettings::previewsShown();
      m_preview->setVisible(previewsShown);
  
@@ -175,7 +175,7 @@ index 417ca709c..c3b99d6c1 100644
      m_metaDataWidget = new Baloo::FileMetaDataWidget(parent);
      m_metaDataWidget->setDateFormat(static_cast<Baloo::DateFormats>(InformationPanelSettings::dateFormat()));
      connect(m_metaDataWidget, &Baloo::FileMetaDataWidget::urlActivated,
-@@ -139,9 +148,12 @@ InformationPanelContent::InformationPanelContent(QWidget* parent) :
+@@ -140,9 +149,12 @@ InformationPanelContent::InformationPanelContent(QWidget* parent) :
                  emit configurationFinished();
              }
      );
@@ -188,7 +188,7 @@ index 417ca709c..c3b99d6c1 100644
      m_metaDataArea->setWidgetResizable(true);
      m_metaDataArea->setFrameShape(QFrame::NoFrame);
  
-@@ -152,9 +164,13 @@ InformationPanelContent::InformationPanelContent(QWidget* parent) :
+@@ -153,9 +165,13 @@ InformationPanelContent::InformationPanelContent(QWidget* parent) :
      layout->addWidget(m_phononWidget);
      layout->addWidget(m_nameLabel);
      layout->addWidget(new KSeparator());
@@ -202,7 +202,7 @@ index 417ca709c..c3b99d6c1 100644
  
      m_placesItemModel = new PlacesItemModel(this);
  }
-@@ -289,16 +305,20 @@ void InformationPanelContent::refreshPreview()
+@@ -291,16 +307,20 @@ void InformationPanelContent::refreshPreview()
  
  void InformationPanelContent::configureShownProperties()
  {
@@ -223,7 +223,7 @@ index 417ca709c..c3b99d6c1 100644
  }
  
  void InformationPanelContent::showItems(const KFileItemList& items)
-@@ -316,7 +336,9 @@ void InformationPanelContent::showItems(const KFileItemList& items)
+@@ -318,7 +338,9 @@ void InformationPanelContent::showItems(const KFileItemList& items)
      );
      setNameLabelText(i18ncp("@label", "%1 item selected", "%1 items selected", items.count()));
  
@@ -233,7 +233,7 @@ index 417ca709c..c3b99d6c1 100644
  
      m_phononWidget->hide();
  
-@@ -328,13 +350,17 @@ bool InformationPanelContent::eventFilter(QObject* obj, QEvent* event)
+@@ -330,13 +352,17 @@ bool InformationPanelContent::eventFilter(QObject* obj, QEvent* event)
      switch (event->type()) {
      case QEvent::Resize: {
          QResizeEvent* resizeEvent = static_cast<QResizeEvent*>(event);
@@ -251,7 +251,7 @@ index 417ca709c..c3b99d6c1 100644
          break;
      }
  
-@@ -342,9 +368,11 @@ bool InformationPanelContent::eventFilter(QObject* obj, QEvent* event)
+@@ -344,9 +370,11 @@ bool InformationPanelContent::eventFilter(QObject* obj, QEvent* event)
          adjustWidgetSizes(parentWidget()->width());
          break;
  
@@ -263,7 +263,7 @@ index 417ca709c..c3b99d6c1 100644
  
      default:
          break;
-@@ -418,7 +446,11 @@ void InformationPanelContent::markOutdatedPreview()
+@@ -420,7 +448,11 @@ void InformationPanelContent::markOutdatedPreview()
  
  KFileItemList InformationPanelContent::items()
  {
@@ -275,7 +275,7 @@ index 417ca709c..c3b99d6c1 100644
  }
  
  void InformationPanelContent::slotHasVideoChanged(bool hasVideo)
-@@ -478,7 +510,9 @@ void InformationPanelContent::adjustWidgetSizes(int width)
+@@ -480,7 +512,9 @@ void InformationPanelContent::adjustWidgetSizes(int width)
  
      // The metadata widget also contains a text widget which may return
      // a large preferred width.
@@ -306,5 +306,5 @@ index 8daeb95b0..8a7473717 100644
      PlacesItemModel* m_placesItemModel;
      bool m_isVideo;
 -- 
-2.24.1
+2.26.2
 
