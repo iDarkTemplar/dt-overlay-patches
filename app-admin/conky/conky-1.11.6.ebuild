@@ -74,8 +74,7 @@ CONFIG_CHECK=~IPV6
 DOCS=( README.md AUTHORS )
 
 PATCHES=(
-	"${FILESDIR}"/${P}-pull-878.patch
-	"${FILESDIR}"/${P}-lua-5.4.patch
+	"${FILESDIR}"/${PN}-1.11.5-lua-5.4.patch
 )
 
 DISABLE_AUTOFORMATTING="yes"
