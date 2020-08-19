@@ -25,7 +25,9 @@ DEPEND="
 	qtav? ( media-libs/qtav )
 	qtmedia? ( >=dev-qt/qtmultimedia-5.8:5 )"
 RDEPEND="${DEPEND}
-	!mpv? ( media-plugins/gst-plugins-hls )"
+	!mpv? ( media-plugins/gst-plugins-hls )
+	qtmedia? ( media-plugins/gst-plugins-neon )
+	"
 
 REQUIRED_USE="^^ ( mpv qtav qtmedia )"
 
