@@ -9,14 +9,14 @@ inherit qt5-build
 DESCRIPTION="Bluetooth support library for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 ~arm ~arm64 x86"
+	KEYWORDS="amd64 arm arm64 x86"
 fi
 
 IUSE="examples qml"
 
 RDEPEND="
 	~dev-qt/qtconcurrent-${PV}
-	~dev-qt/qtcore-${PV}
+	~dev-qt/qtcore-${PV}:5=
 	~dev-qt/qtdbus-${PV}
 	>=net-wireless/bluez-5:=
 	doc? ( ~dev-qt/qdoc-${PV}[qml?] )
