@@ -1,7 +1,8 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
+
 MY_P=${P/fortune-mod-sp-fortunes/SP}
 MY_PN=${PN/fortune-mod-sp-fortunes/SP}
 DESCRIPTION="South Park Fortunes"

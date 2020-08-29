@@ -1,9 +1,9 @@
 # Copyright 2003-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="6"
+EAPI=7
 
-inherit cmake-utils gnome2-utils xdg-utils
+inherit cmake gnome2-utils xdg-utils
 
 if [[ "${PV}" =~ (^|\.)9999$ ]]; then
 	inherit git-r3
@@ -88,7 +88,7 @@ src_prepare() {
 		-e "/^find_package(XKeyboardConfig REQUIRED)/,+1d" \
 		-i CMakeLists.txt
 
-	cmake-utils_src_prepare
+	cmake_src_prepare
 	xdg_environment_reset
 }
 
@@ -118,11 +118,11 @@ src_configure() {
 		-DENABLE_XDGAUTOSTART=$(usex autostart)
 	)
 
-	cmake-utils_src_configure
+	cmake_src_configure
 }
 
 src_install() {
-	cmake-utils_src_install
+	cmake_src_install
 	rm -r "${ED}usr/share/doc/${PN}"
 }
 

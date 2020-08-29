@@ -3,7 +3,7 @@
 
 EAPI=7
 
-inherit cmake-utils linux-info readme.gentoo-r1 xdg
+inherit cmake linux-info readme.gentoo-r1 xdg
 
 DESCRIPTION="An advanced, highly configurable system monitor for X"
 HOMEPAGE="https://github.com/brndnmtthws/conky"
@@ -92,7 +92,7 @@ pkg_setup() {
 }
 
 src_prepare() {
-	cmake-utils_src_prepare
+	cmake_src_prepare
 
 	xdg_environment_reset
 
@@ -159,11 +159,11 @@ src_configure() {
 		-DRELEASE=ON
 	)
 
-	cmake-utils_src_configure
+	cmake_src_configure
 }
 
 src_install() {
-	cmake-utils_src_install
+	cmake_src_install
 
 	if use vim-syntax; then
 		insinto /usr/share/vim/vimfiles/ftdetect

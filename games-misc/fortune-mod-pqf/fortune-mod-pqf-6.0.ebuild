@@ -1,7 +1,8 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
+
 DESCRIPTION="Fortune database of Terry Pratchett's Discworld related quotes"
 HOMEPAGE="http://www.lspace.org/"
 SRC_URI="http://www.ie.lspace.org/ftp-lspace/words/pqf/pqf-${PV}"

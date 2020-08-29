@@ -1,7 +1,8 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
+
 MY_P=${PN/-mod/}
 DESCRIPTION="Quotes from Hitchhikers Guide to the Galaxy"
 HOMEPAGE="http://www.splitbrain.org/projects/fortunes/hg2g"
