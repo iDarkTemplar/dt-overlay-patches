@@ -5,8 +5,8 @@ EAPI=7
 
 PYTHON_COMPAT=( python3_{7,8} )
 
-inherit check-reqs cmake-utils xdg-utils flag-o-matic xdg-utils \
-	pax-utils python-single-r1 toolchain-funcs
+inherit check-reqs cmake flag-o-matic pax-utils python-single-r1 \
+	toolchain-funcs xdg-utils
 
 DESCRIPTION="3D Creation/Animation/Publishing System"
 HOMEPAGE="https://www.blender.org"
@@ -20,39 +20,46 @@ MY_PV="$(ver_cut 1-2)"
 SLOT="0"
 LICENSE="|| ( GPL-2 BL )"
 KEYWORDS="~amd64 ~x86"
-IUSE="+bullet +dds +elbeem +openexr collada color-management \
-	cuda cycles debug doc ffmpeg fftw headless jack jemalloc jpeg2k \
-	llvm man ndof nls oceansim openal opencl openimageio openmp opensubdiv openvdb \
-	osl sdl sndfile +tbb test tiff valgrind"
+IUSE="+bullet +dds +elbeem +openexr +tbb \
+	abi6-compat abi7-compat alembic collada color-management cuda cycles \
+	debug doc ffmpeg fftw headless jack jemalloc jpeg2k llvm \
+	man ndof nls oceansim openal opencl openimageio openmp opensubdiv \
+	openvdb osl sdl sndfile standalone test tiff valgrind"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
+	alembic? ( openexr )
 	cuda? ( cycles )
 	cycles? ( openexr tiff openimageio )
 	elbeem? ( tbb )
 	oceansim? ( fftw tbb )
 	opencl? ( cycles )
-	openvdb? ( tbb )
-	osl? ( cycles llvm )"
+	openvdb? (
+		^^ ( abi6-compat abi7-compat )
+		tbb
+	)
+	osl? ( cycles llvm )
+	standalone? ( cycles )"
 
 RDEPEND="${PYTHON_DEPS}
 	dev-cpp/gflags:=
 	dev-cpp/glog[gflags(+)]
-	>=dev-libs/boost-1.62:=[nls?,threads(+)]
-	dev-libs/lzo:2
+	dev-libs/boost:=[nls?,threads(+)]
+	dev-libs/lzo:2=
 	$(python_gen_cond_dep '
-		>=dev-python/numpy-1.10.1[${PYTHON_MULTI_USEDEP}]
+		dev-python/numpy[${PYTHON_MULTI_USEDEP}]
 		dev-python/requests[${PYTHON_MULTI_USEDEP}]
 	' python3_7 python3_8)
-	media-libs/freetype
+	media-libs/freetype:=
 	media-libs/glew:=
-	media-libs/libpng:0=
+	media-libs/libpng:=
 	media-libs/libsamplerate
-	sys-libs/zlib
+	sys-libs/zlib:=
 	virtual/glu
-	virtual/jpeg:0=
+	virtual/jpeg
 	virtual/libintl
 	virtual/opengl
-	collada? ( >=media-libs/opencollada-1.6.18:= )
+	alembic? ( >=media-gfx/alembic-1.7.12[boost(+),hdf(+)] )
+	collada? ( >=media-libs/opencollada-1.6.68:= )
 	color-management? ( media-libs/opencolorio:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
 	ffmpeg? ( media-video/ffmpeg:=[x264,mp3,encode,theora,jpeg2k?] )
@@ -65,7 +72,7 @@ RDEPEND="${PYTHON_DEPS}
 	)
 	jack? ( virtual/jack )
 	jemalloc? ( dev-libs/jemalloc:= )
-	jpeg2k? ( media-libs/openjpeg:2 )
+	jpeg2k? ( media-libs/openjpeg:2= )
 	llvm? ( sys-devel/llvm:= )
 	ndof? (
 		app-misc/spacenavd
@@ -74,25 +81,29 @@ RDEPEND="${PYTHON_DEPS}
 	nls? ( virtual/libiconv )
 	openal? ( media-libs/openal )
 	opencl? ( virtual/opencl )
-	openimageio? ( >=media-libs/openimageio-1.7.0:= )
+	openimageio? ( media-libs/openimageio:= )
 	openexr? (
-		>=media-libs/ilmbase-2.2.0:=
-		>=media-libs/openexr-2.2.0:=
+		media-libs/ilmbase:=
+		media-libs/openexr:=
 	)
-	opensubdiv? ( >=media-libs/opensubdiv-3.3.0:=[cuda=,opencl=] )
+	opensubdiv? ( >=media-libs/opensubdiv-3.4.0:=[cuda=,opencl=] )
 	openvdb? (
-		media-gfx/openvdb[${PYTHON_SINGLE_USEDEP},-abi3-compat(-),abi4-compat(+)]
-		>=dev-libs/c-blosc-1.5.2
+		~media-gfx/openvdb-7.0.0[abi6-compat(-)?,abi7-compat(-)?]
+		dev-libs/c-blosc:=
 	)
 	osl? ( media-libs/osl:= )
 	sdl? ( media-libs/libsdl2[sound,joystick] )
 	sndfile? ( media-libs/libsndfile )
 	tbb? ( dev-cpp/tbb )
-	tiff? ( media-libs/tiff:0 )
-	valgrind? ( dev-util/valgrind )"
+	tiff? ( media-libs/tiff )
+	valgrind? ( dev-util/valgrind )
+"
 
 DEPEND="${RDEPEND}
-	>=dev-cpp/eigen-3.2.8:3
+	dev-cpp/eigen:=
+"
+
+BDEPEND="
 	virtual/pkgconfig
 	doc? (
 		app-doc/doxygen[dot]
@@ -104,7 +115,8 @@ DEPEND="${RDEPEND}
 		dev-texlive/texlive-latex
 		dev-texlive/texlive-latexextra
 	)
-	nls? ( sys-devel/gettext )"
+	nls? ( sys-devel/gettext )
+"
 
 PATCHES=(
 	"${FILESDIR}/${PN}-2.82-use-system-glog.patch"
@@ -130,7 +142,7 @@ pkg_setup() {
 }
 
 src_prepare() {
-	cmake-utils_src_prepare
+	cmake_src_prepare
 
 	# we don't want static glew, but it's scattered across
 	# multiple files that differ from version to version
@@ -143,10 +155,10 @@ src_prepare() {
 	# Disable MS Windows help generation. The variable doesn't do what it
 	# it sounds like.
 	sed -e "s|GENERATE_HTMLHELP      = YES|GENERATE_HTMLHELP      = NO|" \
-	    -i doc/doxygen/Doxyfile || die
+		-i doc/doxygen/Doxyfile || die
 
 	# Remove bundled libraries which must not be used instead of system ones
-	rm -rf extern/{Eigen3,glew,glew-es,lzo,gflags,glog}
+	rm -rf extern/{Eigen3,glew,lzo,gflags,glog}
 }
 
 src_configure() {
@@ -154,35 +166,43 @@ src_configure() {
 	# shadows, see bug #276338 for reference
 	append-flags -funsigned-char
 	append-lfs-flags
-	# Blender is compatible ABI 4 or less, so use ABI 4.
-	append-cppflags -DOPENVDB_ABI_VERSION_NUMBER=4
+
+	if use openvdb; then
+		local version
+		if use abi6-compat; then
+			version=6;
+		elif use abi7-compat; then
+			version=7;
+		else
+			die "Openvdb abi version not compatible"
+		fi
+		append-cppflags -DOPENVDB_ABI_VERSION_NUMBER=${version}
+	fi
 
 	local mycmakeargs=(
-		-DPYTHON_VERSION="${EPYTHON/python/}"
-		-DPYTHON_LIBRARY="$(python_get_library_path)"
+		-DBUILD_SHARED_LIBS=OFF
 		-DPYTHON_INCLUDE_DIR="$(python_get_includedir)"
-		-DWITH_INSTALL_PORTABLE=OFF
-		-DWITH_PYTHON_INSTALL=OFF
-		-DWITH_PYTHON_INSTALL_NUMPY=OFF
-		-DWITH_STATIC_LIBS=OFF
-		-DWITH_SYSTEM_GLEW=ON
-		-DWITH_SYSTEM_EIGEN3=ON
-		-DWITH_SYSTEM_LZO=ON
-		-DWITH_SYSTEM_GFLAGS=ON
-		-DWITH_SYSTEM_GLOG=ON
+		-DPYTHON_LIBRARY="$(python_get_library_path)"
+		-DPYTHON_VERSION="${EPYTHON/python/}"
+		-DWITH_ALEMBIC=$(usex alembic)
+		-DWITH_ASSERT_ABORT=$(usex debug)
 		-DWITH_BOOST=ON
 		-DWITH_BULLET=$(usex bullet)
 		-DWITH_CODEC_FFMPEG=$(usex ffmpeg)
 		-DWITH_CODEC_SNDFILE=$(usex sndfile)
 		-DWITH_CUDA_DYNLOAD=$(usex cuda)
+		-DWITH_CXX_GUARDEDALLOC=$(usex debug)
 		-DWITH_CYCLES_DEVICE_CUDA=$(usex cuda TRUE FALSE)
-		-DWITH_CYCLES_DEVICE_OPENCL=$(usex opencl TRUE FALSE)
 		-DWITH_CYCLES=$(usex cycles)
+		-DWITH_CYCLES_DEVICE_OPENCL=$(usex opencl TRUE FALSE)
+		-DWITH_CYCLES_STANDALONE=$(usex standalone)
+		-DWITH_CYCLES_STANDALONE_GUI=$(usex standalone)
 		-DWITH_CYCLES_OSL=$(usex osl)
-		-DWITH_LLVM=$(usex llvm)
+		-DWITH_DOC_MANPAGE=$(usex man)
 		-DWITH_FFTW3=$(usex fftw)
+		-DWITH_GTESTS=$(usex test)
 		-DWITH_HEADLESS=$(usex headless)
-		-DWITH_X11=$(usex !headless)
+		-DWITH_INSTALL_PORTABLE=OFF
 		-DWITH_IMAGE_DDS=$(usex dds)
 		-DWITH_IMAGE_OPENEXR=$(usex openexr)
 		-DWITH_IMAGE_OPENJPEG=$(usex jpeg2k)
@@ -190,31 +210,36 @@ src_configure() {
 		-DWITH_INPUT_NDOF=$(usex ndof)
 		-DWITH_INTERNATIONAL=$(usex nls)
 		-DWITH_JACK=$(usex jack)
+		-DWITH_LLVM=$(usex llvm)
+		-DWITH_MEM_JEMALLOC=$(usex jemalloc)
+		-DWITH_MEM_VALGRIND=$(usex valgrind)
 		-DWITH_MOD_FLUID=$(usex elbeem)
 		-DWITH_MOD_OCEANSIM=$(usex oceansim)
 		-DWITH_OPENAL=$(usex openal)
-		-DWITH_OPENCOLORIO=$(usex color-management)
 		-DWITH_OPENCOLLADA=$(usex collada)
+		-DWITH_OPENCOLORIO=$(usex color-management)
 		-DWITH_OPENIMAGEIO=$(usex openimageio)
 		-DWITH_OPENMP=$(usex openmp)
 		-DWITH_OPENSUBDIV=$(usex opensubdiv)
 		-DWITH_OPENVDB=$(usex openvdb)
 		-DWITH_OPENVDB_BLOSC=$(usex openvdb)
+		-DWITH_PYTHON_INSTALL=OFF
+		-DWITH_PYTHON_INSTALL_NUMPY=OFF
 		-DWITH_SDL=$(usex sdl)
-		-DWITH_CXX_GUARDEDALLOC=$(usex debug)
-		-DWITH_ASSERT_ABORT=$(usex debug)
-		-DWITH_GTESTS=$(usex test)
-		-DWITH_DOC_MANPAGE=$(usex man)
-		-DWITH_MEM_JEMALLOC=$(usex jemalloc)
-		-DWITH_MEM_VALGRIND=$(usex valgrind)
+		-DWITH_STATIC_LIBS=OFF
+		-DWITH_SYSTEM_EIGEN3=ON
+		-DWITH_SYSTEM_GFLAGS=ON
+		-DWITH_SYSTEM_GLEW=ON
+		-DWITH_SYSTEM_GLOG=ON
+		-DWITH_SYSTEM_LZO=ON
 		-DWITH_TBB=$(usex tbb)
-		-DBUILD_SHARED_LIBS=OFF
+		-DWITH_X11=$(usex !headless)
 	)
-	cmake-utils_src_configure
+	cmake_src_configure
 }
 
 src_compile() {
-	cmake-utils_src_compile
+	cmake_src_compile
 
 	if use doc; then
 		# Workaround for binary drivers.
@@ -251,7 +276,11 @@ src_test() {
 
 src_install() {
 	# Pax mark blender for hardened support.
-	pax-mark m "${CMAKE_BUILD_DIR}"/bin/blender
+	pax-mark m "${BUILD_DIR}"/bin/blender
+
+	if use standalone; then
+		dobin "${BUILD_DIR}"/bin/cycles
+	fi
 
 	if use doc; then
 		docinto "html/API/python"
@@ -261,21 +290,21 @@ src_install() {
 		dodoc -r "${CMAKE_USE_DIR}"/doc/doxygen/html/.
 	fi
 
-	cmake-utils_src_install
+	cmake_src_install
 
 	# fix doc installdir
 	docinto "html"
 	dodoc "${CMAKE_USE_DIR}"/release/text/readme.html
-	rm -r "${ED%/}"/usr/share/doc/blender || die
+	rm -r "${ED}"/usr/share/doc/blender || die
 
-	python_fix_shebang "${ED%/}/usr/bin/blender-thumbnailer.py"
-	python_optimize "${ED%/}/usr/share/blender/${MY_PV}/scripts"
+	python_fix_shebang "${ED}/usr/bin/blender-thumbnailer.py"
+	python_optimize "${ED}/usr/share/blender/${MY_PV}/scripts"
 }
 
 pkg_postinst() {
 	elog
 	elog "Blender uses python integration. As such, may have some"
-	elog "inherit risks with running unknown python scripts."
+	elog "inherent risks with running unknown python scripts."
 	elog
 	elog "It is recommended to change your blender temp directory"
 	elog "from /tmp to /home/user/tmp or another tmp file under your"
@@ -290,14 +319,14 @@ pkg_postinst() {
 	ewarn "  https://developer.blender.org/"
 	ewarn
 	xdg_icon_cache_update
-	xdg_desktop_database_update
 	xdg_mimeinfo_database_update
+	xdg_desktop_database_update
 }
 
 pkg_postrm() {
 	xdg_icon_cache_update
-	xdg_desktop_database_update
 	xdg_mimeinfo_database_update
+	xdg_desktop_database_update
 
 	ewarn ""
 	ewarn "You may want to remove the following directory."

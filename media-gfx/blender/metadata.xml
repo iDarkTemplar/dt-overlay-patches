@@ -10,6 +10,16 @@
 		rendering, post-production, interactive creation and playback.
 	</longdescription>
 	<use>
+		<flag name="abi6-compat">
+			Build for OpenVDB ABI 6.
+		</flag>
+		<flag name="abi7-compat">
+			Build for OpenVDB ABI 7.
+		</flag>
+		<flag name="alembic">
+			Add support for Alembic through
+			<pkg>media-gfx/alembic</pkg>.
+		</flag>
 		<flag name="bullet">
 			Enable Bullet (Physics Engine).
 		</flag>
@@ -63,9 +73,11 @@
 		<flag name="osl">
 			Add support for OpenShadingLanguage scripting.
 		</flag>
+		<flag name="standalone">
+			Build the standalone version of Cycles.
+		</flag>
 		<flag name="tbb">
-			Enable multithreading with the Intel Threads Building Blocks through
-			<pkg>dev-cpp/tbb</pkg>.
+			Use threading building blocks library from <pkg>dev-cpp/tbb</pkg>.
 		</flag>
 		<flag name="test">
 			Build the provided unit tests.
