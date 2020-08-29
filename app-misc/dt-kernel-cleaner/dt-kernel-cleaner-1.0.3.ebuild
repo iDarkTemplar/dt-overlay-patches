@@ -1,9 +1,9 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
-inherit eutils cmake-utils
+inherit eutils cmake
 
 DESCRIPTION="Utility to remove leftover files of linux kernels"
 HOMEPAGE="https://github.com/iDarkTemplar/dt-kernel-cleaner"
@@ -27,9 +27,5 @@ src_configure() {
 		-DUSE_BOOST=$(usex boost)
 	)
 
-	cmake-utils_src_configure
-}
-
-src_install() {
-	cmake-utils_src_install
+	cmake_src_configure
 }

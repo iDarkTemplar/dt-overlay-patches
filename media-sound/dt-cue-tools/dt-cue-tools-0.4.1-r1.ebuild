@@ -1,8 +1,9 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
+CMAKE_ECLASS=cmake
 inherit eutils cmake-multilib
 
 DESCRIPTION="Library for cue sheet reading and tool for flac splitting using this information"
@@ -27,10 +28,10 @@ RDEPEND="
 		media-sound/alac_decoder
 	)"
 
-multilib_src_configure() {
+src_configure() {
 	local mycmakeargs=(
 		-DENABLE_SPLIT_TOOL=$(usex tools)
 	)
 
-	cmake-utils_src_configure
+	cmake-multilib_src_configure
 }
