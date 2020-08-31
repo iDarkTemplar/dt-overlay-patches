@@ -27,7 +27,7 @@ fi
 # TODO: unbundle sqlite
 
 QTC_PLUGINS=(android +autotest baremetal beautifier boot2qt
-	'+clang:clangcodemodel|clangformat|clangpchmanager|clangrefactoring|clangtools' clearcase
+	'+clang:clangcodemodel|clangformat|clangtools' 'clangrefactoring:clangrefactoring|clangpchmanager' clearcase
 	cmake:cmakeprojectmanager cppcheck ctfvisualizer cvs +designer git glsl:glsleditor +help ios
 	lsp:languageclient mcu:mcusupport mercurial modeling:modeleditor nim perforce perfprofiler python
 	qbs:qbsprojectmanager +qmldesigner qmlprofiler qnx remotelinux scxml:scxmleditor serialterminal
@@ -37,6 +37,7 @@ RESTRICT="!test? ( test )"
 REQUIRED_USE="
 	boot2qt? ( remotelinux )
 	clang? ( test? ( qbs ) )
+	clangrefactoring? ( clang )
 	mcu? ( cmake )
 	python? ( lsp )
 	qnx? ( remotelinux )
@@ -113,8 +114,8 @@ done
 unset x
 
 PATCHES=(
-	"${FILESDIR}"/${PN}-4.12.0-dylib-fix.patch
-	"${FILESDIR}"/${PN}-4.12.0-libclangformat-ide.patch
+	"${FILESDIR}"/${PN}-4.13.0-dylib-fix.patch
+	"${FILESDIR}"/${PN}-4.13.0-libclangformat-ide.patch
 )
 
 llvm_check_deps() {
@@ -142,7 +143,10 @@ src_prepare() {
 	# avoid building unused support libraries and tools
 	if ! use clang; then
 		sed -i -e '/clangsupport/d' src/libs/libs.pro || die
-		sed -i -e '/clang\(\|pchmanager\|refactoring\)backend/d' src/tools/tools.pro || die
+		sed -i -e '/clangbackend/d' src/tools/tools.pro || die
+	fi
+	if ! use clangrefactoring; then
+		sed -i -e '/clang\(pchmanager\|refactoring\)backend/d' src/tools/tools.pro || die
 	fi
 	if ! use glsl; then
 		sed -i -e '/glsl/d' src/libs/libs.pro || die
@@ -203,6 +207,8 @@ src_prepare() {
 }
 
 src_configure() {
+	use clangrefactoring && export QTC_ENABLE_CLANG_REFACTORING=1
+
 	eqmake5 IDE_LIBRARY_BASENAME="$(get_libdir)" \
 		IDE_PACKAGE_MODE=1 \
 		KSYNTAXHIGHLIGHTING_LIB_DIR="${EPREFIX}/usr/$(get_libdir)" \
@@ -215,11 +221,19 @@ src_configure() {
 		$(use test && echo BUILD_TESTS=1)
 }
 
+src_compile() {
+	use clangrefactoring && export QTC_ENABLE_CLANG_REFACTORING=1
+
+	default
+}
+
 src_test() {
 	cd tests/auto && virtx default
 }
 
 src_install() {
+	use clangrefactoring && export QTC_ENABLE_CLANG_REFACTORING=1
+
 	emake INSTALL_ROOT="${ED}/usr" install
 
 	dodoc dist/{changes-*,known-issues}

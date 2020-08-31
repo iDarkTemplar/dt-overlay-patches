@@ -1,3 +1,5 @@
+diff --git a/src/plugins/clangformat/clangformatbaseindenter.h b/src/plugins/clangformat/clangformatbaseindenter.h
+index 00dc3e9c7a..2c1cf48f40 100644
 --- a/src/plugins/clangformat/clangformatbaseindenter.h
 +++ b/src/plugins/clangformat/clangformatbaseindenter.h
 @@ -27,7 +27,7 @@
@@ -9,6 +11,8 @@
  
  namespace ClangFormat {
  
+diff --git a/src/plugins/clangformat/clangformatconfigwidget.cpp b/src/plugins/clangformat/clangformatconfigwidget.cpp
+index f1fa2c82ce..b2e552e9af 100644
 --- a/src/plugins/clangformat/clangformatconfigwidget.cpp
 +++ b/src/plugins/clangformat/clangformatconfigwidget.cpp
 @@ -32,7 +32,7 @@
@@ -20,6 +24,8 @@
  
  #include <coreplugin/icore.h>
  #include <cppeditor/cpphighlighter.h>
+diff --git a/src/plugins/clangformat/clangformatplugin.cpp b/src/plugins/clangformat/clangformatplugin.cpp
+index 9b76a0862f..840efe1f58 100644
 --- a/src/plugins/clangformat/clangformatplugin.cpp
 +++ b/src/plugins/clangformat/clangformatplugin.cpp
 @@ -56,7 +56,7 @@
@@ -31,20 +37,24 @@
  
  #include <utils/algorithm.h>
  
+diff --git a/src/plugins/clangformat/clangformatutils.h b/src/plugins/clangformat/clangformatutils.h
+index 74fd84c9c6..c455d25f85 100644
 --- a/src/plugins/clangformat/clangformatutils.h
 +++ b/src/plugins/clangformat/clangformatutils.h
-@@ -27,7 +27,7 @@
- 
- #include <coreplugin/id.h>
+@@ -28,7 +28,7 @@
  #include <utils/fileutils.h>
+ #include <utils/id.h>
+ 
 -#include <clang/Format/Format.h>
 +#include <clang/Format/FormatIDE.h>
  
  #include <QFile>
  
+diff --git a/src/shared/clang/clang_installation.pri b/src/shared/clang/clang_installation.pri
+index b1927ca9e9..2f0b590047 100644
 --- a/src/shared/clang/clang_installation.pri
 +++ b/src/shared/clang/clang_installation.pri
-@@ -227,7 +227,7 @@
+@@ -229,7 +229,7 @@ isEmpty(LLVM_VERSION) {
          CLANGFORMAT_MAIN_HEADER = $$LLVM_INCLUDEPATH/clang/Format/Format.h
          exists($$CLANGFORMAT_MAIN_HEADER) {
              exists($${LLVM_LIBDIR}/libclangFormat.so*)|exists($${LLVM_LIBDIR}/libclangFormat.dylib) {
@@ -53,7 +63,7 @@
                  ALL_CLANG_LIBS=-lclangFormat -lclangToolingInclusions -lclangTooling -lclangToolingCore \
                             -lclangRewrite -lclangIndex -lclangFrontend -lclangParse -lclangSerialization \
                             -lclangSema -lclangEdit -lclangAnalysis -lclangDriver -lclangDynamicASTMatchers \
-@@ -235,7 +235,7 @@
+@@ -237,7 +237,7 @@ isEmpty(LLVM_VERSION) {
                  win32:CLANGFORMAT_LIBS += -lversion
                  win32:ALL_CLANG_LIBS += -lversion
              } else {
