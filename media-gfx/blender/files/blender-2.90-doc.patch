@@ -1,0 +1,20 @@
+diff --git a/doc/python_api/sphinx_doc_gen.py b/doc/python_api/sphinx_doc_gen.py
+index 2c9445d..815a346 100644
+--- a/doc/python_api/sphinx_doc_gen.py
++++ b/doc/python_api/sphinx_doc_gen.py
+@@ -1028,7 +1028,6 @@ context_type_map = {
+     "gpencil": ("GreasePencil", False),
+     "gpencil_data": ("GreasePencil", False),
+     "gpencil_data_owner": ("ID", False),
+-    "hair": ("Hair", False),
+     "image_paint_object": ("Object", False),
+     "lattice": ("Lattice", False),
+     "light": ("Light", False),
+@@ -1045,7 +1044,6 @@ context_type_map = {
+     "particle_settings": ("ParticleSettings", False),
+     "particle_system": ("ParticleSystem", False),
+     "particle_system_editable": ("ParticleSystem", False),
+-    "pointcloud": ("PointCloud", False),
+     "pose_bone": ("PoseBone", False),
+     "pose_object": ("Object", False),
+     "scene": ("Scene", False),

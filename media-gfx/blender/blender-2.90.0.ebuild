@@ -122,6 +122,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-2.82-use-system-glog.patch"
 	"${FILESDIR}/${PN}-2.80-alt-include-deduplication-check-skip.patch"
 	"${FILESDIR}/${PN}-2.80-fix-install-rules.patch"
+	"${FILESDIR}/${PN}-2.90-doc.patch"
 )
 
 blender_check_requirements() {
@@ -195,6 +196,7 @@ src_configure() {
 		-DWITH_CYCLES_DEVICE_CUDA=$(usex cuda TRUE FALSE)
 		-DWITH_CYCLES=$(usex cycles)
 		-DWITH_CYCLES_DEVICE_OPENCL=$(usex opencl TRUE FALSE)
+		-DWITH_CYCLES_EMBREE=OFF
 		-DWITH_CYCLES_STANDALONE=$(usex standalone)
 		-DWITH_CYCLES_STANDALONE_GUI=$(usex standalone)
 		-DWITH_CYCLES_OSL=$(usex osl)
@@ -233,7 +235,6 @@ src_configure() {
 		-DWITH_SYSTEM_GLOG=ON
 		-DWITH_SYSTEM_LZO=ON
 		-DWITH_TBB=$(usex tbb)
-		-DWITH_X11=$(usex !headless)
 	)
 	cmake_src_configure
 }
