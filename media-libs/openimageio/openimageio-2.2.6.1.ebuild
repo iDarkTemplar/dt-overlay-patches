@@ -11,7 +11,7 @@ HOMEPAGE="https://sites.google.com/site/openimageio/ https://github.com/OpenImag
 SRC_URI="https://github.com/OpenImageIO/oiio/archive/Release-${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="BSD"
-SLOT="0/2.1"
+SLOT=0/$(ver_cut 1-2)
 KEYWORDS="amd64 ~ppc64 x86"
 
 X86_CPU_FEATURES=(
@@ -86,6 +86,10 @@ RDEPEND="
 DEPEND="${RDEPEND}"
 
 DOCS=( CHANGES.md CREDITS.md README.md )
+
+PATCHES=(
+	"${FILESDIR}"/${P}-pull-2698.patch
+)
 
 S="${WORKDIR}/oiio-Release-${PV}"
 
