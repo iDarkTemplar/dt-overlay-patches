@@ -25,7 +25,7 @@ DEPEND="
 	dev-qt/qtwidgets:5
 	dev-qt/qtxml:5
 	webengine? (
-		dev-qt/qtwebengine:5
+		dev-qt/qtwebengine:5[widgets]
 	)
 	!webengine? (
 		dev-qt/qtwebkit:5
