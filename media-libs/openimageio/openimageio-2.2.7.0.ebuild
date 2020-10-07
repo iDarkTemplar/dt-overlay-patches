@@ -87,10 +87,6 @@ DEPEND="${RDEPEND}"
 
 DOCS=( CHANGES.md CREDITS.md README.md )
 
-PATCHES=(
-	"${FILESDIR}"/${P}-pull-2698.patch
-)
-
 S="${WORKDIR}/oiio-Release-${PV}"
 
 pkg_setup() {
