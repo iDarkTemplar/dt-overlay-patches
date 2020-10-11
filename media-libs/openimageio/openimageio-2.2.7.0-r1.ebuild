@@ -3,27 +3,30 @@
 
 EAPI=7
 
-PYTHON_COMPAT=( python3_{6,7,8} )
+PYTHON_COMPAT=( python3_{6..9} )
 inherit cmake python-single-r1
 
 DESCRIPTION="A library for reading and writing images"
 HOMEPAGE="https://sites.google.com/site/openimageio/ https://github.com/OpenImageIO"
 SRC_URI="https://github.com/OpenImageIO/oiio/archive/Release-${PV}.tar.gz -> ${P}.tar.gz"
+S="${WORKDIR}/oiio-Release-${PV}"
 
 LICENSE="BSD"
 SLOT=0/$(ver_cut 1-2)
 KEYWORDS="amd64 ~ppc64 x86"
 
 X86_CPU_FEATURES=(
-	sse2:sse2 sse3:sse3 ssse3:ssse3 sse4_1:sse4.1 sse4_2:sse4.2
+	aes:aes sse2:sse2 sse3:sse3 ssse3:ssse3 sse4_1:sse4.1 sse4_2:sse4.2
 	avx:avx avx2:avx2 avx512f:avx512f f16c:f16c
 )
 CPU_FEATURES=( ${X86_CPU_FEATURES[@]/#/cpu_flags_x86_} )
 
-IUSE="color-management dicom doc ffmpeg field3d gif jpeg2k libheif opencv opengl openvdb ptex python qt5 raw +truetype ${CPU_FEATURES[@]%:*}"
+IUSE="doc ffmpeg field3d gif jpeg2k opencv opengl openvdb ptex python qt5 raw +truetype ${CPU_FEATURES[@]%:*}"
 REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} )"
 
-RESTRICT="test" # bug 431412
+# test data in separate repo
+# second repo has no structure whatsoever
+RESTRICT="test"
 
 BDEPEND="
 	doc? (
@@ -37,38 +40,40 @@ BDEPEND="
 "
 RDEPEND="
 	>=dev-libs/boost-1.62:=
+	dev-cpp/robin-map
 	dev-libs/libfmt:=
 	dev-libs/pugixml:=
-	dev-libs/robin-map:=
 	>=media-libs/ilmbase-2.2.0-r1:=
+	>=media-libs/libheif-1.7.0:=
 	media-libs/libpng:0=
 	>=media-libs/libwebp-0.2.1:=
+	media-libs/opencolorio:=
 	>=media-libs/openexr-2.2.0-r2:=
 	media-libs/tiff:0=
+	sci-libs/dcmtk
 	sys-libs/zlib:=
 	virtual/jpeg:0
-	color-management? ( media-libs/opencolorio:= )
-	dicom? ( sci-libs/dcmtk )
-	ffmpeg? (
-		app-arch/bzip2:=
-		media-video/ffmpeg:=
-	)
+	ffmpeg? ( media-video/ffmpeg:= )
 	field3d? ( media-libs/Field3D:= )
 	gif? ( media-libs/giflib:0= )
-	jpeg2k? ( >=media-libs/openjpeg-1.5:0= )
-	libheif? ( media-libs/libheif:= )
+	jpeg2k? ( >=media-libs/openjpeg-2.0:2= )
 	opencv? ( media-libs/opencv:= )
 	opengl? (
 		media-libs/glew:=
 		virtual/glu
 		virtual/opengl
 	)
-	openvdb? ( media-gfx/openvdb:= )
+	openvdb? (
+		dev-cpp/tbb:=
+		media-gfx/openvdb:=
+	)
 	ptex? ( media-libs/ptex:= )
 	python? (
 		${PYTHON_DEPS}
 		$(python_gen_cond_dep '
-			dev-libs/boost:=[python,${PYTHON_MULTI_USEDEP}]
+			dev-libs/boost:=[python,${PYTHON_USEDEP}]
+			dev-python/numpy:=[${PYTHON_USEDEP}]
+			dev-python/pybind11:=[${PYTHON_USEDEP}]
 		')
 	)
 	qt5? (
@@ -78,16 +83,11 @@ RDEPEND="
 		opengl? ( dev-qt/qtopengl:5 )
 	)
 	raw? ( media-libs/libraw:= )
-	truetype? (
-		app-arch/bzip2:=
-		media-libs/freetype:2=
-	)
+	truetype? ( media-libs/freetype:2= )
 "
 DEPEND="${RDEPEND}"
 
 DOCS=( CHANGES.md CREDITS.md README.md )
-
-S="${WORKDIR}/oiio-Release-${PV}"
 
 pkg_setup() {
 	use python && python-single-r1_pkg_setup
@@ -110,31 +110,27 @@ src_configure() {
 	[[ -z ${mysimd} ]] && mysimd=("0")
 
 	local mycmakeargs=(
+		-DVERBOSE=ON
+		-DOIIO_BUILD_TESTS=OFF
+		-DBUILD_DOCS=$(usex doc)
 		-DINSTALL_DOCS=$(usex doc)
-		-DOIIO_BUILD_TESTS=OFF # as they are RESTRICTed
 		-DSTOP_ON_WARNING=OFF
 		-DUSE_EXTERNAL_PUGIXML=ON
 		-DUSE_JPEGTURBO=ON
-		-DUSE_NUKE=OFF # Missing in Gentoo
-		-DUSE_LIBSQUISH=OFF # Missing in Gentoo
-		-DBUILD_MISSING_ROBINMAP=OFF
-		-DBUILD_MISSING_FMT=OFF
-		-DUSE_OPENCOLORIO=$(usex color-management)
-		-DUSE_DCMTK=$(usex dicom)
+		-DUSE_NUKE=OFF # not in Gentoo
 		-DUSE_FFMPEG=$(usex ffmpeg)
 		-DUSE_FIELD3D=$(usex field3d)
 		-DUSE_GIF=$(usex gif)
 		-DUSE_OPENJPEG=$(usex jpeg2k)
 		-DUSE_OPENCV=$(usex opencv)
 		-DUSE_OPENGL=$(usex opengl)
+		-DUSE_OPENVDB=$(usex openvdb)
 		-DUSE_PTEX=$(usex ptex)
 		-DUSE_PYTHON=$(usex python)
 		-DUSE_QT=$(usex qt5)
 		-DUSE_LIBRAW=$(usex raw)
 		-DUSE_FREETYPE=$(usex truetype)
 		-DUSE_SIMD=$(local IFS=','; echo "${mysimd[*]}")
-		-DUSE_LIBHEIF=$(usex libheif)
-		-DUSE_OPENVDB=$(usex openvdb)
 	)
 
 	cmake_src_configure
