@@ -5,6 +5,9 @@
 		<email>darktemplar@dark-templar-archives.net</email>
 		<name>i.Dark_Templar</name>
 	</maintainer>
+	<use>
+		<flag name="desktop">If disabled, eselect wine will not create desktop entries</flag>
+	</use>
 	<upstream>
 		<remote-id type="bitbucket">NP-Hardass/eselect-wine</remote-id>
 	</upstream>

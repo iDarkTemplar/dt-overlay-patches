@@ -10,20 +10,22 @@ SRC_URI="https://bitbucket.org/NP-Hardass/${PN}/raw/v${PV}/wine.eselect -> wine.
 LICENSE="GPL-2+"
 SLOT="0"
 KEYWORDS="-* amd64 x86"
-IUSE=""
+IUSE="+desktop"
 
 RDEPEND="app-admin/eselect
 	dev-util/desktop-file-utils
 	!!app-emulation/wine:0"
 
-PATCHES=(
-	"${FILESDIR}/${P}-skip-desktop-files.patch"
-)
-
 S=${WORKDIR}
 
 src_unpack() {
 	cp "${DISTDIR}"/wine.eselect-${PV} "${S}"/wine.eselect
+}
+
+src_prepare() {
+	use desktop || eapply "${FILESDIR}/${P}-skip-desktop-files.patch"
+
+	default
 }
 
 src_install() {
