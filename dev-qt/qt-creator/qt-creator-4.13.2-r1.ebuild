@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
-LLVM_MAX_SLOT=10
+LLVM_MAX_SLOT=11
 PLOCALES="cs da de fr ja pl ru sl uk zh-CN zh-TW"
 
 inherit llvm qmake-utils virtualx xdg
@@ -69,6 +69,8 @@ CDEPEND="
 	kde-frameworks/syntax-highlighting:5
 	clang? (
 		|| (
+			( sys-devel/clang:11
+				dev-libs/libclangformat-ide:11 )
 			( sys-devel/clang:10
 				dev-libs/libclangformat-ide:10 )
 			( sys-devel/clang:9
