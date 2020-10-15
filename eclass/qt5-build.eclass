@@ -204,6 +204,10 @@ qt5-build_src_prepare() {
 		sed -i -e "s|\"\$outpath/bin/qmake\" \"\$relpathMangled\" -- \"\$@\"|& $(qt5_qmake_args) |" configure || die
 	fi
 
+	if [[ ${QT5_MODULE} == qttools ]]; then
+		qt5_symlink_qttools_to_build_dir
+	fi
+
 	default
 }
 
@@ -522,6 +526,28 @@ qt5_symlink_tools_to_build_dir() {
 		tools+=(qmake moc rcc qlalr)
 		[[ ${PN} != qtdbus ]] && tools+=(qdbuscpp2xml qdbusxml2cpp)
 		[[ ${PN} != qtwidgets ]] && tools+=(uic)
+	fi
+
+	mkdir -p "${QT5_BUILD_DIR}"/bin || die
+	pushd "${QT5_BUILD_DIR}"/bin >/dev/null || die
+
+	for tool in "${tools[@]}"; do
+		[[ -e ${QT5_BINDIR}/${tool} ]] || continue
+		ln -s "${QT5_BINDIR}/${tool}" . || die "failed to symlink ${tool}"
+	done
+
+	popd >/dev/null || die
+}
+
+# @FUNCTION: qt5_symlink_qttools_to_build_dir
+# @INTERNAL
+# @DESCRIPTION:
+# Symlinks qtattributionsscanner and a few other tools to QT5_BUILD_DIR,
+# so that they can be used when building other modules.
+qt5_symlink_qttools_to_build_dir() {
+	local tool= tools=()
+	if [[ ${PN} == qdoc || ${PN} == designer ]]; then
+		tools+=(qtattributionsscanner)
 	fi
 
 	mkdir -p "${QT5_BUILD_DIR}"/bin || die
