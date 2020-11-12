@@ -15,16 +15,9 @@ KEYWORDS="~alpha ~amd64 ~arm ~ppc ~ppc64 ~sparc ~x86"
 IUSE="apcupsd bundled-toluapp cmus curl doc hddtemp ical iconv imlib iostats
 	ipv6 irc lua-cairo lua-imlib lua-rsvg math moc mpd mysql nano-syntax
 	ncurses nvidia +portmon pulseaudio rss systemd thinkpad truetype
-	vim-syntax weather-metar webserver wifi X xmms2"
+	vim-syntax weather-metar webserver wifi X xinerama xmms2"
 
 COMMON_DEPEND="
-	X? (
-		x11-libs/libX11
-		x11-libs/libXdamage
-		x11-libs/libXinerama
-		x11-libs/libXfixes
-		x11-libs/libXext
-	)
 	cmus? ( media-sound/cmus )
 	curl? ( net-misc/curl )
 	ical? ( dev-libs/libical:= )
@@ -44,6 +37,13 @@ COMMON_DEPEND="
 	wifi? ( net-wireless/wireless-tools )
 	weather-metar? ( net-misc/curl )
 	webserver? ( net-libs/libmicrohttpd )
+	X? (
+		x11-libs/libX11
+		x11-libs/libXdamage
+		x11-libs/libXfixes
+		x11-libs/libXext
+	)
+	xinerama? ( x11-libs/libXinerama )
 	xmms2? ( media-sound/xmms2 )
 	|| ( dev-lang/lua:5.4 dev-lang/lua:5.3 dev-lang/lua:5.2 )
 "
@@ -62,11 +62,12 @@ DEPEND="
 
 REQUIRED_USE="
 	imlib? ( X )
-	nvidia? ( X )
-	truetype? ( X )
 	lua-cairo? ( X  bundled-toluapp )
 	lua-imlib? ( X  bundled-toluapp )
 	lua-rsvg? ( X  bundled-toluapp )
+	nvidia? ( X )
+	truetype? ( X )
+	xinerama? ( X )
 "
 
 CONFIG_CHECK=~IPV6
@@ -74,6 +75,7 @@ CONFIG_CHECK=~IPV6
 DOCS=( README.md AUTHORS )
 
 PATCHES=(
+	"${FILESDIR}"/${P}-fpermissive.patch
 	"${FILESDIR}"/${PN}-1.11.5-lua-5.4.patch
 )
 
@@ -109,7 +111,6 @@ src_configure() {
 			-DBUILD_X11=ON
 			-DBUILD_XDAMAGE=ON
 			-DBUILD_XDBE=ON
-			-DBUILD_XINERAMA=ON
 			-DBUILD_XSHAPE=ON
 			-DOWN_WINDOW=ON
 		)
@@ -153,6 +154,7 @@ src_configure() {
 		-DBUILD_WEATHER_METAR=$(usex weather-metar)
 		-DBUILD_WLAN=$(usex wifi)
 		-DBUILD_XFT=$(usex truetype)
+		-DBUILD_XINERAMA=$(usex xinerama)
 		-DBUILD_XMMS2=$(usex xmms2)
 		-DDOC_PATH=/usr/share/doc/${PF}
 		-DMAINTAINER_MODE=OFF
