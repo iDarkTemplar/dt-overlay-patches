@@ -168,6 +168,10 @@ src_configure() {
 	append-flags -funsigned-char
 	append-lfs-flags
 
+	if ! use debug ; then
+		append-flags -DNDEBUG
+	fi
+
 	if use openvdb; then
 		local version
 		if use abi6-compat; then
