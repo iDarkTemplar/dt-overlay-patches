@@ -1,0 +1,25 @@
+From df9f6f38be7ed385b0b56d5c6101e34f717e2318 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Wolfgang=20St=C3=B6ggl?= <c72578@yahoo.de>
+Date: Sun, 11 Oct 2020 03:49:27 +0200
+Subject: [PATCH] Look for Qt online-help file also in FILESDIR (#2844)
+
+---
+ gui/helpdialog.cpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/gui/helpdialog.cpp b/gui/helpdialog.cpp
+index 706266968b..c158c8092f 100644
+--- a/gui/helpdialog.cpp
++++ b/gui/helpdialog.cpp
+@@ -33,6 +33,11 @@ static QString getHelpFile()
+           << datadir
+           << (QApplication::applicationDirPath() + "/help")
+           << QApplication::applicationDirPath();
++#ifdef FILESDIR
++    const QString filesdir = FILESDIR;
++    paths << (filesdir + "/help")
++          << filesdir;
++#endif
+     for (QString p: paths) {
+         QString filename = p + "/online-help.qhc";
+         if (QFileInfo(filename).exists())

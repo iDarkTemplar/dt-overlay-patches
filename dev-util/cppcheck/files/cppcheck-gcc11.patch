@@ -1,0 +1,24 @@
+diff --git a/lib/programmemory.cpp b/lib/programmemory.cpp
+index 6b0e2d8..785c9cf 100644
+--- a/lib/programmemory.cpp
++++ b/lib/programmemory.cpp
+@@ -6,6 +6,7 @@
+ #include <algorithm>
+ #include <cassert>
+ #include <memory>
++#include <limits>
+ 
+ void ProgramMemory::setValue(nonneg int varid, const ValueFlow::Value &value)
+ {
+diff --git a/test/testsymboldatabase.cpp b/test/testsymboldatabase.cpp
+index 4d378d5..ced44ab 100644
+--- a/test/testsymboldatabase.cpp
++++ b/test/testsymboldatabase.cpp
+@@ -38,6 +38,7 @@
+ #include <stdexcept>
+ #include <string>
+ #include <vector>
++#include <limits>
+ 
+ struct InternalError;
+ 

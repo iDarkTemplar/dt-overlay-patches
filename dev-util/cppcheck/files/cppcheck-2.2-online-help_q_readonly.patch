@@ -1,0 +1,31 @@
+From 4a057c181373626f6e1538a2edf46cc4741fe7bf Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Wolfgang=20St=C3=B6ggl?= <c72578@yahoo.de>
+Date: Sun, 8 Nov 2020 15:06:14 +0100
+Subject: [PATCH] Set _q_readonly property for online-help (#2890)
+
+- Setting _q_readonly disables the timestamp check of the registered
+  online-help.qch file
+- This enables displaying of Contents and Index of the online help,
+  even if the timestamp of online-help.qch is slightly different.
+  Differences in the timestamp can result from packing online-help.qch
+  in a cab file, when building the installer (1 or 2 seconds) or from
+  installing the file under a different timezone under Linux etc.
+- Remark: Qt 5.14 or newer is required to display Contents or Index,
+  when the help files are readonly
+---
+ gui/helpdialog.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/gui/helpdialog.cpp b/gui/helpdialog.cpp
+index c158c8092f..ce24aa1c3a 100644
+--- a/gui/helpdialog.cpp
++++ b/gui/helpdialog.cpp
+@@ -66,6 +66,8 @@ HelpDialog::HelpDialog(QWidget *parent) :
+     }
+ 
+     mHelpEngine = new QHelpEngine(helpFile);
++    // Disable the timestamp check of online-help.qhc by setting _q_readonly
++    mHelpEngine->setProperty("_q_readonly", QVariant::fromValue<bool>(true));
+     mHelpEngine->setupData();
+ 
+     mUi->contents->addWidget(mHelpEngine->contentWidget());
