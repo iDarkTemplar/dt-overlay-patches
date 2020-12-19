@@ -116,7 +116,6 @@ done
 unset x
 
 PATCHES=(
-	"${FILESDIR}"/${PN}-4.13.0-dylib-fix.patch
 	"${FILESDIR}"/${PN}-4.13.0-libclangformat-ide.patch
 )
 

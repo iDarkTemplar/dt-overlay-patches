@@ -51,24 +51,23 @@ index 74fd84c9c6..c455d25f85 100644
  #include <QFile>
  
 diff --git a/src/shared/clang/clang_installation.pri b/src/shared/clang/clang_installation.pri
-index b1927ca9e9..2f0b590047 100644
+index 28c2d0d326..52a54422c8 100644
 --- a/src/shared/clang/clang_installation.pri
 +++ b/src/shared/clang/clang_installation.pri
-@@ -229,7 +229,7 @@ isEmpty(LLVM_VERSION) {
+@@ -204,14 +204,14 @@ isEmpty(LLVM_VERSION) {
          CLANGFORMAT_MAIN_HEADER = $$LLVM_INCLUDEPATH/clang/Format/Format.h
          exists($$CLANGFORMAT_MAIN_HEADER) {
-             exists($${LLVM_LIBDIR}/libclangFormat.so*)|exists($${LLVM_LIBDIR}/libclangFormat.dylib) {
+             exists($$LLVM_LIBDIR/*clangBasic*) {
 -                CLANGFORMAT_LIBS=-lclangFormat -lclangToolingInclusions -lclangToolingCore -lclangRewrite -lclangLex -lclangBasic
 +                CLANGFORMAT_LIBS=-lclangFormatIDE -lclangToolingInclusions -lclangToolingCore -lclangRewrite -lclangLex -lclangBasic
                  ALL_CLANG_LIBS=-lclangFormat -lclangToolingInclusions -lclangTooling -lclangToolingCore \
-                            -lclangRewrite -lclangIndex -lclangFrontend -lclangParse -lclangSerialization \
-                            -lclangSema -lclangEdit -lclangAnalysis -lclangDriver -lclangDynamicASTMatchers \
-@@ -237,7 +237,7 @@ isEmpty(LLVM_VERSION) {
+                                -lclangRewrite -lclangIndex -lclangFrontend -lclangParse -lclangSerialization \
+                                -lclangSema -lclangEdit -lclangAnalysis -lclangDriver -lclangDynamicASTMatchers \
+                                -lclangASTMatchers -lclangAST -lclangLex -lclangBasic
                  win32:CLANGFORMAT_LIBS += -lversion
-                 win32:ALL_CLANG_LIBS += -lversion
              } else {
--                CLANGFORMAT_LIBS=-lclang-cpp
-+                CLANGFORMAT_LIBS=-lclangFormatIDE -lclang-cpp
-                 ALL_CLANG_LIBS=-lclang-cpp
+-                CLANGFORMAT_LIBS = -lclang-cpp
++                CLANGFORMAT_LIBS = -lclangFormatIDE -lclang-cpp
+                 ALL_CLANG_LIBS = -lclang-cpp
              }
          }
