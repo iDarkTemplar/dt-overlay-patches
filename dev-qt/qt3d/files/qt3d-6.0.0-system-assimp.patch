@@ -1,0 +1,25 @@
+From 89461a91ed979538ae905c58877ac8c645d15e0d Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sun, 3 Jan 2021 17:23:38 +0300
+Subject: [PATCH] Fix system assimp test
+
+---
+ src/plugins/sceneparsers/configure.cmake | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/plugins/sceneparsers/configure.cmake b/src/plugins/sceneparsers/configure.cmake
+index 5e680c0ba..61a7a774e 100644
+--- a/src/plugins/sceneparsers/configure.cmake
++++ b/src/plugins/sceneparsers/configure.cmake
+@@ -29,7 +29,7 @@ qt_feature("qt3d_assimp" PUBLIC PRIVATE
+ qt_feature_definition("qt3d_assimp" "QT_NO_ASSIMP" NEGATE VALUE "1")
+ qt_feature("qt3d_system_assimp" PRIVATE
+     LABEL "System Assimp"
+-    CONDITION QT_FEATURE_qt3d_assimp AND TEST_assimp
++    CONDITION QT_FEATURE_qt3d_assimp AND TEST_qt3d_assimp
+     ENABLE INPUT_assimp STREQUAL 'system'
+     DISABLE INPUT_assimp STREQUAL 'qt'
+ )
+-- 
+2.26.2
+
