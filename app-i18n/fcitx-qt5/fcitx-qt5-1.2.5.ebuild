@@ -24,7 +24,11 @@ SLOT="4"
 KEYWORDS="amd64 ~hppa ppc ppc64 x86"
 IUSE=""
 
-BDEPEND="kde-frameworks/extra-cmake-modules:5
+BDEPEND=">=app-i18n/fcitx-4.2.9:4
+	dev-qt/qtcore:5
+	dev-qt/qtdbus:5
+	dev-qt/qtwidgets:5
+	kde-frameworks/extra-cmake-modules:5
 	virtual/pkgconfig"
 # Private headers of dev-qt/qtgui:5 used.
 RDEPEND=">=app-i18n/fcitx-4.2.9:4
@@ -37,8 +41,9 @@ RDEPEND=">=app-i18n/fcitx-4.2.9:4
 DEPEND="${RDEPEND}
 	dev-qt/qtconcurrent:5"
 
-DOCS=()
-
 PATCHES=(
+	"${FILESDIR}/${P}-QFcitxPlatformInputContext_recursion.patch"
 	"${FILESDIR}/${P}-disable-qfilesystemwatcher-warnings.patch"
 )
+
+DOCS=()
