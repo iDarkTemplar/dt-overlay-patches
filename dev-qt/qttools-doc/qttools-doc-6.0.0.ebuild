@@ -13,7 +13,6 @@ if [[ ${QT6_BUILD_TYPE} == release ]]; then
 fi
 
 IUSE="dbus examples qml"
-# TODO: example sources
 
 BDEPEND="
 	~dev-qt/qttools-${PV}:6=

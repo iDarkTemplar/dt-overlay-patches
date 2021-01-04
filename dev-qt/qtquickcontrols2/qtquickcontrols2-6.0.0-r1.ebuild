@@ -3,27 +3,24 @@
 
 EAPI=7
 
-QT6_MODULE="qtquick3d"
+QT6_MODULE="qtquickcontrols2"
 inherit cmake qt6-build
 
-DESCRIPTION="Qt Quick3D Libraries"
+DESCRIPTION="Set of next generation Qt Quick controls for the Qt6 framework"
 
 if [[ ${QT6_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 ~arm ~arm64 ~hppa ~ppc ~ppc64 ~sparc ~x86"
 fi
 
 IUSE="doc examples"
-# TODO: example sources
 
 BDEPEND="
 	doc? ( ~dev-qt/qttools-${PV}:6=[qml] )
 	"
 
 DEPEND="
-	>=media-libs/assimp-5.0.0
-	~dev-qt/qtbase-${PV}:6=
+	~dev-qt/qtbase-${PV}:6=[widgets]
 	~dev-qt/qtdeclarative-${PV}:6=
-	~dev-qt/qtshadertools-${PV}:6=
 	!dev-qt/qt-docs
 "
 
@@ -39,8 +36,6 @@ src_configure() {
 		# exclude examples and tests from default build
 		-DQT_BUILD_EXAMPLES=$(usex examples ON OFF)
 		-DQT_BUILD_TESTS=OFF
-
-		-DINPUT_quick3d_assimp=system
 	)
 
 	cmake_src_configure
@@ -55,6 +50,20 @@ src_compile() {
 }
 
 src_install() {
+	local exampledir
+	local installexampledir
+
+	if use examples; then
+		# QTBUG-86302: install example sources manually
+		while read exampledir ; do
+			exampledir="$(dirname "$exampledir")"
+			installexampledir="$(dirname "$exampledir")"
+			installexampledir="${installexampledir#examples/}"
+			insinto "${QT6_EXAMPLESDIR}/${installexampledir}"
+			doins -r "${exampledir}"
+		done < <(find examples -name CMakeLists.txt 2>/dev/null | xargs grep -l -i project)
+	fi
+
 	cmake_src_install $(usex doc install_docs "")
 
 	qt_install_bin_symlinks

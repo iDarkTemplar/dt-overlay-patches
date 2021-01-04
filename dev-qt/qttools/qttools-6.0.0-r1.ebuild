@@ -13,7 +13,6 @@ if [[ ${QT6_BUILD_TYPE} == release ]]; then
 fi
 
 IUSE="dbus doc examples qml"
-# TODO: example sources
 
 DEPEND="
 	~dev-qt/qtbase-${PV}:6=[gui,network,opengl,png,sql,widgets]
@@ -62,6 +61,20 @@ src_configure() {
 }
 
 src_install() {
+	local exampledir
+	local installexampledir
+
+	if use examples; then
+		# QTBUG-86302: install example sources manually
+		while read exampledir ; do
+			exampledir="$(dirname "$exampledir")"
+			installexampledir="$(dirname "$exampledir")"
+			installexampledir="${installexampledir#examples/}"
+			insinto "${QT6_EXAMPLESDIR}/${installexampledir}"
+			doins -r "${exampledir}"
+		done < <(find examples -name CMakeLists.txt 2>/dev/null | xargs grep -l -i project)
+	fi
+
 	cmake_src_install
 
 	qt_install_bin_symlinks

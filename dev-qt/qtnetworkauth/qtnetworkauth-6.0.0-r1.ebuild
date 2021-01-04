@@ -3,10 +3,11 @@
 
 EAPI=7
 
-QT6_MODULE="qt3d"
+QT6_MODULE="qtnetworkauth"
 inherit cmake qt6-build
 
-DESCRIPTION="3D rendering module for the Qt6 framework"
+DESCRIPTION="Network authorization library for the Qt6 framework"
+LICENSE="GPL-3"
 
 SRC_URI="https://download.qt.io/official_releases/additional_libraries/${QT6_MODULE}/${PV%.*}/${PV}/${MY_P}.tar.xz"
 
@@ -14,49 +15,19 @@ if [[ ${QT6_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 ~arm ~arm64 ~hppa ~ppc ~ppc64 ~sparc ~x86"
 fi
 
-IUSE="doc examples gles2-only qml vulkan"
-# TODO: example sources
-# TODO: tools
-# TODO: gamepad dep
-# TODO: multimedia dep
+IUSE="doc examples"
 
 BDEPEND="
-	doc? ( ~dev-qt/qttools-${PV}:6=[qml=] )
+	doc? ( ~dev-qt/qttools-${PV}:6= )
 	"
 
-RDEPEND="
-	>=media-libs/assimp-5.0.0
-	~dev-qt/qtbase-${PV}:6=[gui,opengl,vulkan=]
-	~dev-qt/qtshadertools-${PV}:6=
+DEPEND="
+	~dev-qt/qtbase-${PV}:6=[network]
 	examples? (
 		~dev-qt/qtbase-${PV}:6=[widgets]
-		~dev-qt/qtdeclarative-${PV}:6=[widgets]
-	)
-	qml? (
-		~dev-qt/qtdeclarative-${PV}:6=[gles2-only=]
-		~dev-qt/qtquick3d-${PV}:6=
 	)
 	!dev-qt/qt-docs
 "
-
-DEPEND="${RDEPEND}
-	vulkan? ( dev-util/vulkan-headers )
-"
-
-PATCHES=(
-	"${FILESDIR}/qt3d-6.0.0-system-assimp.patch"
-)
-
-src_prepare() {
-	qt_use_disable_target qml Qt::QuickWidgets \
-		examples/qt3d/CMakeLists.txt
-
-	qt_use_disable_target qml Qt::Quick \
-		src/CMakeLists.txt \
-		examples/qt3d/CMakeLists.txt
-
-	cmake_src_prepare
-}
 
 src_configure() {
 	local mycmakeargs
@@ -70,8 +41,6 @@ src_configure() {
 		# exclude examples and tests from default build
 		-DQT_BUILD_EXAMPLES=$(usex examples ON OFF)
 		-DQT_BUILD_TESTS=OFF
-
-		-DINPUT_assimp=system
 	)
 
 	cmake_src_configure
@@ -86,6 +55,20 @@ src_compile() {
 }
 
 src_install() {
+	local exampledir
+	local installexampledir
+
+	if use examples; then
+		# QTBUG-86302: install example sources manually
+		while read exampledir ; do
+			exampledir="$(dirname "$exampledir")"
+			installexampledir="$(dirname "$exampledir")"
+			installexampledir="${installexampledir#examples/}"
+			insinto "${QT6_EXAMPLESDIR}/${installexampledir}"
+			doins -r "${exampledir}"
+		done < <(find examples -name CMakeLists.txt 2>/dev/null | xargs grep -l -i project)
+	fi
+
 	cmake_src_install $(usex doc install_docs "")
 
 	qt_install_bin_symlinks

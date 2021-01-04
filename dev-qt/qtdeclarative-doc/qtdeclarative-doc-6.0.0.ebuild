@@ -13,7 +13,6 @@ if [[ ${QT6_BUILD_TYPE} == release ]]; then
 fi
 
 IUSE="examples gles2-only +jit localstorage vulkan +widgets"
-# TODO: example sources
 
 BDEPEND="
 	~dev-qt/qttools-${PV}:6=[qml]

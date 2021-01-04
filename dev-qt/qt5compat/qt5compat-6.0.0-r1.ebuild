@@ -3,36 +3,30 @@
 
 EAPI=7
 
-QT6_MODULE="qtwayland"
+QT6_MODULE="qt5compat"
 inherit cmake qt6-build
 
-DESCRIPTION="Wayland platform plugin for Qt"
+DESCRIPTION="Qt5-compatibility layer for Qt6"
 
 if [[ ${QT6_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 ~arm ~arm64 ~hppa ~ppc ~ppc64 ~sparc ~x86"
 fi
 
-IUSE="doc examples vulkan X"
-# TODO: example sources
+IUSE="doc examples"
 
 BDEPEND="
-	doc? ( ~dev-qt/qttools-${PV}:6=[qml] )
+	doc? ( ~dev-qt/qttools-${PV}:6= )
 	"
 
 DEPEND="
-	>=dev-libs/wayland-1.6.0
-	~dev-qt/qtbase-${PV}:6=[gui,egl,opengl,vulkan=,X=]
-	~dev-qt/qtdeclarative-${PV}:6=
-	media-libs/mesa[egl]
-	>=x11-libs/libxkbcommon-0.2.0
-	vulkan? ( dev-util/vulkan-headers )
-	X? (
-		~dev-qt/qtbase-${PV}:6=[-gles2-only]
-		x11-libs/libX11
-		x11-libs/libXcomposite
-	)
+	~dev-qt/qtbase-${PV}:6=[icu]
+	examples? ( ~dev-qt/qtbase-${PV}:6=[widgets] )
 	!dev-qt/qt-docs
 "
+
+PATCHES=(
+	"${FILESDIR}/${P}-examples.patch"
+)
 
 src_configure() {
 	local mycmakeargs
@@ -60,6 +54,20 @@ src_compile() {
 }
 
 src_install() {
+	local exampledir
+	local installexampledir
+
+	if use examples; then
+		# QTBUG-86302: install example sources manually
+		while read exampledir ; do
+			exampledir="$(dirname "$exampledir")"
+			installexampledir="$(dirname "$exampledir")"
+			installexampledir="${installexampledir#examples/}"
+			insinto "${QT6_EXAMPLESDIR}/${installexampledir}"
+			doins -r "${exampledir}"
+		done < <(find examples -name CMakeLists.txt 2>/dev/null | xargs grep -l -i project)
+	fi
+
 	cmake_src_install $(usex doc install_docs "")
 
 	qt_install_bin_symlinks
