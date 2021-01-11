@@ -12,7 +12,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm arm64 ~hppa ppc ppc64 x86"
 fi
 
-IUSE="declarative examples webkit"
+IUSE="declarative examples"
 
 DEPEND="
 	~dev-qt/qtcore-${PV}:5=
@@ -23,9 +23,10 @@ DEPEND="
 	~dev-qt/qtxml-${PV}
 	declarative? ( ~dev-qt/qtdeclarative-${PV}[widgets] )
 	doc? ( declarative? ( ~dev-qt/qdoc-${PV}[qml] ) )
-	webkit? ( >=dev-qt/qtwebkit-5.9.1:5 )
 "
-RDEPEND="${DEPEND}"
+RDEPEND="${DEPEND}
+	dev-qt/qtchooser
+"
 
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples/designer")
@@ -35,8 +36,8 @@ src_prepare() {
 	qt_use_disable_mod declarative quickwidgets \
 		src/designer/src/plugins/plugins.pro
 
-	qt_use_disable_mod webkit webkitwidgets \
-		src/designer/src/plugins/plugins.pro
+	sed -e "s/qtHaveModule(webkitwidgets)/false/g" \
+		-i src/designer/src/plugins/plugins.pro || die
 
 	qt5-build_src_prepare
 }

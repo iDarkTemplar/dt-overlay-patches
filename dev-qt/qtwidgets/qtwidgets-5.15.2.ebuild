@@ -25,7 +25,9 @@ DEPEND="
 		x11-libs/pango
 	)
 "
-RDEPEND="${DEPEND}"
+RDEPEND="${DEPEND}
+	dev-qt/qtchooser
+"
 
 PDEPEND="
 	doc? (

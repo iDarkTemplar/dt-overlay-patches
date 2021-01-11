@@ -20,7 +20,9 @@ DEPEND="
 	doc? ( ~dev-qt/qdoc-${PV}[qml?] )
 	examples? ( ~dev-qt/qtwidgets-${PV} )
 "
-RDEPEND="${DEPEND}"
+RDEPEND="${DEPEND}
+	dev-qt/qtchooser
+"
 
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples")

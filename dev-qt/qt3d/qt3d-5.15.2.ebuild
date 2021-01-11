@@ -16,7 +16,7 @@ IUSE="examples gamepad gles2-only qml vulkan"
 
 REQUIRED_USE="examples? ( qml )"
 
-RDEPEND="
+COMMON_DEPEND="
 	~dev-qt/qtconcurrent-${PV}
 	~dev-qt/qtcore-${PV}
 	~dev-qt/qtgui-${PV}:5=[vulkan=]
@@ -27,8 +27,11 @@ RDEPEND="
 	gamepad? ( ~dev-qt/qtgamepad-${PV} )
 	qml? ( ~dev-qt/qtdeclarative-${PV}[gles2-only=] )
 "
-DEPEND="${RDEPEND}
+DEPEND="${COMMON_DEPEND}
 	vulkan? ( dev-util/vulkan-headers )
+"
+RDEPEND="${COMMON_DEPEND}
+	dev-qt/qtchooser
 "
 
 pkg_setup() {

@@ -38,6 +38,8 @@ QT5_TARGET_SUBDIRS=(
 	src/plugins/geoservices
 )
 
+PATCHES=( "${FILESDIR}"/${P}-qsg-render-thread-crash-{1,2}.patch ) # QTBUG-85260
+
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples/location")
 }

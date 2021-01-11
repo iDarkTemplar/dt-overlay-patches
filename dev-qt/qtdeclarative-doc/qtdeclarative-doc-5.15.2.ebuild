@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
+
 QT5_MODULE="qtdeclarative"
-PYTHON_COMPAT=( python3_{6,7,8} )
-inherit python-any-r1 qt5-build
+inherit qt5-build
 
 DESCRIPTION="Documentation for the QML and Quick modules for the Qt5 framework"
 

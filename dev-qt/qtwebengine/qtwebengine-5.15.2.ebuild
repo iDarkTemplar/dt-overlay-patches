@@ -10,13 +10,13 @@ inherit multiprocessing python-any-r1 qt5-build
 DESCRIPTION="Library for rendering dynamic web content in Qt5 C++ and QML applications"
 
 # patchset based on https://github.com/chromium-ppc64le releases
-SRC_URI+=" ppc64? ( https://dev.gentoo.org/~gyakovlev/distfiles/${PN}-5.15.0-ppc64.tar.xz )"
+SRC_URI+=" ppc64? ( https://dev.gentoo.org/~gyakovlev/distfiles/${PN}-5.15.2-ppc64.tar.xz )"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm arm64 ppc64 x86"
 fi
 
-IUSE="alsa bindist designer examples geolocation jumbo-build kerberos pulseaudio +system-ffmpeg +system-icu widgets"
+IUSE="alsa bindist designer examples geolocation kerberos pulseaudio +system-ffmpeg +system-icu widgets"
 REQUIRED_USE="designer? ( widgets ) examples? ( widgets )"
 
 RDEPEND="
@@ -85,21 +85,22 @@ DEPEND="${RDEPEND}
 	sys-devel/bison
 "
 
-PATCHES=( "${FILESDIR}/${PN}-5.15.0-disable-fatal-warnings.patch" ) # bug 695446
+PATCHES=(
+	"${FILESDIR}/${PN}-5.15.0-disable-fatal-warnings.patch" # bug 695446
+	"${FILESDIR}/${P}-icu-68.patch" # bug 751997, QTBUG-88116
+	"${FILESDIR}/${P}-icu-68-v8-runtime-fix.patch"
+)
 
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples")
 }
 
 src_prepare() {
-	if use ppc64; then
-		eapply "${WORKDIR}/${PN}-ppc64"
-	fi
-
-	if ! use jumbo-build; then
+	# QTBUG-88657 - jumbo-build is broken
+	#if ! use jumbo-build; then
 		sed -i -e 's|use_jumbo_build=true|use_jumbo_build=false|' \
 			src/buildtools/config/common.pri || die
-	fi
+	#fi
 
 	# bug 630834 - pass appropriate options to ninja when building GN
 	sed -e "s/\['ninja'/&, '-j$(makeopts_jobs)', '-l$(makeopts_loadavg "${MAKEOPTS}" 0)', '-v'/" \
@@ -133,6 +134,22 @@ src_prepare() {
 	sed -i -e 's:QMAKE_PYTHON2 = python$:QMAKE_PYTHON2 = python2:' mkspecs/features/functions.prf || die
 
 	qt5-build_src_prepare
+
+	# we need to generate ppc64 stuff because upstream does not ship it yet
+	if use ppc64; then
+		einfo "Patching for ppc64le and generating build files"
+		eapply "${WORKDIR}/${PN}-ppc64"
+		pushd src/3rdparty/chromium/third_party/libvpx > /dev/null || die
+		mkdir -vp source/config/linux/ppc64 || die
+		mkdir -p source/libvpx/test || die
+		touch source/libvpx/test/test.mk || die
+		# generate_gni.sh runs git at the end of process, prevent it.
+		git() {	: ; }
+		export -f git
+		./generate_gni.sh || die
+		unset git
+		popd >/dev/null || die
+	fi
 }
 
 src_configure() {

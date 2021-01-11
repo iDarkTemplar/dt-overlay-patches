@@ -19,7 +19,9 @@ DEPEND="
 	qml? ( ~dev-qt/qtdeclarative-${PV} )
 	doc? ( !dev-qt/qt-docs )
 "
-RDEPEND="${DEPEND}"
+RDEPEND="${DEPEND}
+	dev-qt/qtchooser
+"
 BDEPEND="
 	doc? (
 		~dev-qt/qtattributionsscanner-${PV}

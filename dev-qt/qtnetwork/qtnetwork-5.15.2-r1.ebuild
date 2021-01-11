@@ -57,7 +57,10 @@ QT5_GENTOO_PRIVATE_CONFIG=(
 	:network
 )
 
-PATCHES=( "${FILESDIR}"/${P}-libressl.patch ) # Bug 562050, not upstreamable
+PATCHES=(
+	"${FILESDIR}"/${P}-QNetworkAccessManager-memleak.patch # QTBUG-88063
+	"${FILESDIR}"/${PN}-5.15.2-libressl.patch # Bug 562050, not upstreamable
+)
 
 pkg_setup() {
 	use connman && QT5_TARGET_SUBDIRS+=(src/plugins/bearer/connman)
@@ -74,4 +77,13 @@ src_configure() {
 		$(usex ssl -openssl-linked '')
 	)
 	qt5-build_src_configure
+}
+
+src_install() {
+	qt5-build_src_install
+	# workaround for bug 652650
+	if use ssl; then
+		sed -e "/^#define QT_LINKED_OPENSSL/s/$/ true/" \
+			-i "${D}${QT5_HEADERDIR}"/Gentoo/${PN}-qconfig.h || die
+	fi
 }
