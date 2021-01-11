@@ -18,7 +18,6 @@ REQUIRED_USE="examples? ( widgets )"
 DEPEND="
 	~dev-qt/qtbase-${PV}:6=[gui,gles2-only=,network,vulkan=,widgets=]
 	localstorage? ( ~dev-qt/qtbase-${PV}:6=[sql] )
-	!dev-qt/qt-docs
 "
 
 PDEPEND="

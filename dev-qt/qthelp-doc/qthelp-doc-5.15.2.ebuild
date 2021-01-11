@@ -18,7 +18,7 @@ DEPEND="
 	~dev-qt/qdoc-${PV}[qml]
 	~dev-qt/qtattributionsscanner-${PV}
 	~dev-qt/qthelp-${PV}
-	!dev-qt/qt-docs
+	!dev-qt/qt-docs:5
 "
 RDEPEND="${DEPEND}"
 

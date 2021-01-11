@@ -20,7 +20,7 @@ BDEPEND="
 
 DEPEND="
 	~dev-qt/qtbase-${PV}:6=[gui]
-	!dev-qt/qt-docs
+	doc? ( !dev-qt/qt-docs:6 )
 "
 
 src_configure() {

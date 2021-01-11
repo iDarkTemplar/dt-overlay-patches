@@ -18,7 +18,7 @@ DEPEND="
 	~dev-qt/qtbase-${PV}:6=
 	~dev-qt/qttools-${PV}:6=
 	examples? ( ~dev-qt/qtbase-${PV}:6=[widgets] )
-	!dev-qt/qt-docs
+	!dev-qt/qt-docs:6
 "
 
 src_configure() {

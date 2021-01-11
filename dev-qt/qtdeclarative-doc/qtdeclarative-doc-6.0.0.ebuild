@@ -20,7 +20,7 @@ BDEPEND="
 
 DEPEND="
 	~dev-qt/qtdeclarative-${PV}:6=[examples=,gles2-only=,jit=,localstorage=,vulkan=,widgets=]
-	!dev-qt/qt-docs
+	!dev-qt/qt-docs:6
 "
 
 src_prepare() {

@@ -134,7 +134,7 @@ if [ -n "${QT5_GENERATE_DOCS}" ] ; then
 		)
 		"
 	RDEPEND="${RDEPEND}
-		doc? ( !dev-qt/qt-docs )
+		doc? ( !dev-qt/qt-docs:5 )
 	"
 fi
 

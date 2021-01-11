@@ -25,7 +25,7 @@ DEPEND="
 	~dev-qt/qtbase-${PV}:6=[gui]
 	media-libs/libwebp:=
 	media-libs/tiff:0
-	!dev-qt/qt-docs
+	doc? ( !dev-qt/qt-docs:6 )
 "
 
 src_configure() {

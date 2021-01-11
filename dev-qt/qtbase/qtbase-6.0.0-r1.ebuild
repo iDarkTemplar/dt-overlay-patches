@@ -105,7 +105,6 @@ DEPEND="
 		x11-libs/xcb-util-renderutil
 		x11-libs/xcb-util-wm
 	)
-	!dev-qt/qt-docs
 "
 
 RDEPEND="

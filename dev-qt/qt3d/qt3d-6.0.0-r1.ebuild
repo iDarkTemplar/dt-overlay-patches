@@ -35,7 +35,7 @@ RDEPEND="
 		~dev-qt/qtdeclarative-${PV}:6=[gles2-only=]
 		~dev-qt/qtquick3d-${PV}:6=
 	)
-	!dev-qt/qt-docs
+	doc? ( !dev-qt/qt-docs:6 )
 "
 
 DEPEND="${RDEPEND}

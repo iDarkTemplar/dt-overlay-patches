@@ -21,7 +21,7 @@ BDEPEND="
 DEPEND="
 	~dev-qt/qtbase-${PV}:6=[icu]
 	examples? ( ~dev-qt/qtbase-${PV}:6=[widgets] )
-	!dev-qt/qt-docs
+	doc? ( !dev-qt/qt-docs:6 )
 "
 
 PATCHES=(

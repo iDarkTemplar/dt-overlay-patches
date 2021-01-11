@@ -17,7 +17,7 @@ DEPEND="
 	~dev-qt/qtcore-${PV}:5=
 	sys-devel/clang:=
 	qml? ( ~dev-qt/qtdeclarative-${PV} )
-	doc? ( !dev-qt/qt-docs )
+	doc? ( !dev-qt/qt-docs:5 )
 "
 RDEPEND="${DEPEND}
 	dev-qt/qtchooser

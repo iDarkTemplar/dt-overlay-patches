@@ -19,7 +19,6 @@ DEPEND="
 	sys-devel/clang:=
 	dbus? ( ~dev-qt/qtbase-${PV}:6=[dbus] )
 	qml? ( ~dev-qt/qtdeclarative-${PV}:6=[widgets] )
-	!dev-qt/qt-docs
 "
 
 PDEPEND="

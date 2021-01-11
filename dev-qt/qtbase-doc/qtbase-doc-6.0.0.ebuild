@@ -46,7 +46,7 @@ BDEPEND="
 
 DEPEND="
 	~dev-qt/qtbase-${PV}:6=[concurrent=,dbus=,gui=,network=,sql=,opengl=,widgets=$(printf ',%s=' ${QTGUI_IUSE//+/} ${QTNETWORK_IUSE//+/} ${QTSQL_IUSE//+/}),cups=,examples=,gtk=,icu=,old-kernel=,systemd=,udev=]
-	!dev-qt/qt-docs
+	!dev-qt/qt-docs:6
 "
 
 PATCHES=(

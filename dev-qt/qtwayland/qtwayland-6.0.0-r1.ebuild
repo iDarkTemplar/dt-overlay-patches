@@ -30,7 +30,7 @@ DEPEND="
 		x11-libs/libX11
 		x11-libs/libXcomposite
 	)
-	!dev-qt/qt-docs
+	doc? ( !dev-qt/qt-docs:6 )
 "
 
 src_configure() {

@@ -20,7 +20,7 @@ BDEPEND="
 
 DEPEND="
 	~dev-qt/qttools-${PV}:6=[dbus=,examples=,qml=]
-	!dev-qt/qt-docs
+	!dev-qt/qt-docs:6
 "
 
 src_prepare() {

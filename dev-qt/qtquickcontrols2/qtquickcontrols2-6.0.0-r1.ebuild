@@ -21,7 +21,7 @@ BDEPEND="
 DEPEND="
 	~dev-qt/qtbase-${PV}:6=[widgets]
 	~dev-qt/qtdeclarative-${PV}:6=
-	!dev-qt/qt-docs
+	doc? ( !dev-qt/qt-docs:6 )
 "
 
 src_configure() {
