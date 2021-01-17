@@ -13,11 +13,8 @@
 		Unlike other viewers, KchmViewer in most cases is able to detect help file
 		encoding, correctly shows tables of context of Russian, Korean, Chinese and
 		Japanese help files, and does correct search in non-English help files
-		(search for MBCS languages - ja/ko/ch is still in progress). 
+		(search for MBCS languages - ja/ko/ch is still in progress).
 	</longdescription>
-	<use>
-		<flag name='webengine'>Use <pkg>dev-qt/qtwebengine</pkg> instead of <pkg>dev-qt/qtwebkit</pkg></flag>
-	</use>
 	<upstream>
 		<remote-id type="github">gyunaev/kchmviewer</remote-id>
 	</upstream>

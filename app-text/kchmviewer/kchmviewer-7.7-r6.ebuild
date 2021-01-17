@@ -12,7 +12,7 @@ SRC_URI="mirror://sourceforge/kchmviewer/${P}.tar.gz"
 LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="amd64 x86"
-IUSE="+webengine"
+IUSE=""
 
 DEPEND="
 	dev-libs/chmlib
@@ -24,23 +24,14 @@ DEPEND="
 	dev-qt/qtprintsupport:5
 	dev-qt/qtwidgets:5
 	dev-qt/qtxml:5
-	webengine? (
-		dev-qt/qtwebengine:5[widgets]
-	)
-	!webengine? (
-		dev-qt/qtwebkit:5
-	)
+	dev-qt/qtwebengine:5[widgets]
 "
 RDEPEND="${DEPEND}"
 
 PATCHES=(
 	"${FILESDIR}/${P}-underlinking.patch"
+	"${FILESDIR}/${P}-qtwebengine.patch"
 )
-
-pkg_setup() {
-	! use webengine && PATCHES+=( "${FILESDIR}/${P}-force-qtwebkit.patch" )
-	use webengine && PATCHES+=( "${FILESDIR}/${P}-qtwebengine.patch" )
-}
 
 src_configure() {
 	eqmake5
