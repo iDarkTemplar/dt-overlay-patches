@@ -3,7 +3,7 @@
 
 EAPI=7
 
-inherit eutils cmake
+inherit eutils cmake desktop
 
 DESCRIPTION="Removable media mount/unmount daemon and clients"
 HOMEPAGE="https://github.com/iDarkTemplar/dtmd"
