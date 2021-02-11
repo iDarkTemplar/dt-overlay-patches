@@ -44,7 +44,7 @@ REQUIRED_USE="
 "
 
 # minimum Qt version required
-QT_PV="5.12.3:5"
+QT_PV="5.14.0:5"
 
 BDEPEND="
 	>=dev-qt/linguist-tools-${QT_PV}
@@ -97,7 +97,7 @@ DEPEND="${CDEPEND}
 	)
 "
 RDEPEND="${CDEPEND}
-	sys-devel/gdb[client,python]
+	sys-devel/gdb[python]
 	cmake? ( dev-util/cmake )
 	cppcheck? ( dev-util/cppcheck )
 	cvs? ( dev-vcs/cvs )
