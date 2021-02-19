@@ -24,6 +24,8 @@ DEPEND="
 	doc? ( !dev-qt/qt-docs:6 )
 "
 
+RDEPEND="${DEPEND}"
+
 PATCHES=(
 	"${FILESDIR}/${P}-examples.patch"
 )

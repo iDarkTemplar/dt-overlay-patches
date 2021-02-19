@@ -21,6 +21,8 @@ DEPEND="
 	qml? ( ~dev-qt/qtdeclarative-${PV}:6=[widgets] )
 "
 
+RDEPEND="${DEPEND}"
+
 PDEPEND="
 	doc? ( ~dev-qt/qttools-doc-${PV} )
 "

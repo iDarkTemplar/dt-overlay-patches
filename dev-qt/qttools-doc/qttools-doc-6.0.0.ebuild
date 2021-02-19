@@ -23,6 +23,8 @@ DEPEND="
 	!dev-qt/qt-docs:6
 "
 
+RDEPEND="${DEPEND}"
+
 src_prepare() {
 	qt_use_disable_target dbus Qt::DBus \
 		src/CMakeLists.txt

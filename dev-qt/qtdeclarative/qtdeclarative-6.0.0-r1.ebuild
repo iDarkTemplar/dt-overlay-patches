@@ -20,6 +20,8 @@ DEPEND="
 	localstorage? ( ~dev-qt/qtbase-${PV}:6=[sql] )
 "
 
+RDEPEND="${DEPEND}"
+
 PDEPEND="
 	doc? ( ~dev-qt/qtdeclarative-doc-${PV} )
 "
