@@ -120,7 +120,6 @@ PDEPEND="
 PATCHES=(
 	"${FILESDIR}/qtcore-5.14.1-examples.patch"
 	"${FILESDIR}/qtcore-5.14.1-qmake-update-libdirs-order.patch"
-	"${FILESDIR}/qtbase-6.0.0-doc-install.patch"
 )
 
 pkg_pretend() {

@@ -27,10 +27,6 @@ PDEPEND="
 	doc? ( ~dev-qt/qttools-doc-${PV} )
 "
 
-PATCHES=(
-	"${FILESDIR}/qttools-6.0.0-QTBUG-88972.patch"
-)
-
 src_prepare() {
 	qt_use_disable_target dbus Qt::DBus \
 		src/CMakeLists.txt
