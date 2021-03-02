@@ -11,13 +11,14 @@ SRC_URI="https://github.com/brndnmtthws/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.
 
 LICENSE="GPL-3 BSD LGPL-2.1 MIT"
 SLOT="0"
-KEYWORDS="~alpha ~amd64 ~arm ~ppc ~ppc64 ~sparc ~x86"
-IUSE="apcupsd bundled-toluapp cmus curl doc hddtemp ical iconv imlib iostats
+KEYWORDS="~alpha amd64 ~arm ppc ppc64 sparc x86"
+IUSE="apcupsd audacious bundled-toluapp cmus curl doc hddtemp ical iconv imlib iostats
 	ipv6 irc lua-cairo lua-imlib lua-rsvg math moc mpd mysql nano-syntax
 	ncurses nvidia +portmon pulseaudio rss systemd thinkpad truetype
 	vim-syntax weather-metar webserver wifi X xinerama xmms2"
 
 COMMON_DEPEND="
+	audacious? ( media-sound/audacious )
 	cmus? ( media-sound/cmus )
 	curl? ( net-misc/curl )
 	ical? ( dev-libs/libical:= )
@@ -70,12 +71,12 @@ REQUIRED_USE="
 	xinerama? ( X )
 "
 
-CONFIG_CHECK=~IPV6
+CONFIG_CHECK="~IPV6"
 
 DOCS=( README.md AUTHORS )
 
 PATCHES=(
-	"${FILESDIR}"/${P}-fpermissive.patch
+	"${FILESDIR}"/${PN}-1.11.6-ipv6.patch
 	"${FILESDIR}"/${PN}-1.11.5-lua-5.4.patch
 )
 
@@ -107,29 +108,29 @@ src_configure() {
 
 	if use X; then
 		mycmakeargs=(
-			-DBUILD_ARGB=ON
-			-DBUILD_X11=ON
-			-DBUILD_XDAMAGE=ON
-			-DBUILD_XDBE=ON
-			-DBUILD_XSHAPE=ON
-			-DOWN_WINDOW=ON
+			-DBUILD_ARGB=yes
+			-DBUILD_X11=yes
+			-DBUILD_XDAMAGE=yes
+			-DBUILD_XDBE=yes
+			-DBUILD_XSHAPE=yes
+			-DOWN_WINDOW=yes
 		)
 	else
 		mycmakeargs=(
-			-DBUILD_X11=OFF
+			-DBUILD_X11=no
 		)
 	fi
 
 	mycmakeargs+=(
 		-DBUILD_APCUPSD=$(usex apcupsd)
-		-DBUILD_AUDACIOUS=OFF
-		-DBUILD_BUILTIN_CONFIG=ON
+		-DBUILD_AUDACIOUS=$(usex audacious)
+		-DBUILD_BUILTIN_CONFIG=yes
 		-DBUILD_CMUS=$(usex cmus)
 		-DBUILD_CURL=$(usex curl)
 		-DBUILD_DOCS=$(usex doc)
 		-DBUILD_HDDTEMP=$(usex hddtemp)
 		-DBUILD_HTTP=$(usex webserver)
-		-DBUILD_I18N=ON
+		-DBUILD_I18N=yes
 		-DBUILD_IBM=$(usex thinkpad)
 		-DBUILD_ICAL=$(usex ical)
 		-DBUILD_ICONV=$(usex iconv)
@@ -147,7 +148,7 @@ src_configure() {
 		-DBUILD_MYSQL=$(usex mysql)
 		-DBUILD_NCURSES=$(usex ncurses)
 		-DBUILD_NVIDIA=$(usex nvidia)
-		-DBUILD_OLD_CONFIG=ON
+		-DBUILD_OLD_CONFIG=yes
 		-DBUILD_PORT_MONITORS=$(usex portmon)
 		-DBUILD_PULSEAUDIO=$(usex pulseaudio)
 		-DBUILD_RSS=$(usex rss)
@@ -157,8 +158,8 @@ src_configure() {
 		-DBUILD_XINERAMA=$(usex xinerama)
 		-DBUILD_XMMS2=$(usex xmms2)
 		-DDOC_PATH=/usr/share/doc/${PF}
-		-DMAINTAINER_MODE=OFF
-		-DRELEASE=ON
+		-DMAINTAINER_MODE=no
+		-DRELEASE=yes
 	)
 
 	cmake_src_configure
