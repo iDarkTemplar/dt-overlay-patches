@@ -93,7 +93,8 @@ src_configure() {
 		# reduced relocations cause major breakage on at least arm and ppc, so
 		# don't specify anything and let the configure figure out if they are
 		# supported; see also https://bugreports.qt.io/browse/QTBUG-36129
-		#-DFEATURE_reduce_relocations=ON
+		# and https://bugreports.qt.io/browse/QTBUG-86173
+		-DFEATURE_reduce_relocations=OFF
 
 		# use the system linker (gold will be selected automagically otherwise)
 		-DFEATURE_use_gold_linker=$(tc-ld-is-gold && echo ON || echo OFF)
