@@ -116,21 +116,25 @@ IUSE="debug test"
 
 [[ ${QT5_BUILD_TYPE} == release ]] && RESTRICT+=" test" # bug 457182
 
+if [ -z "${QTVER}" ] ; then
+	QTVER=$(ver_cut 1-3)
+fi
+
 BDEPEND="
 	dev-lang/perl
 	virtual/pkgconfig
 "
 if [[ ${PN} != qttest ]]; then
-	DEPEND+=" test? ( ~dev-qt/qttest-${PV} )"
+	DEPEND+=" test? ( ~dev-qt/qttest-${QTVER} )"
 fi
 
 if [ -n "${QT5_GENERATE_DOCS}" ] ; then
 	IUSE="${IUSE} doc"
 	BDEPEND="${BDEPEND}
 		doc? (
-			~dev-qt/qdoc-${PV}
-			~dev-qt/qtattributionsscanner-${PV}
-			~dev-qt/qthelp-${PV}
+			~dev-qt/qdoc-${QTVER}
+			~dev-qt/qtattributionsscanner-${QTVER}
+			~dev-qt/qthelp-${QTVER}
 		)
 		"
 	RDEPEND="${RDEPEND}
