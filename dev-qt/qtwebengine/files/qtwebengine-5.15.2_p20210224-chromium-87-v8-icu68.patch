@@ -17,14 +17,14 @@ Reviewed-by: Jakob Kummerow <jkummerow@chromium.org>
 Reviewed-by: Shu-yu Guo <syg@chromium.org>
 Cr-Commit-Position: refs/heads/master@{#70972}
 
-(ported to work with <ICU-68.1 and rebased to qtwebengine)
+(ported to work with <ICU-68.1 and rebased chromium)
 ---
 
 diff --git a/src/3rdparty/chromium/v8/src/objects/js-number-format.cc b/src/3rdparty/chromium/v8/src/objects/js-number-format.cc
-index 6f3d97a619..83cf021fb1 100644
+index 45b0eab..d18b133 100644
 --- a/src/3rdparty/chromium/v8/src/objects/js-number-format.cc
 +++ b/src/3rdparty/chromium/v8/src/objects/js-number-format.cc
-@@ -390,17 +390,20 @@ Handle<String> CurrencySignString(Isolate* isolate,
+@@ -389,17 +389,20 @@ Handle<String> CurrencySignString(Isolate* isolate,
  Handle<String> UnitDisplayString(Isolate* isolate,
                                   const icu::UnicodeString& skeleton) {
    // Ex: skeleton as
@@ -48,7 +48,7 @@ index 6f3d97a619..83cf021fb1 100644
    return ReadOnlyRoots(isolate).short_string_handle();
  }
  
-@@ -423,7 +426,8 @@ Notation NotationFromSkeleton(const icu::UnicodeString& skeleton) {
+@@ -422,7 +425,8 @@ Notation NotationFromSkeleton(const icu::UnicodeString& skeleton) {
      return Notation::COMPACT;
    }
    // Ex: skeleton as
@@ -58,7 +58,7 @@ index 6f3d97a619..83cf021fb1 100644
    return Notation::STANDARD;
  }
  
-@@ -563,14 +567,23 @@ namespace {
+@@ -562,14 +566,23 @@ namespace {
  
  // Ex: percent .### rounding-mode-half-up
  // Special case for "percent"
@@ -86,7 +86,7 @@ index 6f3d97a619..83cf021fb1 100644
    size_t begin = str.find(search);
    if (begin == str.npos) {
      // Special case for "percent".
-@@ -579,20 +592,41 @@ std::string UnitFromSkeleton(const icu::UnicodeString& skeleton) {
+@@ -578,20 +591,41 @@ std::string UnitFromSkeleton(const icu::UnicodeString& skeleton) {
      }
      return "";
    }
@@ -130,7 +130,7 @@ index 6f3d97a619..83cf021fb1 100644
      return str.substr(begin, end - begin);
    }
    // "measure-unit/length-kilometer per-measure-unit/duration-hour"
-@@ -626,18 +660,37 @@ std::string UnitFromSkeleton(const icu::UnicodeString& skeleton) {
+@@ -625,17 +659,36 @@ std::string UnitFromSkeleton(const icu::UnicodeString& skeleton) {
    // "measure-unit/length-kilometer per-measure-unit/duration-hour"
    //                      [result ]                           b   e
    return result + "-per-" + str.substr(begin, end - begin);
@@ -146,25 +146,47 @@ index 6f3d97a619..83cf021fb1 100644
    }
 +#if U_ICU_VERSION_MAJOR_NUM < 68
    if (skeleton.indexOf("measure-unit/") >= 0) {
-+#else
-+  if (skeleton.indexOf("unit/") >= 0) {
-+#endif
-     return Style::UNIT;
-   }
-+#if U_ICU_VERSION_MAJOR_NUM < 68
-   if (skeleton.indexOf("percent ") >= 0) {
-     return Style::PERCENT;
-   }
+     if (skeleton.indexOf("scale/100") >= 0 &&
+         skeleton.indexOf("measure-unit/concentr-percent") >= 0) {
 +#else
 +  if (skeleton.indexOf("percent") >= 0) {
 +    // percent precision-integer rounding-mode-half-up scale/100
 +    if (skeleton.indexOf("scale/100") >= 0) {
-+      return Style::PERCENT;
++#endif
+       return Style::PERCENT;
++#if U_ICU_VERSION_MAJOR_NUM >= 68
 +    } else {
 +      return Style::UNIT;
-+    }
++#endif
+     }
++#if U_ICU_VERSION_MAJOR_NUM >= 68
++  }
++  // Before ICU68: "measure-unit/", since ICU68 "unit/"
++  if (skeleton.indexOf("unit/") >= 0) {
++#endif
+     return Style::UNIT;
+   }
+   return Style::DECIMAL;
+diff --git a/src/3rdparty/chromium/v8/src/objects/js-relative-time-format.cc b/src/3rdparty/chromium/v8/src/objects/js-relative-time-format.cc
+index 267343aaae..64d56a1c12 100644
+--- a/src/3rdparty/chromium/v8/src/objects/js-relative-time-format.cc
++++ b/src/3rdparty/chromium/v8/src/objects/js-relative-time-format.cc
+@@ -195,9 +195,18 @@ MaybeHandle<JSRelativeTimeFormat> JSRelativeTimeFormat::New(
+     }
+   }
+ 
++#if U_ICU_VERSION_MAJOR_NUM < 68
+   icu::DecimalFormat* decimal_format =
+       static_cast<icu::DecimalFormat*>(number_format);
+   decimal_format->setMinimumGroupingDigits(-2);
++#else
++  if (number_format->getDynamicClassID() ==
++      icu::DecimalFormat::getStaticClassID()) {
++    icu::DecimalFormat* decimal_format =
++        static_cast<icu::DecimalFormat*>(number_format);
++    decimal_format->setMinimumGroupingDigits(-2);
 +  }
 +#endif
-   return Style::DECIMAL;
- }
  
+   // Change UDISPCTX_CAPITALIZATION_NONE to other values if
+   // ECMA402 later include option to change capitalization.
