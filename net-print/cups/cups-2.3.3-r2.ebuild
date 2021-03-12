@@ -7,24 +7,25 @@ inherit autotools flag-o-matic linux-info xdg multilib-minimal pam systemd toolc
 
 MY_PV="${PV/_rc/rc}"
 MY_PV="${MY_PV/_beta/b}"
+# temporary change for current release
+MY_PV="${MY_PV}op2"
 MY_P="${PN}-${MY_PV}"
 
 if [[ ${PV} == *9999 ]]; then
 	inherit git-r3
-	EGIT_REPO_URI="https://github.com/apple/cups.git"
+	EGIT_REPO_URI="https://github.com/OpenPrinting/cups.git"
 	if [[ ${PV} != 9999 ]]; then
 		EGIT_BRANCH=branch-${PV/.9999}
 	fi
 else
-	#SRC_URI="https://github.com/apple/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
-	SRC_URI="https://github.com/apple/cups/releases/download/v${MY_PV}/${MY_P}-source.tar.gz"
+	SRC_URI="https://github.com/OpenPrinting/cups/releases/download/v${MY_PV}/${MY_P}-source.tar.gz"
 	if [[ "${PV}" != *_beta* ]] && [[ "${PV}" != *_rc* ]] ; then
 		KEYWORDS="~alpha amd64 arm arm64 hppa ~ia64 ~mips ppc ppc64 s390 sparc x86"
 	fi
 fi
 
 DESCRIPTION="The Common Unix Printing System"
-HOMEPAGE="https://www.cups.org/"
+HOMEPAGE="https://openprinting.github.io/cups/"
 
 LICENSE="Apache-2.0"
 SLOT="0"
@@ -77,10 +78,7 @@ RESTRICT="test"
 PATCHES=(
 	"${FILESDIR}/${PN}-2.2.6-fix-install-perms.patch"
 	"${FILESDIR}/${PN}-1.4.4-nostrip.patch"
-	"${FILESDIR}/${PN}-2.0.2-rename-systemd-service-files.patch"
-	"${FILESDIR}/${PN}-2.0.1-xinetd-installation-fix.patch"
 	"${FILESDIR}/${PN}-2.3.3-user-AR.patch"
-	"${FILESDIR}/${PN}-2.3.3-no-libtool.patch"
 )
 
 MULTILIB_CHOST_TOOLS=(
