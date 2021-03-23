@@ -8,7 +8,7 @@ inherit cmake qt6-build
 
 DESCRIPTION="Additional format plugins for the Qt image I/O system"
 
-SRC_URI="https://download.qt.io/official_releases/additional_libraries/${QT6_MODULE}/${PV%.*}/${PV}/${MY_P}.tar.xz"
+SRC_URI="https://download.qt.io/official_releases/additional_libraries/${PV%.*}/${PV}/${MY_P}.tar.xz"
 
 if [[ ${QT6_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 ~arm ~arm64 ~hppa ~ppc ~ppc64 ~sparc ~x86"
