@@ -77,6 +77,7 @@ DOCS=( README.md AUTHORS )
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-1.11.6-ipv6.patch
+	"${FILESDIR}"/${P}-network-speed.patch
 	"${FILESDIR}"/${PN}-1.11.5-lua-5.4.patch
 )
 
