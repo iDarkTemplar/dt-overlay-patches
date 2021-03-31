@@ -5,14 +5,12 @@ EAPI=7
 
 MY_P="${P/_/-}"
 
-inherit autotools
-
 if [[ ${PV} == *9999 ]]; then
-	inherit git-r3
+	inherit autotools git-r3
 	EGIT_REPO_URI="https://github.com/audacious-media-player/audacious-plugins.git"
 else
 	SRC_URI="https://distfiles.audacious-media-player.org/${MY_P}.tar.bz2"
-	KEYWORDS="~amd64 ~x86"
+	KEYWORDS="amd64 x86"
 fi
 DESCRIPTION="Lightweight and versatile audio player"
 HOMEPAGE="https://audacious-media-player.org/"
@@ -104,11 +102,6 @@ RDEPEND="${DEPEND}"
 
 S="${WORKDIR}/${MY_P}"
 
-PATCHES=(
-	"${FILESDIR}/${PN}-4.0.3-qthotkey-plugin.patch"
-	"${FILESDIR}/${PN}-4.0.3-display-channels.patch"
-)
-
 pkg_setup() {
 	use mp3 || ewarn "MP3 support is optional, you may want to enable the mp3 USE-flag"
 }
@@ -118,7 +111,7 @@ src_prepare() {
 	if ! use nls; then
 		sed -e "/SUBDIRS/s/ po//" -i Makefile || die # bug #512698
 	fi
-	eautoreconf
+	[[ ${PV} == *9999 ]] && eautoreconf
 }
 
 src_configure() {
