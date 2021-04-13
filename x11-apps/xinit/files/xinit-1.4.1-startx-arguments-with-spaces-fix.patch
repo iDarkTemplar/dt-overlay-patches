@@ -1,13 +1,13 @@
-From 750dc88356555d954836f417c86342b1142f424e Mon Sep 17 00:00:00 2001
+From 32a21fd6e9b2008dab5531cfbc66b99d1c3b0149 Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Thu, 23 Jul 2020 13:29:00 +0300
 Subject: [PATCH] startx: allow to properly process spaces
 
 ---
  Makefile.am  |  1 +
- configure.ac |  1 +
+ configure.ac |  2 ++
  startx.cpp   | 17 ++++++++++-------
- 3 files changed, 12 insertions(+), 7 deletions(-)
+ 3 files changed, 13 insertions(+), 7 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
 index 8b09369..b5c9f88 100644
@@ -22,7 +22,7 @@ index 8b09369..b5c9f88 100644
  	-D__libexecdir__="$(libexecdir)" \
  	-D__bindir__="$(bindir)" \
 diff --git a/configure.ac b/configure.ac
-index 3530b7e..5acf3c4 100644
+index 3530b7e..4efa36f 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -174,6 +174,7 @@ AC_SUBST(STARTX_COOKIE_FLAGS)
@@ -33,6 +33,14 @@ index 3530b7e..5acf3c4 100644
  XSERVERNAME="Xorg"
  XCONFIGFILE="xorg.conf"
  XCONFIGFILEMAN='${XCONFIGFILE} (${FILE_MAN_SUFFIX})'
+@@ -192,6 +193,7 @@ case $host_os in
+ 	;;
+ esac
+ AC_SUBST(SHELL_CMD)
++AC_SUBST(BASH_SHELL_CMD)
+ AC_SUBST(XSERVERNAME)
+ AC_SUBST(XCONFIGFILE)
+ AC_SUBST(XCONFIGFILEMAN)
 diff --git a/startx.cpp b/startx.cpp
 index dbc4cae..e448d22 100644
 --- a/startx.cpp
@@ -93,5 +101,5 @@ index dbc4cae..e448d22 100644
  retval=$?
  
 -- 
-2.26.2
+2.26.3
 
