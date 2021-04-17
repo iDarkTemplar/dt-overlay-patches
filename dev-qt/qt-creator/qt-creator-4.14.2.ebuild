@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
-LLVM_MAX_SLOT=11
+LLVM_MAX_SLOT=12
 PLOCALES="cs da de fr ja pl ru sl uk zh-CN zh-TW"
 
 inherit llvm qmake-utils virtualx xdg
@@ -27,7 +27,7 @@ fi
 # TODO: unbundle sqlite
 
 QTC_PLUGINS=(android +autotest baremetal beautifier boot2qt
-	'+clang:clangcodemodel|clangformat|clangtools' 'clangrefactoring:clangrefactoring|clangpchmanager' clearcase
+	'+clang:clangcodemodel|clangformat|clangpchmanager|clangrefactoring|clangtools' clearcase
 	cmake:cmakeprojectmanager cppcheck ctfvisualizer cvs +designer git glsl:glsleditor +help ios
 	lsp:languageclient mcu:mcusupport mercurial modeling:modeleditor nim perforce perfprofiler python
 	qbs:qbsprojectmanager +qmldesigner qmlprofiler qnx remotelinux scxml:scxmleditor serialterminal
@@ -37,7 +37,6 @@ RESTRICT="!test? ( test )"
 REQUIRED_USE="
 	boot2qt? ( remotelinux )
 	clang? ( test? ( qbs ) )
-	clangrefactoring? ( clang )
 	mcu? ( cmake )
 	python? ( lsp )
 	qnx? ( remotelinux )
@@ -68,14 +67,8 @@ CDEPEND="
 	>=dev-qt/qtxml-${QT_PV}
 	kde-frameworks/syntax-highlighting:5
 	clang? (
-		|| (
-			( sys-devel/clang:11
-				dev-libs/libclangformat-ide:11 )
-			( sys-devel/clang:10
-				dev-libs/libclangformat-ide:10 )
-			( sys-devel/clang:9
-				dev-libs/libclangformat-ide:9 )
-		)
+		sys-devel/clang:12=
+		dev-libs/libclangformat-ide:12=
 		<sys-devel/clang-$((LLVM_MAX_SLOT + 1)):=
 	)
 	designer? ( >=dev-qt/designer-${QT_PV} )
@@ -117,6 +110,7 @@ unset x
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-4.13.0-libclangformat-ide.patch
+	"${FILESDIR}"/${PN}-4.14.2-llvm-12.patch
 )
 
 llvm_check_deps() {
@@ -144,10 +138,7 @@ src_prepare() {
 	# avoid building unused support libraries and tools
 	if ! use clang; then
 		sed -i -e '/clangsupport/d' src/libs/libs.pro || die
-		sed -i -e '/clangbackend/d' src/tools/tools.pro || die
-	fi
-	if ! use clangrefactoring; then
-		sed -i -e '/clang\(pchmanager\|refactoring\)backend/d' src/tools/tools.pro || die
+		sed -i -e '/clang\(\|pchmanager\|refactoring\)backend/d' src/tools/tools.pro || die
 	fi
 	if ! use glsl; then
 		sed -i -e '/glsl/d' src/libs/libs.pro || die
@@ -208,7 +199,7 @@ src_prepare() {
 }
 
 src_configure() {
-	use clangrefactoring && export QTC_ENABLE_CLANG_REFACTORING=1
+	use clang && export QTC_ENABLE_CLANG_REFACTORING=1
 
 	eqmake5 IDE_LIBRARY_BASENAME="$(get_libdir)" \
 		IDE_PACKAGE_MODE=1 \
@@ -223,7 +214,7 @@ src_configure() {
 }
 
 src_compile() {
-	use clangrefactoring && export QTC_ENABLE_CLANG_REFACTORING=1
+	use clang && export QTC_ENABLE_CLANG_REFACTORING=1
 
 	default
 }
@@ -233,7 +224,7 @@ src_test() {
 }
 
 src_install() {
-	use clangrefactoring && export QTC_ENABLE_CLANG_REFACTORING=1
+	use clang && export QTC_ENABLE_CLANG_REFACTORING=1
 
 	emake INSTALL_ROOT="${ED}/usr" install
 
