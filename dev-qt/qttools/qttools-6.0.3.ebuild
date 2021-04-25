@@ -19,13 +19,13 @@ DEPEND="
 	sys-devel/clang:=
 	dbus? ( ~dev-qt/qtbase-${PV}:6=[dbus] )
 	qml? ( ~dev-qt/qtdeclarative-${PV}:6=[widgets] )
+	doc? (
+		!dev-qt/qt-docs:6
+		!dev-qt/qttools-doc:6
+	)
 "
 
 RDEPEND="${DEPEND}"
-
-PDEPEND="
-	doc? ( ~dev-qt/qttools-doc-${PV} )
-"
 
 src_prepare() {
 	qt_use_disable_target dbus Qt::DBus \
@@ -61,6 +61,14 @@ src_configure() {
 	cmake_src_configure
 }
 
+src_compile() {
+	cmake_src_compile
+
+	if use doc; then
+		cmake_src_compile docs
+	fi
+}
+
 src_install() {
 	local exampledir
 	local installexampledir
@@ -76,7 +84,7 @@ src_install() {
 		done < <(find examples -name CMakeLists.txt 2>/dev/null | xargs grep -l -i project)
 	fi
 
-	cmake_src_install
+	cmake_src_install $(usex doc install_docs "")
 
 	qt_install_bin_symlinks
 
