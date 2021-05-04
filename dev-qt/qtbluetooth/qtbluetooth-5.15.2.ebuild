@@ -26,6 +26,8 @@ DEPEND="${RDEPEND}
 	~dev-qt/qtnetwork-${PV}
 "
 
+PATCHES=( "${FILESDIR}/${P}-gcc11.patch" ) # bug 752012
+
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples/bluetooth")
 }

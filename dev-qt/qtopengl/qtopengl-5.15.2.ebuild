@@ -7,6 +7,7 @@ VIRTUALX_REQUIRED="test"
 inherit qt5-build
 
 DESCRIPTION="OpenGL support library for the Qt5 framework (deprecated)"
+SRC_URI+=" https://dev.gentoo.org/~asturm/distfiles/qtbase-${PV}-gcc11.patch.xz"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm arm64 ~hppa ppc ppc64 ~sparc x86"
@@ -34,6 +35,8 @@ PDEPEND="
 QT5_TARGET_SUBDIRS=(
 	src/opengl
 )
+
+PATCHES=( "${WORKDIR}/qtbase-${PV}-gcc11.patch" ) # bug 752012
 
 src_configure() {
 	local myconf=(
