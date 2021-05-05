@@ -110,7 +110,6 @@ unset x
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-4.13.0-libclangformat-ide.patch
-	"${FILESDIR}"/${PN}-4.14.2-llvm-12.patch
 )
 
 llvm_check_deps() {
