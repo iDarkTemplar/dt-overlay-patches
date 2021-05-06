@@ -5,6 +5,9 @@
 		<email>darktemplar@dark-templar-archives.net</email>
 		<name>i.Dark_Templar</name>
 	</maintainer>
+	<use>
+		<flag name="qml">Add qml support to qdoc</flag>
+	</use>
 	<upstream>
 		<bugs-to>https://bugreports.qt.io/</bugs-to>
 		<doc>https://doc.qt.io/</doc>

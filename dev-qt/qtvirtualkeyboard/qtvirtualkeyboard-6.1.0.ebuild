@@ -1,31 +1,35 @@
-# Copyright 1999-2018 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
 
-QT6_MODULE="qtquick3d"
+QT6_MODULE="qtvirtualkeyboard"
 inherit cmake qt6-build
 
-DESCRIPTION="Qt Quick3D Libraries"
+DESCRIPTION="Customizable input framework and virtual keyboard for Qt"
 
 if [[ ${QT6_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 ~arm ~arm64 ~hppa ~ppc ~ppc64 ~sparc ~x86"
+	KEYWORDS="amd64 arm arm64 ppc64 x86"
 fi
 
-IUSE="doc examples"
+# TODO: unbudle libraries for more layouts
+IUSE="doc examples handwriting +spell +X"
 
 BDEPEND="
-	doc? ( ~dev-qt/qttools-${PV}:6=[qml] )
+	doc? ( ~dev-qt/qttools-${PV}:6= )
 	"
 
 DEPEND="
-	>=media-libs/assimp-5.0.0
-	~dev-qt/qtbase-${PV}:6=
+	~dev-qt/qtbase-${PV}:6=[gui]
 	~dev-qt/qtdeclarative-${PV}:6=
-	~dev-qt/qtshadertools-${PV}:6=
+	~dev-qt/qtsvg-${PV}:6=
+	spell? ( app-text/hunspell:= )
+	X? ( x11-libs/libxcb:= )
+	examples? (
+		~dev-qt/qtquickcontrols2-${PV}:6=
+	)
 	doc? ( !dev-qt/qt-docs:6 )
 "
-
 RDEPEND="${DEPEND}"
 
 src_configure() {
@@ -37,11 +41,12 @@ src_configure() {
 	unset QMAKESPEC XQMAKESPEC QMAKEPATH QMAKEFEATURES
 
 	mycmakeargs=(
+		-DINPUT_vkb_hunspell=$(usex spell system no)
+		-DINPUT_vkb_handwriting=$(usex handwriting t9write no)
+
 		# exclude examples and tests from default build
 		-DQT_BUILD_EXAMPLES=$(usex examples ON OFF)
 		-DQT_BUILD_TESTS=OFF
-
-		-DINPUT_quick3d_assimp=system
 	)
 
 	cmake_src_configure

@@ -1,34 +1,31 @@
-# Copyright 1999-2018 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
 
-QT6_MODULE="qt5compat"
+QT6_MODULE="qtdatavis3d"
 inherit cmake qt6-build
 
-DESCRIPTION="Qt5-compatibility layer for Qt6"
+DESCRIPTION="3D data visualization library for the Qt5 framework"
+LICENSE="GPL-3"
 
 if [[ ${QT6_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 ~arm ~arm64 ~hppa ~ppc ~ppc64 ~sparc ~x86"
+	KEYWORDS="amd64 arm64 x86"
 fi
 
-IUSE="doc examples"
+IUSE="doc examples gles2-only"
+# TODO: multimedia dep
 
 BDEPEND="
-	doc? ( ~dev-qt/qttools-${PV}:6= )
+	doc? ( ~dev-qt/qttools-${PV}:6=[qml] )
 	"
 
 DEPEND="
-	~dev-qt/qtbase-${PV}:6=[icu]
-	examples? ( ~dev-qt/qtbase-${PV}:6=[widgets] )
+	~dev-qt/qtbase-${PV}:6=[gui,opengl,gles2-only=]
+	~dev-qt/qtdeclarative-${PV}:6=[gles2-only=]
 	doc? ( !dev-qt/qt-docs:6 )
 "
-
 RDEPEND="${DEPEND}"
-
-PATCHES=(
-	"${FILESDIR}/${PN}-6.0.0-examples.patch"
-)
 
 src_configure() {
 	local mycmakeargs
