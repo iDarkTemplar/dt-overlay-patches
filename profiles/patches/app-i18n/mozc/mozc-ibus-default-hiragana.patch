@@ -1,7 +1,7 @@
-diff --git a/unix/ibus/property_handler.cc b/unix/ibus/property_handler.cc
+diff --git a/src/unix/ibus/property_handler.cc b/src/unix/ibus/property_handler.cc
 index e852b3bd..169dd5e4 100644
---- a/unix/ibus/property_handler.cc
-+++ b/unix/ibus/property_handler.cc
+--- a/src/unix/ibus/property_handler.cc
++++ b/src/unix/ibus/property_handler.cc
 @@ -79,11 +79,7 @@ bool GetDisabled(IBusEngine *engine) {
  // https://github.com/google/mozc/issues/201
  // On IBus 1.4.x, IBus expects that an IME should always be turned on and
