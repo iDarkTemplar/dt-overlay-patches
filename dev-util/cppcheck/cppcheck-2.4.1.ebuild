@@ -36,18 +36,14 @@ DEPEND="${RDEPEND}
 	doc? ( app-text/pandoc )
 "
 PATCHES=(
-	"${FILESDIR}"/${PN}-2.2-tinyxml.patch
+	"${FILESDIR}"/${PN}-2.4.1-limits.patch
 	"${FILESDIR}"/${PN}-2.2-translations.patch
-	"${FILESDIR}"/${PN}-2.2-exprengine.patch
-	"${FILESDIR}"/${PN}-2.2-online-help.patch
-	"${FILESDIR}"/${PN}-gcc11.patch
-	"${FILESDIR}"/${PN}-2.2-online-help_q_readonly.patch
 )
 
 src_prepare() {
 	cmake_src_prepare
 
-	rm -r externals/tinyxml || die
+	rm -r externals/tinyxml2 || die
 
 	# Generate the Qt online-help file
 	cd gui/help
@@ -55,17 +51,17 @@ src_prepare() {
 }
 
 src_configure() {
-	local mycmakeargs
-
-	mycmakeargs=(
-		-DUSE_MATCHCOMPILER=yes
-		-DUSE_Z3=$(usex z3)
+	local mycmakeargs=(
 		-DHAVE_RULES=$(usex pcre)
 		-DBUILD_GUI=$(usex qt5)
+		-DUSE_Z3=$(usex z3)
+		-DFILESDIR=/usr/share/Cppcheck
+		-DENABLE_OSS_FUZZ=OFF
+		-DUSE_MATCHCOMPILER=yes
 		-DWITH_QCHART=$(usex qchart)
 		-DBUILD_SHARED_LIBS:BOOL=OFF
 		-DBUILD_TESTS=no
-		-DFILESDIR=/usr/share/Cppcheck
+		-DUSE_BUNDLED_TINYXML2:BOOL=OFF
 	)
 
 	cmake_src_configure
@@ -84,11 +80,6 @@ src_compile() {
 src_install() {
 	cmake_src_install
 
-	insinto "/usr/share/${PN}/cfg"
-	doins cfg/*.cfg
-
-	dodoc -r tools/triage
-
 	if use doc ; then
 		doman ${PN}.1
 	fi
@@ -105,4 +96,6 @@ src_install() {
 	if use htmlreport ; then
 		dobin htmlreport/cppcheck-htmlreport
 	fi
+
+	dodoc -r tools/triage
 }
