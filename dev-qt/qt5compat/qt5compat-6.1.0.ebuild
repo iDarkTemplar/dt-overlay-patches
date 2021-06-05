@@ -19,6 +19,7 @@ BDEPEND="
 	"
 
 DEPEND="
+	dev-libs/icu:=
 	~dev-qt/qtbase-${PV}:6=[icu]
 	examples? ( ~dev-qt/qtbase-${PV}:6=[widgets] )
 	doc? ( !dev-qt/qt-docs:6 )
