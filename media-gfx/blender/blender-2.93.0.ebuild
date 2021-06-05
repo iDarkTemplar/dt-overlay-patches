@@ -29,7 +29,7 @@ IUSE="+bullet +dds +elbeem +openexr +tbb \
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	alembic? ( openexr )
 	cuda? ( cycles )
-	cycles? ( openexr tiff openimageio )
+	cycles? ( openexr tbb tiff openimageio )
 	elbeem? ( tbb )
 	oceansim? ( fftw tbb )
 	opencl? ( cycles )
@@ -44,11 +44,15 @@ RDEPEND="${PYTHON_DEPS}
 	dev-cpp/gflags:=
 	dev-cpp/glog[gflags(+)]
 	dev-libs/boost:=[nls?,threads(+)]
+	dev-libs/gmp
+	dev-libs/pugixml
 	dev-libs/lzo:2=
 	$(python_gen_cond_dep '
-		dev-python/numpy[${PYTHON_MULTI_USEDEP}]
-		dev-python/requests[${PYTHON_MULTI_USEDEP}]
-	' python3_7 python3_8)
+		dev-python/numpy[${PYTHON_USEDEP}]
+		dev-python/requests[${PYTHON_USEDEP}]
+	')
+	media-gfx/potrace
+	media-libs/fontconfig:=
 	media-libs/freetype:=
 	media-libs/glew:=
 	media-libs/libpng:=
@@ -60,8 +64,9 @@ RDEPEND="${PYTHON_DEPS}
 	virtual/opengl
 	alembic? ( >=media-gfx/alembic-1.7.12[boost(+),hdf(+)] )
 	collada? ( >=media-libs/opencollada-1.6.68:= )
-	color-management? ( media-libs/opencolorio:= )
+	color-management? ( >=media-libs/opencolorio-2.0:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
+	cycles? ( media-libs/freeglut )
 	ffmpeg? ( media-video/ffmpeg:=[x264,mp3,encode,theora,jpeg2k?] )
 	fftw? ( sci-libs/fftw:3.0= )
 	!headless? (
@@ -124,6 +129,8 @@ PATCHES=(
 	"${FILESDIR}/${PN}-2.80-fix-install-rules.patch"
 	"${FILESDIR}/${PN}-2.90-doc.patch"
 )
+
+CMAKE_BUILD_TYPE="Release"
 
 blender_check_requirements() {
 	[[ ${MERGE_TYPE} != binary ]] && use openmp && tc-check-openmp
