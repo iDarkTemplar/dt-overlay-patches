@@ -18,7 +18,7 @@ BDEPEND="
 	doc? ( ~dev-qt/qttools-${PV}:6=[qml] )
 	"
 
-# TODO: reintroduce system assimp dependency
+# TODO: reintroduce system assimp dependency when both qt3d and qtquick3d would build with system assimp
 
 DEPEND="
 	~dev-qt/qtbase-${PV}:6=

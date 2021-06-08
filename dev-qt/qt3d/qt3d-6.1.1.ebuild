@@ -17,7 +17,7 @@ IUSE="doc examples gles2-only qml vulkan"
 # TODO: gamepad dep
 # TODO: multimedia dep
 
-# TODO: reintroduce system assimp dependency when qtquick3d builds with system assimp
+# TODO: reintroduce system assimp dependency when both qt3d and qtquick3d would build with system assimp
 
 BDEPEND="
 	doc? ( ~dev-qt/qttools-${PV}:6=[qml?] )
@@ -42,7 +42,7 @@ DEPEND="${RDEPEND}
 "
 
 PATCHES=(
-	"${FILESDIR}/${PN}-6.0.0-system-assimp.patch"
+	"${FILESDIR}/${PN}-6.1.1-bundled-assimp-build.patch"
 )
 
 src_prepare() {
