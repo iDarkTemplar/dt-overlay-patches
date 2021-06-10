@@ -110,7 +110,6 @@ unset x
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-4.13.0-libclangformat-ide.patch
-	"${FILESDIR}"/${PN}-4.15.0-clangrefactoring-build.patch
 )
 
 llvm_check_deps() {
@@ -199,8 +198,6 @@ src_prepare() {
 }
 
 src_configure() {
-	use clang && export QTC_ENABLE_CLANG_REFACTORING=1
-
 	eqmake5 IDE_LIBRARY_BASENAME="$(get_libdir)" \
 		IDE_PACKAGE_MODE=1 \
 		KSYNTAXHIGHLIGHTING_LIB_DIR="${EPREFIX}/usr/$(get_libdir)" \
@@ -213,19 +210,11 @@ src_configure() {
 		$(use test && echo BUILD_TESTS=1)
 }
 
-src_compile() {
-	use clang && export QTC_ENABLE_CLANG_REFACTORING=1
-
-	default
-}
-
 src_test() {
 	cd tests/auto && virtx default
 }
 
 src_install() {
-	use clang && export QTC_ENABLE_CLANG_REFACTORING=1
-
 	emake INSTALL_ROOT="${ED}/usr" install
 
 	dodoc dist/{changes-*,known-issues}
