@@ -5,9 +5,13 @@ EAPI=7
 
 inherit desktop qmake-utils xdg-utils
 
+MY_PV="RELEASE_${PV/./_}"
+
 DESCRIPTION="Feature rich chm file viewer, based on Qt"
 HOMEPAGE="https://www.ulduzsoft.com/kchmviewer/"
-SRC_URI="mirror://sourceforge/kchmviewer/${P}.tar.gz"
+SRC_URI="https://github.com/gyunaev/${PN}/archive/${MY_PV}.tar.gz -> ${P}.tar.gz"
+
+S="${WORKDIR}/${PN}-${MY_PV}"
 
 LICENSE="GPL-3+"
 SLOT="0"
@@ -29,8 +33,15 @@ DEPEND="
 RDEPEND="${DEPEND}"
 
 PATCHES=(
-	"${FILESDIR}/${P}-underlinking.patch"
-	"${FILESDIR}/${P}-qtwebengine.patch"
+	"${FILESDIR}/${P}-upstream-fix-1.patch"
+	"${FILESDIR}/${P}-upstream-fix-2.patch"
+	"${FILESDIR}/${P}-upstream-fix-3.patch"
+	"${FILESDIR}/${P}-disable-linkClicked-signal.patch"
+	"${FILESDIR}/${P}-implement-opening-additional-windows.patch"
+	"${FILESDIR}/${P}-synchronize-url-with-navigation-panel.patch"
+	"${FILESDIR}/${P}-remove-updates-check.patch"
+	"${FILESDIR}/${P}-remove-whats-this-function.patch"
+	"${FILESDIR}/${P}-remove-debug-output.patch"
 )
 
 src_configure() {

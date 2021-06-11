@@ -1,0 +1,28 @@
+From 41848e61b5488fb93128d315888f71771f1642bf Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Mon, 22 Apr 2019 00:14:52 +0300
+Subject: [PATCH 5/6] Remove "what's this" function
+
+---
+ src/mainwindow.cpp | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/src/mainwindow.cpp b/src/mainwindow.cpp
+index 8344ebc..cd4b5f0 100644
+--- a/src/mainwindow.cpp
++++ b/src/mainwindow.cpp
+@@ -1163,11 +1163,6 @@ void MainWindow::setupActions()
+ 	// Navigation panel visibility
+ 	connect( m_navPanel, SIGNAL(visibilityChanged(bool)), this, SLOT( navigatorVisibilityChanged(bool) ) );
+ 
+-	// "What's this" action
+-	QAction * whatsthis = QWhatsThis::createAction( this );
+-	menuHelp->addAction( whatsthis );
+-	viewToolbar->addAction( whatsthis );
+-		
+ 	// Tab switching actions
+ 	(void) new QShortcut( QKeySequence( i18n("Ctrl+1") ),
+ 	                      this,
+-- 
+2.31.1
+
