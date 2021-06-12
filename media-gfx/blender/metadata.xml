@@ -10,12 +10,6 @@
 		rendering, post-production, interactive creation and playback.
 	</longdescription>
 	<use>
-		<flag name="abi6-compat">
-			Build for OpenVDB ABI 6.
-		</flag>
-		<flag name="abi7-compat">
-			Build for OpenVDB ABI 7.
-		</flag>
 		<flag name="alembic">
 			Add support for Alembic through
 			<pkg>media-gfx/alembic</pkg>.
@@ -41,8 +35,11 @@
 		<flag name="doc">
 			Build C and Python API documentation directly from the source code.
 		</flag>
-		<flag name="elbeem">
-			Adds surface fluid simulation to Blender using El'Beem library.
+		<flag name="embree">
+			Use embree to accelerate certain areas of the Cycles render engine.
+		</flag>
+		<flag name="fluid">
+			Adds fluid simulation support via the built-in Mantaflow library.
 		</flag>
 		<flag name="headless">
 			Build without graphical support (renderfarm, server mode only).
@@ -59,6 +56,7 @@
 		<flag name="oceansim">
 			Enable Ocean Modifier.
 		</flag>
+		<flag name="oidn">Enable OpenImageDenoiser Support</flag>
 		<flag name="opencl">
 			Allow OpenCL Graphics Acceleration. This may
 			require extra graphics card drivers.</flag>
@@ -73,14 +71,17 @@
 		<flag name="osl">
 			Add support for OpenShadingLanguage scripting.
 		</flag>
+		<flag name="potrace">
+			Add support for converting bitmaps into Grease pencil line using the potrace library.
+		</flag>
+		<flag name="pugixml">
+			Enable PugiXML support (Used for OpenImageIO, Grease Pencil SVG export)
+		</flag>
 		<flag name="standalone">
 			Build the standalone version of Cycles.
 		</flag>
 		<flag name="tbb">
 			Use threading building blocks library from <pkg>dev-cpp/tbb</pkg>.
-		</flag>
-		<flag name="test">
-			Build the provided unit tests.
 		</flag>
 		<flag name="valgrind">
 			Add support for memory debugging using

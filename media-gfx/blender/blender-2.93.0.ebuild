@@ -3,10 +3,9 @@
 
 EAPI=7
 
-PYTHON_COMPAT=( python3_{8,9} )
+PYTHON_COMPAT=( python3_9 )
 
-inherit check-reqs cmake flag-o-matic pax-utils python-single-r1 \
-	toolchain-funcs xdg-utils
+inherit check-reqs cmake flag-o-matic pax-utils python-single-r1 toolchain-funcs xdg-utils
 
 DESCRIPTION="3D Creation/Animation/Publishing System"
 HOMEPAGE="https://www.blender.org"
@@ -20,38 +19,34 @@ MY_PV="$(ver_cut 1-2)"
 SLOT="0"
 LICENSE="|| ( GPL-2 BL )"
 KEYWORDS="~amd64"
-IUSE="+bullet +dds +elbeem +openexr +tbb \
-	abi6-compat abi7-compat alembic collada color-management cuda cycles \
-	debug doc ffmpeg fftw headless jack jemalloc jpeg2k llvm \
-	man ndof nls oceansim openal opencl openimageio openmp opensubdiv \
-	openvdb osl sdl sndfile standalone test tiff valgrind"
+IUSE="+bullet +dds +fluid +openexr +tbb \
+	alembic collada +color-management cuda +cycles \
+	debug doc +embree +ffmpeg +fftw +gmp headless jack jemalloc jpeg2k +llvm \
+	man ndof nls +oceansim openal opencl oidn +openimageio +openmp +opensubdiv \
+	+openvdb +osl +pdf +potrace +pugixml pulseaudio sdl +sndfile standalone +tiff valgrind"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	alembic? ( openexr )
 	cuda? ( cycles )
 	cycles? ( openexr tbb tiff openimageio )
-	elbeem? ( tbb )
+	fluid? ( tbb )
 	oceansim? ( fftw tbb )
 	opencl? ( cycles )
-	openvdb? (
-		^^ ( abi6-compat abi7-compat )
-		tbb
-	)
+	openvdb? ( tbb )
 	osl? ( cycles llvm )
 	standalone? ( cycles )"
 
+# Library versions for official builds can be found in the blender source directory in:
+# build_files/build_environment/install_deps.sh
 RDEPEND="${PYTHON_DEPS}
 	dev-cpp/gflags:=
 	dev-cpp/glog[gflags(+)]
 	dev-libs/boost:=[nls?,threads(+)]
-	dev-libs/gmp
-	dev-libs/pugixml
 	dev-libs/lzo:2=
 	$(python_gen_cond_dep '
 		dev-python/numpy[${PYTHON_USEDEP}]
 		dev-python/requests[${PYTHON_USEDEP}]
 	')
-	media-gfx/potrace
 	media-libs/fontconfig:=
 	media-libs/freetype:=
 	media-libs/glew:=
@@ -64,11 +59,13 @@ RDEPEND="${PYTHON_DEPS}
 	virtual/opengl
 	alembic? ( >=media-gfx/alembic-1.7.12[boost(+),hdf(+)] )
 	collada? ( >=media-libs/opencollada-1.6.68:= )
-	color-management? ( >=media-libs/opencolorio-2.0:= )
+	color-management? ( >=media-libs/opencolorio-2.0.0:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
 	cycles? ( media-libs/freeglut )
-	ffmpeg? ( media-video/ffmpeg:=[x264,mp3,encode,theora,jpeg2k?] )
+	embree? ( >=media-libs/embree-3.10.0[raymask] )
+	ffmpeg? ( media-video/ffmpeg:=[x264,mp3,encode,theora,jpeg2k?,vpx,vorbis,opus,xvid] )
 	fftw? ( sci-libs/fftw:3.0= )
+	gmp? ( dev-libs/gmp )
 	!headless? (
 		x11-libs/libX11
 		x11-libs/libXi
@@ -86,17 +83,22 @@ RDEPEND="${PYTHON_DEPS}
 	nls? ( virtual/libiconv )
 	openal? ( media-libs/openal )
 	opencl? ( virtual/opencl )
-	openimageio? ( media-libs/openimageio:= )
+	oidn? ( >=media-libs/oidn-1.3.0 )
+	openimageio? ( >=media-libs/openimageio-2.2.13.1:= )
 	openexr? (
 		media-libs/ilmbase:=
 		media-libs/openexr:=
 	)
 	opensubdiv? ( >=media-libs/opensubdiv-3.4.0:=[cuda=,opencl=] )
 	openvdb? (
-		~media-gfx/openvdb-7.0.0[abi6-compat(-)?,abi7-compat(-)?]
+		>=media-gfx/openvdb-7.1.0
 		dev-libs/c-blosc:=
 	)
-	osl? ( media-libs/osl:= )
+	osl? ( >=media-libs/osl-1.11.10.0:= )
+	pdf? ( media-libs/libharu )
+	potrace? ( media-gfx/potrace )
+	pugixml? ( dev-libs/pugixml )
+	pulseaudio? ( media-sound/pulseaudio )
 	sdl? ( media-libs/libsdl2[sound,joystick] )
 	sndfile? ( media-libs/libsndfile )
 	tbb? ( dev-cpp/tbb )
@@ -170,26 +172,7 @@ src_prepare() {
 }
 
 src_configure() {
-	# FIX: forcing '-funsigned-char' fixes an anti-aliasing issue with menu
-	# shadows, see bug #276338 for reference
-	append-flags -funsigned-char
 	append-lfs-flags
-
-	if ! use debug ; then
-		append-flags -DNDEBUG
-	fi
-
-	if use openvdb; then
-		local version
-		if use abi6-compat; then
-			version=6;
-		elif use abi7-compat; then
-			version=7;
-		else
-			die "Openvdb abi version not compatible"
-		fi
-		append-cppflags -DOPENVDB_ABI_VERSION_NUMBER=${version}
-	fi
 
 	local mycmakeargs=(
 		-DBUILD_SHARED_LIBS=OFF
@@ -203,17 +186,19 @@ src_configure() {
 		-DWITH_CODEC_FFMPEG=$(usex ffmpeg)
 		-DWITH_CODEC_SNDFILE=$(usex sndfile)
 		-DWITH_CXX_GUARDEDALLOC=$(usex debug)
-		-DWITH_CYCLES_DEVICE_CUDA=$(usex cuda TRUE FALSE)
 		-DWITH_CYCLES=$(usex cycles)
+		-DWITH_CYCLES_DEVICE_CUDA=$(usex cuda TRUE FALSE)
 		-DWITH_CYCLES_DEVICE_OPENCL=$(usex opencl)
-		-DWITH_CYCLES_EMBREE=OFF
+		-DWITH_CYCLES_EMBREE=$(usex embree)
+		-DWITH_CYCLES_OSL=$(usex osl)
 		-DWITH_CYCLES_STANDALONE=$(usex standalone)
 		-DWITH_CYCLES_STANDALONE_GUI=$(usex standalone)
-		-DWITH_CYCLES_OSL=$(usex osl)
 		-DWITH_DOC_MANPAGE=$(usex man)
 		-DWITH_FFTW3=$(usex fftw)
 		-DWITH_GHOST_X11=$(usex !headless)
-		-DWITH_GTESTS=$(usex test)
+		-DWITH_GMP=$(usex gmp)
+		-DWITH_GTESTS=OFF
+		-DWITH_HARU=$(usex pdf)
 		-DWITH_HEADLESS=$(usex headless)
 		-DWITH_INSTALL_PORTABLE=OFF
 		-DWITH_IMAGE_DDS=$(usex dds)
@@ -226,18 +211,24 @@ src_configure() {
 		-DWITH_LLVM=$(usex llvm)
 		-DWITH_MEM_JEMALLOC=$(usex jemalloc)
 		-DWITH_MEM_VALGRIND=$(usex valgrind)
-		-DWITH_MOD_FLUID=$(usex elbeem)
+		-DWITH_MOD_FLUID=$(usex fluid)
 		-DWITH_MOD_OCEANSIM=$(usex oceansim)
+		-DWITH_NANOVDB=OFF
 		-DWITH_OPENAL=$(usex openal)
 		-DWITH_OPENCOLLADA=$(usex collada)
 		-DWITH_OPENCOLORIO=$(usex color-management)
+		-DWITH_OPENIMAGEDENOISE=$(usex oidn)
 		-DWITH_OPENIMAGEIO=$(usex openimageio)
 		-DWITH_OPENMP=$(usex openmp)
 		-DWITH_OPENSUBDIV=$(usex opensubdiv)
 		-DWITH_OPENVDB=$(usex openvdb)
 		-DWITH_OPENVDB_BLOSC=$(usex openvdb)
+		-DWITH_POTRACE=$(usex potrace)
+		-DWITH_PUGIXML=$(usex pugixml)
+		-DWITH_PULSEAUDIO=$(usex pulseaudio)
 		-DWITH_PYTHON_INSTALL=OFF
 		-DWITH_PYTHON_INSTALL_NUMPY=OFF
+		-DWITH_PYTHON_SAFETY=$(usex debug)
 		-DWITH_SDL=$(usex sdl)
 		-DWITH_STATIC_LIBS=OFF
 		-DWITH_SYSTEM_EIGEN3=ON
@@ -246,7 +237,14 @@ src_configure() {
 		-DWITH_SYSTEM_GLOG=ON
 		-DWITH_SYSTEM_LZO=ON
 		-DWITH_TBB=$(usex tbb)
+		-DWITH_USD=OFF
+		-DWITH_XR_OPENXR=OFF
 	)
+	if ! use debug ; then
+		append-flags  -DNDEBUG
+	else
+		append-flags  -DDEBUG
+	fi
 	cmake_src_configure
 }
 
@@ -272,17 +270,6 @@ src_compile() {
 
 		cd "${CMAKE_USE_DIR}"/doc/python_api || die
 		sphinx-build sphinx-in BPY_API || die "sphinx failed."
-	fi
-}
-
-src_test() {
-	if use test; then
-		einfo "Running Blender Unit Tests ..."
-		cd "${BUILD_DIR}"/bin/tests || die
-		local f
-		for f in *_test; do
-			./"${f}" || die
-		done
 	fi
 }
 
@@ -321,7 +308,7 @@ pkg_postinst() {
 	elog "It is recommended to change your blender temp directory"
 	elog "from /tmp to /home/user/tmp or another tmp file under your"
 	elog "home directory. This can be done by starting blender, then"
-	elog "dragging the main menu down do display all paths."
+	elog "changing the 'Temporary Files' directory in Blender preferences."
 	elog
 	ewarn
 	ewarn "This ebuild does not unbundle the massive amount of 3rd party"
