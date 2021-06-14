@@ -46,6 +46,7 @@ RDEPEND="$COMMONDEPEND
 
 	plymouth? (
 		sys-boot/plymouth[-udev]
+		media-libs/fontconfig
 
 		openrc? (
 			sys-boot/plymouth-openrc-plugin
