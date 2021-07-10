@@ -20,6 +20,7 @@ DEPEND="
 RDEPEND="
 	$DEPEND
 	dev-vcs/git[gpg?]
+	gpg? ( app-crypt/gnupg )
 	"
 
 src_install() {
