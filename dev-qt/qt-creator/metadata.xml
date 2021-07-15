@@ -8,7 +8,9 @@
 	<use>
 		<flag name="android">Build plugin for Android devices</flag>
 		<flag name="autotest">Enable integration with popular unit testing frameworks (QtTest, Google Test, Boost.Test)</flag>
+		<flag name="autotools">Build plugin for autotools-based projects</flag>
 		<flag name="baremetal">Build plugin for bare metal devices</flag>
+		<flag name="bazaar">Add support for GNU Bazaar version control system (requires manual installation of Bazaar client)</flag>
 		<flag name="beautifier">Build the beautifier plugin (supports astyle, clang-format, and uncrustify)</flag>
 		<flag name="boot2qt">Build plugin for Boot2Qt devices</flag>
 		<flag name="clang">Build clang-based plugins (code model, formatting, static analysis)</flag>
@@ -19,7 +21,6 @@
 		<flag name="designer">Enable designer for QtWidgets-based UIs</flag>
 		<flag name="glsl">Build the GLSL editor plugin</flag>
 		<flag name="help">Enable the integrated documentation viewer</flag>
-		<flag name="ios">Build plugin for Apple iOS devices</flag>
 		<flag name="lsp">Add support for the Language Server Protocol (LSP)</flag>
 		<flag name="mcu">Build plugin for MCU devices</flag>
 		<flag name="mercurial">Add support for <pkg>dev-vcs/mercurial</pkg> version control system</flag>
@@ -30,6 +31,7 @@
 		<flag name="python">Build plugin for Python language support</flag>
 		<flag name="qbs">Build plugin for QBS-based projects</flag>
 		<flag name="qmldesigner">Enable designer for QML/QtQuick-based UIs</flag>
+		<flag name="qmljs">Build the QML/JavaScript editor plugin</flag>
 		<flag name="qmlprofiler">Build the QML profiler plugin</flag>
 		<flag name="qnx">Build plugin for QNX devices</flag>
 		<flag name="remotelinux">Add support for deployment and execution on a remote Linux host</flag>
@@ -40,7 +42,6 @@
 		<flag name="valgrind">Enable integration with <pkg>dev-util/valgrind</pkg></flag>
 		<flag name="webassembly">Build WebAssembly plugin</flag>
 		<flag name="webengine">Use <pkg>dev-qt/qtwebengine</pkg> to view documentation</flag>
-		<flag name="winrt">Build plugin for WinRT devices</flag>
 	</use>
 	<upstream>
 		<bugs-to>https://bugreports.qt.io/</bugs-to>
