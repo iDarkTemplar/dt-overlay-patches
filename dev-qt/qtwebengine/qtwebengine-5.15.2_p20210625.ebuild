@@ -71,6 +71,7 @@ RDEPEND="
 	x11-libs/libXext
 	x11-libs/libXfixes
 	x11-libs/libXi
+	x11-libs/libxkbfile
 	x11-libs/libXrandr
 	x11-libs/libXrender
 	x11-libs/libXScrnSaver
@@ -81,7 +82,7 @@ RDEPEND="
 	kerberos? ( virtual/krb5 )
 	pulseaudio? ( media-sound/pulseaudio:= )
 	system-ffmpeg? ( media-video/ffmpeg:0= )
-	system-icu? ( >=dev-libs/icu-68.2:= )
+	system-icu? ( >=dev-libs/icu-69.1:= )
 	widgets? (
 		~dev-qt/qtdeclarative-${QTVER}[widgets]
 		~dev-qt/qtwidgets-${QTVER}
@@ -91,8 +92,7 @@ RDEPEND="
 	)
 "
 DEPEND="${RDEPEND}"
-BDEPEND="
-	${PYTHON_DEPS}
+BDEPEND="${PYTHON_DEPS}
 	dev-util/gperf
 	dev-util/ninja
 	dev-util/re2c
@@ -106,13 +106,22 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.15.2_p20210224-chromium-87-v8-icu68.patch" # downstream, bug 757606
 	"${FILESDIR}/${PN}-5.15.2_p20210224-disable-git.patch" # downstream snapshot fix
 	"${FILESDIR}/${PN}-5.15.2_p20210406-glibc-2.33.patch" # by Fedora, bug 769989
-	"${FILESDIR}/${PN}-5.15.2_p20210406-gcc11.patch" # by Fedora, bug 768261
-	"${FILESDIR}/${PN}-5.15.2_p20210406-icu69.patch" # bug 781236
-	"${FILESDIR}/${P}-qtbug-91773.patch" # in Qt "5.15.5"
+	"${FILESDIR}/${PN}-5.15.2_p20210521-gcc11.patch" # by Fedora, bug 768261
 )
 
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples")
+}
+
+pkg_preinst() {
+	elog "This version of Qt WebEngine is based on Chromium version 87.0.4280, with"
+	elog "additional security fixes from newer versions. Extensive as it is, the"
+	elog "list of backports is impossible to evaluate, but always bound to be behind"
+	elog "Chromium's release schedule."
+	elog "In addition, various online services may deny service based on an outdated"
+	elog "user agent version (and/or other checks). Google is already known to do so."
+	elog
+	elog "tldr: Your web browsing experience will be compromised."
 }
 
 src_unpack() {
@@ -148,10 +157,6 @@ src_prepare() {
 		sed -i -e 's|use_jumbo_build=true|use_jumbo_build=false|' \
 			src/buildtools/config/common.pri || die
 	fi
-
-	# bug 630834 - pass appropriate options to ninja when building GN
-	sed -e "s/\['ninja'/&, '-j$(makeopts_jobs)', '-l$(makeopts_loadavg "${MAKEOPTS}" 0)', '-v'/" \
-		-i src/3rdparty/chromium/tools/gn/bootstrap/bootstrap.py || die
 
 	# bug 620444 - ensure local headers are used
 	find "${S}" -type f -name "*.pr[fio]" | \

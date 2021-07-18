@@ -10,45 +10,6 @@ index 013f1dfb2..3ce63c192 100644
  #include <algorithm>
  #include <functional>
  
-diff --git a/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/containers/string_pool.cc b/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/containers/string_pool.cc
-index fd651958f..1e8d0606c 100644
---- a/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/containers/string_pool.cc
-+++ b/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/containers/string_pool.cc
-@@ -14,9 +14,9 @@
-  * limitations under the License.
-  */
- 
-+#include <limits>
- #include "src/trace_processor/containers/string_pool.h"
- 
--#include <limits>
- 
- #include "perfetto/base/logging.h"
- #include "perfetto/ext/base/utils.h"
-diff --git a/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/db/column.cc b/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/db/column.cc
-index 00496b335..0dccfeb8a 100644
---- a/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/db/column.cc
-+++ b/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/db/column.cc
-@@ -14,6 +14,7 @@
-  * limitations under the License.
-  */
- 
-+#include <limits>
- #include "src/trace_processor/db/column.h"
- 
- #include "src/trace_processor/db/compare.h"
-diff --git a/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/types/variadic.cc b/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/types/variadic.cc
-index 837bfeba9..cdd56817d 100644
---- a/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/types/variadic.cc
-+++ b/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/types/variadic.cc
-@@ -14,6 +14,7 @@
-  * limitations under the License.
-  */
- 
-+#include <limits>
- #include "src/trace_processor/types/variadic.h"
- 
- namespace perfetto {
 diff --git a/src/3rdparty/chromium/ui/accessibility/platform/ax_platform_atk_hyperlink.cc b/src/3rdparty/chromium/ui/accessibility/platform/ax_platform_atk_hyperlink.cc
 index be91def6b..73f202356 100644
 --- a/src/3rdparty/chromium/ui/accessibility/platform/ax_platform_atk_hyperlink.cc
@@ -111,16 +72,3 @@ index 657a3c96b..ad641a082 100644
  #include "components/bookmarks/browser/base_bookmark_model_observer.h"
  
  namespace bookmarks {
-diff --git a/src/3rdparty/chromium/third_party/abseil-cpp/absl/synchronization/internal/graphcycles.cc b/src/3rdparty/chromium/third_party/abseil-cpp/absl/synchronization/internal/graphcycles.cc
-index 19f9aab5b..27fec2168 100644
---- a/src/3rdparty/chromium/third_party/abseil-cpp/absl/synchronization/internal/graphcycles.cc
-+++ b/src/3rdparty/chromium/third_party/abseil-cpp/absl/synchronization/internal/graphcycles.cc
-@@ -37,6 +37,7 @@
- 
- #include <algorithm>
- #include <array>
-+#include <limits>
- #include "absl/base/internal/hide_ptr.h"
- #include "absl/base/internal/raw_logging.h"
- #include "absl/base/internal/spinlock.h"
- 
