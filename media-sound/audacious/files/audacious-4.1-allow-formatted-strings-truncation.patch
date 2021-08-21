@@ -1,4 +1,4 @@
-From 0b51985d3bd739f4a0bd206b1533bd10fdf66a33 Mon Sep 17 00:00:00 2001
+From f0431fe32c3d612c86266758ccd74559f67f2159 Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sat, 21 Aug 2021 13:07:06 +0300
 Subject: [PATCH] Allow to truncate formatted strings in playlist
@@ -6,16 +6,143 @@ Subject: [PATCH] Allow to truncate formatted strings in playlist
 This allows to truncate really long artist names with format like following:
 
 ${?artist:${artist#25} - }${title}
----
- src/libaudcore/tests/test.cc     | 10 ++++++++
- src/libaudcore/tuple-compiler.cc | 44 +++++++++++++++++++++++++++++---
- 2 files changed, 51 insertions(+), 3 deletions(-)
 
+This should also work with UTF-8 strings.
+This change was tested only with UTF-8 locale.
+---
+ src/libaudcore/audstrings.h      |  3 +
+ src/libaudcore/charset.cc        | 97 ++++++++++++++++++++++++++++++++
+ src/libaudcore/tests/test.cc     | 20 +++++++
+ src/libaudcore/tuple-compiler.cc | 67 +++++++++++++++++++++-
+ 4 files changed, 184 insertions(+), 3 deletions(-)
+
+diff --git a/src/libaudcore/audstrings.h b/src/libaudcore/audstrings.h
+index ccd043913..f18f0ddee 100644
+--- a/src/libaudcore/audstrings.h
++++ b/src/libaudcore/audstrings.h
+@@ -124,6 +124,9 @@ StringBuf int_array_to_str(const int * array, int count);
+ bool str_to_double_array(const char * string, double * array, int count);
+ StringBuf double_array_to_str(const double * array, int count);
+ 
++int utf8_str_bytes_len(const char * string, int chars = -1);
++int utf8_str_chars_len(const char * string, int bytes = -1);
++
+ /* Requires: aud_init() */
+ StringBuf str_format_time(int64_t milliseconds);
+ 
+diff --git a/src/libaudcore/charset.cc b/src/libaudcore/charset.cc
+index 542225f35..209c0481e 100644
+--- a/src/libaudcore/charset.cc
++++ b/src/libaudcore/charset.cc
+@@ -188,6 +188,103 @@ EXPORT StringBuf str_to_utf8(StringBuf && str)
+     return str.settle();
+ }
+ 
++static int utf8_get_char_byte(const char * string, int bytes)
++{
++    int checklen = -1;
++
++    if ((string[0] & 0x80) == 0x00)
++    {
++        checklen = 1;
++    }
++    else if ((string[0] & 0xE0) == 0xC0)
++    {
++        checklen = 2;
++    }
++    else if ((string[0] & 0xF0) == 0xE0)
++    {
++        checklen = 3;
++    }
++    else if ((string[0] & 0xF8) == 0xF0)
++    {
++        checklen = 4;
++    }
++    else if ((string[0] & 0xFC) == 0xF8)
++    {
++        checklen = 5;
++    }
++    else if ((string[0] & 0xFE) == 0xFC)
++    {
++        checklen = 6;
++    }
++    else
++    {
++        return -1;
++    }
++
++    if (bytes < checklen)
++    {
++        return -1;
++    }
++
++    for (int i = 1; i < checklen; ++i)
++    {
++        if ((string[i] & 0xC0) != 0x80)
++        {
++            return -1;
++        }
++    }
++
++    return checklen;
++}
++
++EXPORT int utf8_str_bytes_len(const char * string, int chars)
++{
++    int total_bytes_len = strlen(string);
++    int result = 0;
++    int current_chars = 0;
++
++    while ((result < total_bytes_len) && ((chars == -1) || (current_chars < chars)))
++    {
++        int count = utf8_get_char_byte(string + result, total_bytes_len - result);
++        if (count < 0)
++        {
++            AUDWARN("Encountered invalid utf-8 sequence at string %s\n", string);
++            return -1;
++        }
++
++        result += count;
++        ++current_chars;
++    }
++
++    return result;
++}
++
++EXPORT int utf8_str_chars_len(const char * string, int bytes)
++{
++    int result = 0;
++    int processed_bytes = 0;
++
++    if (bytes < 0)
++    {
++        bytes = strlen(string);
++    }
++
++    while (processed_bytes < bytes)
++    {
++        int count = utf8_get_char_byte(string + processed_bytes, bytes - processed_bytes);
++        if (count < 0)
++        {
++            AUDWARN("Encountered invalid utf-8 sequence at string %s\n", string);
++            return -1;
++        }
++
++        processed_bytes += count;
++        ++result;
++    }
++
++    return result;
++}
++
+ static void chardet_update(void * = nullptr, void * = nullptr)
+ {
+     String region = aud_get_str("chardet_detector");
 diff --git a/src/libaudcore/tests/test.cc b/src/libaudcore/tests/test.cc
-index c032d0b7d..c1bfccd0a 100644
+index c032d0b7d..e27373b18 100644
 --- a/src/libaudcore/tests/test.cc
 +++ b/src/libaudcore/tests/test.cc
-@@ -320,6 +320,16 @@ static void test_tuple_formats()
+@@ -320,6 +320,26 @@ static void test_tuple_formats()
      test_tuple_format("x${(empty)?artist:Empty}", tuple, "x");
      test_tuple_format("x${(empty)?album:Empty}", tuple, "xEmpty");
      test_tuple_format("x${(empty)?\"Literal\":Empty}", tuple, "Song Title");
@@ -29,18 +156,28 @@ index c032d0b7d..c1bfccd0a 100644
 +    test_tuple_format("${artist#12}", tuple, "Artist Name");
 +    test_tuple_format("${artist#-1}", tuple, "Artist Name");
 +    test_tuple_format("${artist#abc}", tuple, "Artist Name");
++
++    /* string truncation with utf-8 strings */
++    tuple.set_str(Tuple::Artist, "\xD0\xA0\xD1\x83\xD1\x81\xD1\x81\xD0\xBA\xD0\xBE\xD0\xB5 \xD0\xBD\xD0\xB0\xD0\xB7\xD0\xB2\xD0\xB0\xD0\xBD\xD0\xB8\xD0\xB5");
++    test_tuple_format("${artist}", tuple, "\xD0\xA0\xD1\x83\xD1\x81\xD1\x81\xD0\xBA\xD0\xBE\xD0\xB5 \xD0\xBD\xD0\xB0\xD0\xB7\xD0\xB2\xD0\xB0\xD0\xBD\xD0\xB8\xD0\xB5");
++    test_tuple_format("${artist#7}", tuple, "\xD0\xA0\xD1\x83\xD1\x81\xD1\x81\xD0\xBA\xD0\xBE\xD0\xB5...");
++    test_tuple_format("${artist#15}", tuple, "\xD0\xA0\xD1\x83\xD1\x81\xD1\x81\xD0\xBA\xD0\xBE\xD0\xB5 \xD0\xBD\xD0\xB0\xD0\xB7\xD0\xB2\xD0\xB0\xD0\xBD\xD0\xB8...");
++    test_tuple_format("${artist#16}", tuple, "\xD0\xA0\xD1\x83\xD1\x81\xD1\x81\xD0\xBA\xD0\xBE\xD0\xB5 \xD0\xBD\xD0\xB0\xD0\xB7\xD0\xB2\xD0\xB0\xD0\xBD\xD0\xB8\xD0\xB5");
++    test_tuple_format("${artist#17}", tuple, "\xD0\xA0\xD1\x83\xD1\x81\xD1\x81\xD0\xBA\xD0\xBE\xD0\xB5 \xD0\xBD\xD0\xB0\xD0\xB7\xD0\xB2\xD0\xB0\xD0\xBD\xD0\xB8\xD0\xB5");
++    test_tuple_format("${artist#-1}", tuple, "\xD0\xA0\xD1\x83\xD1\x81\xD1\x81\xD0\xBA\xD0\xBE\xD0\xB5 \xD0\xBD\xD0\xB0\xD0\xB7\xD0\xB2\xD0\xB0\xD0\xBD\xD0\xB8\xD0\xB5");
++    test_tuple_format("${artist#abc}", tuple, "\xD0\xA0\xD1\x83\xD1\x81\xD1\x81\xD0\xBA\xD0\xBE\xD0\xB5 \xD0\xBD\xD0\xB0\xD0\xB7\xD0\xB2\xD0\xB0\xD0\xBD\xD0\xB8\xD0\xB5");
  }
  
  static void test_ringbuf()
 diff --git a/src/libaudcore/tuple-compiler.cc b/src/libaudcore/tuple-compiler.cc
-index 97198b5bf..bc7aa3536 100644
+index 97198b5bf..50fa0f53a 100644
 --- a/src/libaudcore/tuple-compiler.cc
 +++ b/src/libaudcore/tuple-compiler.cc
 @@ -41,6 +41,7 @@ struct Variable
      String text;
      int integer;
      Tuple::Field field;
-+    size_t maxlen = 0;
++    int maxlen = 0;
  
      bool set(const char * name, bool literal);
      bool exists(const Tuple & tuple) const;
@@ -53,7 +190,7 @@ index 97198b5bf..bc7aa3536 100644
      if (g_ascii_isdigit(name[0]))
      {
          type = Integer;
-@@ -85,7 +88,22 @@ bool Variable::set(const char * name, bool literal)
+@@ -85,7 +88,26 @@ bool Variable::set(const char * name, bool literal)
      else
      {
          type = Field;
@@ -73,11 +210,15 @@ index 97198b5bf..bc7aa3536 100644
 +
 +            // if it's invalid length, just fall back to zero
 +            maxlen = atoi(delim + 1);
++            if (maxlen < 0)
++            {
++                maxlen = 0;
++            }
 +        }
  
          if (field < 0)
          {
-@@ -120,7 +138,27 @@ Tuple::ValueType Variable::get(const Tuple & tuple, String & tmps,
+@@ -120,7 +142,46 @@ Tuple::ValueType Variable::get(const Tuple & tuple, String & tmps,
          switch (tuple.get_value_type(field))
          {
          case Tuple::String:
@@ -89,24 +230,43 @@ index 97198b5bf..bc7aa3536 100644
 +            else
 +            {
 +                String temp_string = tuple.get_str(field);
-+                if (strlen(temp_string) <= maxlen)
++
++                int string_chars_len = utf8_str_chars_len(temp_string);
++                if (string_chars_len >= 0)
 +                {
-+                    tmps = temp_string;
++                    if (string_chars_len <= maxlen)
++                    {
++                        tmps = temp_string;
++                    }
++                    else
++                    {
++                        int string_bytes_len = utf8_str_bytes_len(temp_string, maxlen);
++                        if (string_bytes_len >= 0)
++                        {
++                            StringBuf temp_buf(0);
++                            temp_buf.insert(-1, temp_string, string_bytes_len);
++                            temp_buf.insert(-1, "...", -1);
++
++                            tmps = String(temp_buf);
++                        }
++                        else
++                        {
++                            // error, fallback to using full string
++                            tmps = temp_string;
++                        }
++                    }
 +                }
 +                else
 +                {
-+                    StringBuf temp_buf(0);
-+                    temp_buf.insert(-1, temp_string, maxlen);
-+                    temp_buf.insert(-1, "...", -1);
-+
-+                    tmps = String(temp_buf);
++                    // error, fallback to using full string
++                    tmps = temp_string;
 +                }
 +            }
 +
              return Tuple::String;
  
          case Tuple::Int:
-@@ -185,7 +223,7 @@ static StringBuf get_item(const char *& str, char endch, bool & literal)
+@@ -185,7 +246,7 @@ static StringBuf get_item(const char *& str, char endch, bool & literal)
      }
      else
      {
