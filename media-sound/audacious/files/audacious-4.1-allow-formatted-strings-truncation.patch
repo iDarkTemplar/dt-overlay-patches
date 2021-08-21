@@ -1,0 +1,120 @@
+From 0b51985d3bd739f4a0bd206b1533bd10fdf66a33 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Sat, 21 Aug 2021 13:07:06 +0300
+Subject: [PATCH] Allow to truncate formatted strings in playlist
+
+This allows to truncate really long artist names with format like following:
+
+${?artist:${artist#25} - }${title}
+---
+ src/libaudcore/tests/test.cc     | 10 ++++++++
+ src/libaudcore/tuple-compiler.cc | 44 +++++++++++++++++++++++++++++---
+ 2 files changed, 51 insertions(+), 3 deletions(-)
+
+diff --git a/src/libaudcore/tests/test.cc b/src/libaudcore/tests/test.cc
+index c032d0b7d..c1bfccd0a 100644
+--- a/src/libaudcore/tests/test.cc
++++ b/src/libaudcore/tests/test.cc
+@@ -320,6 +320,16 @@ static void test_tuple_formats()
+     test_tuple_format("x${(empty)?artist:Empty}", tuple, "x");
+     test_tuple_format("x${(empty)?album:Empty}", tuple, "xEmpty");
+     test_tuple_format("x${(empty)?\"Literal\":Empty}", tuple, "Song Title");
++
++    /* string truncation tests */
++    tuple.set_str(Tuple::Artist, "Artist Name");
++    test_tuple_format("${artist}", tuple, "Artist Name");
++    test_tuple_format("${artist#6}", tuple, "Artist...");
++    test_tuple_format("${artist#10}", tuple, "Artist Nam...");
++    test_tuple_format("${artist#11}", tuple, "Artist Name");
++    test_tuple_format("${artist#12}", tuple, "Artist Name");
++    test_tuple_format("${artist#-1}", tuple, "Artist Name");
++    test_tuple_format("${artist#abc}", tuple, "Artist Name");
+ }
+ 
+ static void test_ringbuf()
+diff --git a/src/libaudcore/tuple-compiler.cc b/src/libaudcore/tuple-compiler.cc
+index 97198b5bf..bc7aa3536 100644
+--- a/src/libaudcore/tuple-compiler.cc
++++ b/src/libaudcore/tuple-compiler.cc
+@@ -41,6 +41,7 @@ struct Variable
+     String text;
+     int integer;
+     Tuple::Field field;
++    size_t maxlen = 0;
+ 
+     bool set(const char * name, bool literal);
+     bool exists(const Tuple & tuple) const;
+@@ -72,6 +73,8 @@ typedef TupleCompiler::Node Node;
+ 
+ bool Variable::set(const char * name, bool literal)
+ {
++    maxlen = 0;
++
+     if (g_ascii_isdigit(name[0]))
+     {
+         type = Integer;
+@@ -85,7 +88,22 @@ bool Variable::set(const char * name, bool literal)
+     else
+     {
+         type = Field;
+-        field = Tuple::field_by_name(name);
++        field = Tuple::Invalid;
++
++        const char *delim = strchr(name, '#');
++        if (delim == nullptr)
++        {
++            field = Tuple::field_by_name(name);
++        }
++        else
++        {
++            StringBuf actual_name(0);
++            actual_name.insert(-1, name, delim - name);
++            field = Tuple::field_by_name(actual_name);
++
++            // if it's invalid length, just fall back to zero
++            maxlen = atoi(delim + 1);
++        }
+ 
+         if (field < 0)
+         {
+@@ -120,7 +138,27 @@ Tuple::ValueType Variable::get(const Tuple & tuple, String & tmps,
+         switch (tuple.get_value_type(field))
+         {
+         case Tuple::String:
+-            tmps = tuple.get_str(field);
++            if (maxlen == 0)
++            {
++                tmps = tuple.get_str(field);
++            }
++            else
++            {
++                String temp_string = tuple.get_str(field);
++                if (strlen(temp_string) <= maxlen)
++                {
++                    tmps = temp_string;
++                }
++                else
++                {
++                    StringBuf temp_buf(0);
++                    temp_buf.insert(-1, temp_string, maxlen);
++                    temp_buf.insert(-1, "...", -1);
++
++                    tmps = String(temp_buf);
++                }
++            }
++
+             return Tuple::String;
+ 
+         case Tuple::Int:
+@@ -185,7 +223,7 @@ static StringBuf get_item(const char *& str, char endch, bool & literal)
+     }
+     else
+     {
+-        while (g_ascii_isalnum(*s) || *s == '-')
++        while (g_ascii_isalnum(*s) || *s == '-' || *s == '#')
+         {
+             if (set == stop)
+                 throw std::bad_alloc();
+-- 
+2.31.1
+

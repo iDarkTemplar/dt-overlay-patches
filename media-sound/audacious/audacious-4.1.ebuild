@@ -42,6 +42,10 @@ PDEPEND="~media-plugins/audacious-plugins-${PV}"
 
 S="${WORKDIR}/${MY_P}"
 
+PATCHES=(
+	"${FILESDIR}/${PN}-4.1-allow-formatted-strings-truncation.patch"
+)
+
 src_unpack() {
 	default
 	[[ ${PV} == *9999 ]] && git-r3_src_unpack
