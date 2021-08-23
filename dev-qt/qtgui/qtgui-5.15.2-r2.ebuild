@@ -16,7 +16,6 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 fi
 
 # TODO: linuxfb
-
 IUSE="accessibility dbus doc egl eglfs evdev examples +gif gles2-only ibus jpeg
 	+libinput +png tslib tuio +udev vnc vulkan wayland +X"
 REQUIRED_USE="

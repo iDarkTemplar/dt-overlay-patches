@@ -2,6 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
+
 QT5_GENERATE_DOCS="true"
 inherit qt5-build
 
@@ -17,7 +18,7 @@ DEPEND="
 	~dev-qt/qtcore-${PV}
 	~dev-qt/qtdeclarative-${PV}
 	~dev-qt/qtgui-${PV}
-	~dev-qt/qtwebengine-${PV}
+	=dev-qt/qtwebengine-${PV}*:5
 	doc? ( ~dev-qt/qdoc-${PV}[qml] )
 "
 RDEPEND="${DEPEND}"

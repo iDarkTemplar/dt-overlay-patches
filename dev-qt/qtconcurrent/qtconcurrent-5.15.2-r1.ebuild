@@ -5,7 +5,7 @@ EAPI=7
 QT5_MODULE="qtbase"
 inherit qt5-build
 
-DESCRIPTION="Implementation of SAX and DOM for the Qt5 framework"
+DESCRIPTION="Multi-threading concurrence support library for the Qt5 framework"
 SRC_URI+=" https://dev.gentoo.org/~asturm/distfiles/qtbase-${PV}-gcc11.patch.xz"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
@@ -14,12 +14,10 @@ fi
 
 IUSE="doc examples"
 
-RDEPEND="
+DEPEND="
 	~dev-qt/qtcore-${PV}:5=
 "
-DEPEND="${RDEPEND}
-	test? ( ~dev-qt/qtnetwork-${PV} )
-"
+RDEPEND="${DEPEND}"
 
 PDEPEND="
 	doc? (
@@ -31,11 +29,10 @@ PDEPEND="
 "
 
 QT5_TARGET_SUBDIRS=(
-	src/xml
+	src/concurrent
 )
 
-QT5_GENTOO_PRIVATE_CONFIG=(
-	:xml
+PATCHES=(
+	"${WORKDIR}"/qtbase-${PV}-gcc11.patch # bug 752012
+	"${FILESDIR}"/${P}-gcc11.patch # bug #764977
 )
-
-PATCHES=( "${WORKDIR}/qtbase-${PV}-gcc11.patch" ) # bug 752012
