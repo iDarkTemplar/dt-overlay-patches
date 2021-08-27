@@ -34,7 +34,7 @@ IUSE="doc systemd test webengine ${QTC_PLUGINS[@]%:*}"
 RESTRICT="!test? ( test )"
 REQUIRED_USE="
 	boot2qt? ( remotelinux )
-	clang? ( test? ( qbs ) )
+	clang? ( lsp test? ( qbs ) )
 	mcu? ( cmake )
 	python? ( lsp )
 	qmldesigner? ( qmljs )
