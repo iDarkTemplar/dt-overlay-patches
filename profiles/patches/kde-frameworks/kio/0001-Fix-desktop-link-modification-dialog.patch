@@ -1,0 +1,57 @@
+From b223bb07ac0a751dde7f897bb657f8dfe22a8370 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Mon, 6 Sep 2021 21:46:03 +0300
+Subject: [PATCH] Fix desktop link modification dialog
+
+Ensure that file name and displayed name go into correct edit fields,
+same as ones used when creating desktop link.
+---
+ src/widgets/kpropertiesdialog.cpp | 18 +++---------------
+ 1 file changed, 3 insertions(+), 15 deletions(-)
+
+diff --git a/src/widgets/kpropertiesdialog.cpp b/src/widgets/kpropertiesdialog.cpp
+index e714ab1a..508c39fc 100644
+--- a/src/widgets/kpropertiesdialog.cpp
++++ b/src/widgets/kpropertiesdialog.cpp
+@@ -922,11 +922,8 @@ KFilePropsPlugin::KFilePropsPlugin(KPropertiesDialog *_props)
+         // Make it human-readable
+         filename = nameFromFileName(filename);
+ 
+-        if (d->bKDesktopMode && d->bDesktopFile) {
+-            KDesktopFile config(url.toLocalFile());
+-            if (config.desktopGroup().hasKey("Name")) {
+-                filename = config.readName();
+-            }
++        if (d->bKDesktopMode && d->bDesktopFile && (filename.endsWith(QLatin1String(".desktop")) || filename.endsWith(QLatin1String(".kdelnk")))) {
++            filename = QFileInfo(filename).completeBaseName();
+         }
+ 
+         d->oldName = filename;
+@@ -3301,12 +3298,6 @@ KDesktopPropsPlugin::KDesktopPropsPlugin(KPropertiesDialog *_props)
+ 
+     bool bKDesktopMode = properties->url().scheme() == QLatin1String("desktop") || properties->currentDir().scheme() == QLatin1String("desktop");
+ 
+-    if (bKDesktopMode) {
+-        // Hide Name entry
+-        d->w->nameEdit->hide();
+-        d->w->nameLabel->hide();
+-    }
+-
+     d->w->pathEdit->setMode(KFile::Directory | KFile::LocalOnly);
+     d->w->pathEdit->lineEdit()->setAcceptDrops(false);
+ 
+@@ -3395,10 +3386,7 @@ KDesktopPropsPlugin::KDesktopPropsPlugin(KPropertiesDialog *_props)
+         // But let's do it in apply, not here, so that we pick up the right name.
+         setDirty();
+     }
+-    if (!bKDesktopMode) {
+-        d->w->nameEdit->setText(nameStr);
+-    }
+-
++    d->w->nameEdit->setText(nameStr);
+     d->w->genNameEdit->setText(genNameStr);
+     d->w->commentEdit->setText(commentStr);
+     d->w->commandEdit->setText(commandStr);
+-- 
+2.32.0
+
