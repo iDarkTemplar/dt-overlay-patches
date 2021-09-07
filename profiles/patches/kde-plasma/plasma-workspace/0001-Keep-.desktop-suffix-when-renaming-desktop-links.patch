@@ -1,0 +1,33 @@
+From 7c5db847a0549f6e1e4bdee2b7f4e3cd425163fd Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Tue, 7 Sep 2021 21:43:26 +0300
+Subject: [PATCH] Keep .desktop suffix when renaming desktop links
+
+---
+ kioslave/desktop/kio_desktop.cpp | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/kioslave/desktop/kio_desktop.cpp b/kioslave/desktop/kio_desktop.cpp
+index 8e4f672cd..d301e60ff 100644
+--- a/kioslave/desktop/kio_desktop.cpp
++++ b/kioslave/desktop/kio_desktop.cpp
+@@ -196,7 +196,7 @@ void DesktopProtocol::rename(const QUrl &_src, const QUrl &_dest, KIO::JobFlags
+ 
+     QUrl dest;
+     rewriteUrl(_dest, dest);
+-    const QString destPath = dest.toLocalFile();
++    QString destPath = dest.toLocalFile();
+ 
+     if (KDesktopFile::isDesktopFile(srcPath)) {
+         QString friendlyName;
+@@ -206,6 +206,7 @@ void DesktopProtocol::rename(const QUrl &_src, const QUrl &_dest, KIO::JobFlags
+             friendlyName = KIO::decodeFileName(fileName.left(fileName.length() - 8));
+         } else {
+             friendlyName = KIO::decodeFileName(dest.fileName());
++            destPath.append(QLatin1String(".desktop"));
+         }
+ 
+         // Update the value of the Name field in the file.
+-- 
+2.32.0
+
