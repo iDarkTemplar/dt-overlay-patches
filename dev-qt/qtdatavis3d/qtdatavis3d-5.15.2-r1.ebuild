@@ -1,7 +1,7 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 QT5_GENERATE_DOCS="true"
 inherit qt5-build
 
@@ -15,10 +15,10 @@ fi
 IUSE="examples gles2-only qml"
 
 DEPEND="
-	~dev-qt/qtcore-${PV}
-	~dev-qt/qtgui-${PV}[gles2-only=]
-	doc? ( ~dev-qt/qdoc-${PV}[qml?] )
-	qml? ( ~dev-qt/qtdeclarative-${PV}[gles2-only=] )
+	=dev-qt/qtcore-${QT5_PV}*
+	=dev-qt/qtgui-${QT5_PV}*[gles2-only=]
+	doc? ( =dev-qt/qdoc-${QT5_PV}*[qml?] )
+	qml? ( =dev-qt/qtdeclarative-${QT5_PV}*[gles2-only=] )
 "
 RDEPEND="${DEPEND}"
 

@@ -1,26 +1,26 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 QT5_GENERATE_DOCS="true"
 inherit qt5-build
 
 DESCRIPTION="Qt5 module for integrating C++ and QML applications with HTML/JavaScript clients"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 arm arm64 ppc ppc64 x86"
+	KEYWORDS="amd64 arm arm64 ~ppc ppc64 ~riscv x86"
 fi
 
 IUSE="examples qml"
 REQUIRED_USE="examples? ( qml )"
 
 DEPEND="
-	~dev-qt/qtcore-${PV}
-	qml? ( ~dev-qt/qtdeclarative-${PV} )
-	doc? ( ~dev-qt/qdoc-${PV}[qml?] )
+	=dev-qt/qtcore-${QT5_PV}*
+	qml? ( =dev-qt/qtdeclarative-${QT5_PV}* )
+	doc? ( =dev-qt/qdoc-${QT5_PV}*[qml?] )
 	examples? (
-		~dev-qt/qtwidgets-${PV}
-		~dev-qt/qtwebsockets-${PV}
+		=dev-qt/qtwidgets-${QT5_PV}*
+		=dev-qt/qtwebsockets-${QT5_PV}*
 	)
 "
 RDEPEND="${DEPEND}"

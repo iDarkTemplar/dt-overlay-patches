@@ -1,25 +1,25 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 QT5_GENERATE_DOCS="true"
 inherit qt5-build
 
 DESCRIPTION="Multimedia (audio, video, radio, camera) library for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 arm arm64 ~hppa ppc ppc64 ~sparc x86"
+	KEYWORDS="amd64 arm arm64 ~hppa ppc ppc64 ~riscv ~sparc x86"
 fi
 
 IUSE="alsa examples gles2-only gstreamer openal pulseaudio qml widgets"
 REQUIRED_USE="examples? ( widgets )"
 
 RDEPEND="
-	~dev-qt/qtcore-${PV}
-	~dev-qt/qtgui-${PV}[gles2-only=]
-	~dev-qt/qtnetwork-${PV}
+	=dev-qt/qtcore-${QT5_PV}*
+	=dev-qt/qtgui-${QT5_PV}*[gles2-only=]
+	=dev-qt/qtnetwork-${QT5_PV}*
 	alsa? ( media-libs/alsa-lib )
-	doc? ( ~dev-qt/qdoc-${PV}[qml?] )
+	doc? ( =dev-qt/qdoc-${QT5_PV}*[qml?] )
 	gstreamer? (
 		dev-libs/glib:2
 		media-libs/gstreamer:1.0
@@ -28,13 +28,13 @@ RDEPEND="
 	)
 	pulseaudio? ( media-sound/pulseaudio[glib] )
 	qml? (
-		~dev-qt/qtdeclarative-${PV}
-		gles2-only? ( ~dev-qt/qtgui-${PV}[egl] )
+		=dev-qt/qtdeclarative-${QT5_PV}*
+		gles2-only? ( =dev-qt/qtgui-${QT5_PV}*[egl] )
 		openal? ( media-libs/openal )
 	)
 	widgets? (
-		~dev-qt/qtopengl-${PV}
-		~dev-qt/qtwidgets-${PV}[gles2-only=]
+		=dev-qt/qtopengl-${QT5_PV}*
+		=dev-qt/qtwidgets-${QT5_PV}*[gles2-only=]
 	)
 "
 DEPEND="${RDEPEND}

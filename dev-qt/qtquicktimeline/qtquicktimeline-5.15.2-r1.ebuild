@@ -1,7 +1,7 @@
 # Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 QT5_GENERATE_DOCS="true"
 inherit qt5-build
@@ -13,7 +13,7 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 fi
 
 DEPEND="
-	~dev-qt/qtcore-${PV}
-	~dev-qt/qtdeclarative-${PV}
+	=dev-qt/qtcore-${QT5_PV}*
+	=dev-qt/qtdeclarative-${QT5_PV}*
 "
 RDEPEND="${DEPEND}"

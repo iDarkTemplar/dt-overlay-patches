@@ -1,7 +1,7 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 QT5_GENERATE_DOCS="true"
 QT5_MODULE="qtlocation"
 inherit qt5-build
@@ -9,16 +9,16 @@ inherit qt5-build
 DESCRIPTION="Physical position determination library for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 arm arm64 ~hppa ppc ppc64 ~sparc x86"
+	KEYWORDS="amd64 arm arm64 ~hppa ppc ppc64 ~riscv ~sparc x86"
 fi
 
 IUSE="examples geoclue +qml"
 
 RDEPEND="
-	~dev-qt/qtcore-${PV}
-	doc? ( ~dev-qt/qdoc-${PV}[qml?] )
-	geoclue? ( ~dev-qt/qtdbus-${PV} )
-	qml? ( ~dev-qt/qtdeclarative-${PV} )
+	=dev-qt/qtcore-${QT5_PV}*
+	doc? ( =dev-qt/qdoc-${QT5_PV}*[qml?] )
+	geoclue? ( =dev-qt/qtdbus-${QT5_PV}* )
+	qml? ( =dev-qt/qtdeclarative-${QT5_PV}* )
 "
 DEPEND="${RDEPEND}"
 PDEPEND="

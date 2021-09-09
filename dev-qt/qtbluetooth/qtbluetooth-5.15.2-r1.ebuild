@@ -1,7 +1,7 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 QT5_GENERATE_DOCS="true"
 QT5_MODULE="qtconnectivity"
 inherit qt5-build
@@ -9,21 +9,21 @@ inherit qt5-build
 DESCRIPTION="Bluetooth support library for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 arm arm64 x86"
+	KEYWORDS="amd64 arm arm64 ~ppc64 ~riscv x86"
 fi
 
 IUSE="examples qml"
 
 RDEPEND="
-	~dev-qt/qtconcurrent-${PV}
-	~dev-qt/qtcore-${PV}:5=
-	~dev-qt/qtdbus-${PV}
+	=dev-qt/qtconcurrent-${QT5_PV}*
+	=dev-qt/qtcore-${QT5_PV}*:5=
+	=dev-qt/qtdbus-${QT5_PV}*
 	>=net-wireless/bluez-5:=
-	doc? ( ~dev-qt/qdoc-${PV}[qml?] )
-	qml? ( ~dev-qt/qtdeclarative-${PV} )
+	doc? ( =dev-qt/qdoc-${QT5_PV}*[qml?] )
+	qml? ( =dev-qt/qtdeclarative-${QT5_PV}* )
 "
 DEPEND="${RDEPEND}
-	~dev-qt/qtnetwork-${PV}
+	=dev-qt/qtnetwork-${QT5_PV}*
 "
 
 PATCHES=( "${FILESDIR}/${P}-gcc11.patch" ) # bug 752012

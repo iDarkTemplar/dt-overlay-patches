@@ -1,28 +1,28 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 QT5_GENERATE_DOCS="true"
 inherit qt5-build
 
 DESCRIPTION="Set of Qt Quick controls to create complete user interfaces (deprecated)"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 arm arm64 ~hppa ppc ppc64 x86"
+	KEYWORDS="amd64 ~arm arm64 ~hppa ppc ppc64 ~riscv x86"
 fi
 
 IUSE="examples +widgets"
 REQUIRED_USE="examples? ( widgets )"
 
 DEPEND="
-	~dev-qt/qtcore-${PV}
-	~dev-qt/qtdeclarative-${PV}
-	~dev-qt/qtgui-${PV}
-	widgets? ( ~dev-qt/qtwidgets-${PV} )
-	doc? ( ~dev-qt/qdoc-${PV}[qml] )
+	=dev-qt/qtcore-${QT5_PV}*
+	=dev-qt/qtdeclarative-${QT5_PV}*
+	=dev-qt/qtgui-${QT5_PV}*
+	widgets? ( =dev-qt/qtwidgets-${QT5_PV}* )
+	doc? ( =dev-qt/qdoc-${QT5_PV}*[qml] )
 	examples? (
-		~dev-qt/qtnetwork-${PV}
-		~dev-qt/qtsql-${PV}
+		=dev-qt/qtnetwork-${QT5_PV}*
+		=dev-qt/qtsql-${QT5_PV}*
 	)
 "
 RDEPEND="${DEPEND}"
