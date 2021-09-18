@@ -1,24 +1,28 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 9295acb6..c0e6a827 100755
+index c5fb54f..613259e 100755
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -263,5 +263,3 @@ endif()
- 
+@@ -266,8 +266,6 @@ endif()
  configure_file(${CMAKE_SOURCE_DIR}/share/ocio/${OCIO_SETUP_NAME}.in
      ${CMAKE_CURRENT_BINARY_DIR}/share/ocio/${OCIO_SETUP_NAME} @ONLY)
--
+ 
 -INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/ocio/${OCIO_SETUP_NAME} DESTINATION share/ocio/)
+-
+ 
+ ###############################################################################
+ # Generate OpenColorIO-config.cmake
 diff --git a/src/OpenColorIO/CMakeLists.txt b/src/OpenColorIO/CMakeLists.txt
-index 2ce801e6..549e04cf 100755
+index cce741d..e0cb10a 100755
 --- a/src/OpenColorIO/CMakeLists.txt
 +++ b/src/OpenColorIO/CMakeLists.txt
-@@ -278,8 +278,10 @@ if(MSVC AND BUILD_SHARED_LIBS)
+@@ -283,9 +283,11 @@ if(MSVC AND BUILD_SHARED_LIBS)
  	install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION bin OPTIONAL)
  endif()
  
 +include(GNUInstallDirs)
 +
  install(TARGETS OpenColorIO
+ 	EXPORT ${PROJECT_NAME}_EXPORTED_TARGETS
 -	LIBRARY DESTINATION lib
 +	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
  	RUNTIME DESTINATION bin
@@ -26,7 +30,7 @@ index 2ce801e6..549e04cf 100755
 +	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
  )
 diff --git a/src/libutils/oglapphelpers/CMakeLists.txt b/src/libutils/oglapphelpers/CMakeLists.txt
-index 732f76fb..eb4ef260 100644
+index 732f76f..eb4ef26 100644
 --- a/src/libutils/oglapphelpers/CMakeLists.txt
 +++ b/src/libutils/oglapphelpers/CMakeLists.txt
 @@ -82,12 +82,3 @@ if(${OCIO_EGL_HEADLESS})
@@ -43,7 +47,7 @@ index 732f76fb..eb4ef260 100644
 -    DESTINATION include/OpenColorIO/oglapphelpers
 -)
 diff --git a/src/libutils/oiiohelpers/CMakeLists.txt b/src/libutils/oiiohelpers/CMakeLists.txt
-index 6ef7c368..7a90c196 100644
+index 6ef7c36..7a90c19 100644
 --- a/src/libutils/oiiohelpers/CMakeLists.txt
 +++ b/src/libutils/oiiohelpers/CMakeLists.txt
 @@ -34,12 +34,3 @@ target_link_libraries(oiiohelpers

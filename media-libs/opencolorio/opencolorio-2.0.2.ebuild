@@ -22,7 +22,7 @@ REQUIRED_USE="
 
 RDEPEND="
 	dev-cpp/pystring
-	>=dev-cpp/yaml-cpp-0.6.3
+	>=dev-cpp/yaml-cpp-0.6.3:=
 	dev-libs/expat
 	media-libs/ilmbase:=
 	apps? (
