@@ -1,11 +1,10 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 QT5_GENERATE_DOCS="true"
 PYTHON_COMPAT=( python2_7 )
-QTVER=$(ver_cut 1-3)
 inherit estack flag-o-matic multiprocessing python-any-r1 qt5-build
 
 DESCRIPTION="Library for rendering dynamic web content in Qt5 C++ and QML applications"
@@ -13,7 +12,7 @@ HOMEPAGE="https://www.qt.io/"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 ~arm arm64 ~ppc64 x86"
-	if [[ ${PV} == ${QTVER}_p* ]]; then
+	if [[ ${PV} == ${QT5_PV}_p* ]]; then
 		SRC_URI="https://dev.gentoo.org/~asturm/distfiles/${P}.tar.xz"
 		S="${WORKDIR}/${P}"
 		QT5_BUILD_DIR="${S}_build"
@@ -43,12 +42,12 @@ RDEPEND="
 	dev-libs/libxml2[icu]
 	dev-libs/libxslt
 	dev-libs/re2:=
-	~dev-qt/qtcore-${QTVER}
-	~dev-qt/qtdeclarative-${QTVER}
-	~dev-qt/qtgui-${QTVER}
-	~dev-qt/qtnetwork-${QTVER}
-	~dev-qt/qtprintsupport-${QTVER}
-	~dev-qt/qtwebchannel-${QTVER}[qml]
+	=dev-qt/qtcore-${QT5_PV}*
+	=dev-qt/qtdeclarative-${QT5_PV}*
+	=dev-qt/qtgui-${QT5_PV}*
+	=dev-qt/qtnetwork-${QT5_PV}*
+	=dev-qt/qtprintsupport-${QT5_PV}*
+	=dev-qt/qtwebchannel-${QT5_PV}*[qml]
 	media-libs/fontconfig
 	media-libs/freetype
 	media-libs/harfbuzz:=
@@ -77,18 +76,18 @@ RDEPEND="
 	x11-libs/libXScrnSaver
 	x11-libs/libXtst
 	alsa? ( media-libs/alsa-lib )
-	designer? ( ~dev-qt/designer-${QTVER} )
-	geolocation? ( ~dev-qt/qtpositioning-${QTVER} )
+	designer? ( =dev-qt/designer-${QT5_PV}* )
+	geolocation? ( =dev-qt/qtpositioning-${QT5_PV}* )
 	kerberos? ( virtual/krb5 )
 	pulseaudio? ( media-sound/pulseaudio:= )
 	system-ffmpeg? ( media-video/ffmpeg:0= )
 	system-icu? ( >=dev-libs/icu-69.1:= )
 	widgets? (
-		~dev-qt/qtdeclarative-${QTVER}[widgets]
-		~dev-qt/qtwidgets-${QTVER}
+		=dev-qt/qtdeclarative-${QT5_PV}*[widgets]
+		=dev-qt/qtwidgets-${QT5_PV}*
 	)
 	examples? (
-		~dev-qt/qtquickcontrols2-${QTVER}
+		=dev-qt/qtquickcontrols2-${QT5_PV}*
 	)
 "
 DEPEND="${RDEPEND}"
@@ -98,15 +97,19 @@ BDEPEND="${PYTHON_DEPS}
 	dev-util/re2c
 	net-libs/nodejs[ssl]
 	sys-devel/bison
+	sys-devel/flex
 	ppc64? ( >=dev-util/gn-0.1807 )
 "
 
 PATCHES=(
-	"${FILESDIR}/${PN}-5.15.0-disable-fatal-warnings.patch" # bug 695446
+	"${FILESDIR}/${PN}-5.15.2-disable-fatal-warnings.patch" # downstream, bug 695446
+	"${FILESDIR}/${PN}-5.15.2-extra_gn.patch" # downstream, bug 774186
 	"${FILESDIR}/${PN}-5.15.2_p20210224-chromium-87-v8-icu68.patch" # downstream, bug 757606
 	"${FILESDIR}/${PN}-5.15.2_p20210224-disable-git.patch" # downstream snapshot fix
 	"${FILESDIR}/${PN}-5.15.2_p20210406-glibc-2.33.patch" # by Fedora, bug 769989
 	"${FILESDIR}/${PN}-5.15.2_p20210521-gcc11.patch" # by Fedora, bug 768261
+	"${FILESDIR}/${PN}-5.15.2_p20210824-abseil-cpp-glibc-2.34.patch" # bug 811312
+	"${FILESDIR}/${PN}-5.15.2_p20210824-breakpad-glibc-2.34.patch" # bug 811312
 )
 
 pkg_setup() {
@@ -143,14 +146,13 @@ src_unpack() {
 }
 
 src_prepare() {
-	if [[ ${PV} == ${QTVER}_p* ]]; then
+	if [[ ${PV} == ${QT5_PV}_p* ]]; then
 		# This is made from git, and for some reason will fail w/o .git directories.
 		mkdir -p .git src/3rdparty/chromium/.git || die
-
-		# We need to make sure this integrates well into Qt 5.15.2 installation.
-		# Otherwise revdeps fail w/o heavy changes. This is the simplest way to do it.
-		sed -e "/^MODULE_VERSION/s/5.*/${QTVER}/" -i .qmake.conf || die
 	fi
+	# We need to make sure this integrates well into Qt 5.15.2 installation.
+	# Otherwise revdeps fail w/o heavy changes. This is the simplest way to do it.
+	sed -e "/^MODULE_VERSION/s/5\.15\.[3456789]/${QT5_PV}/" -i .qmake.conf || die
 
 	# QTBUG-88657 - jumbo-build could still make trouble
 	if ! use jumbo-build; then
