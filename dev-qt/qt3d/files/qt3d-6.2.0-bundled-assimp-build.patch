@@ -1,0 +1,32 @@
+diff --git a/src/3rdparty/assimp/src/contrib/unzip/ioapi.h b/src/3rdparty/assimp/src/contrib/unzip/ioapi.h
+index 0e49543..1a345ea 100644
+--- a/src/3rdparty/assimp/src/contrib/unzip/ioapi.h
++++ b/src/3rdparty/assimp/src/contrib/unzip/ioapi.h
+@@ -41,6 +41,11 @@
+ #endif
+ #endif
+ 
++#ifdef _Z_OF
++#undef OF
++#define OF _Z_OF
++#endif
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+diff --git a/src/3rdparty/assimp/src/contrib/unzip/unzip.h b/src/3rdparty/assimp/src/contrib/unzip/unzip.h
+index ea4c90a..75716c2 100644
+--- a/src/3rdparty/assimp/src/contrib/unzip/unzip.h
++++ b/src/3rdparty/assimp/src/contrib/unzip/unzip.h
+@@ -44,6 +44,11 @@ typedef unz_file__ *unzFile;
+ typedef voidp unzFile;
+ #endif
+ 
++#ifdef _Z_OF
++#undef OF
++#define OF _Z_OF
++#endif
++
+ #define UNZ_OK                          (0)
+ #define UNZ_END_OF_LIST_OF_FILE         (-100)
+ #define UNZ_ERRNO                       (Z_ERRNO)

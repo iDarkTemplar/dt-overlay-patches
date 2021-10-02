@@ -1,0 +1,67 @@
+diff --git a/src/multimedia/platform/alsa/qalsaaudiosink.cpp b/src/multimedia/platform/alsa/qalsaaudiosink.cpp
+index 7157e95..b264451 100644
+--- a/src/multimedia/platform/alsa/qalsaaudiosink.cpp
++++ b/src/multimedia/platform/alsa/qalsaaudiosink.cpp
+@@ -267,7 +267,6 @@ bool QAlsaAudioSink::open()
+     QTime now(QTime::currentTime());
+     qDebug()<<now.second()<<"s "<<now.msec()<<"ms :open()";
+ #endif
+-    timeStamp.restart();
+     elapsedTimeOffset = 0;
+ 
+     int dir;
+@@ -451,7 +450,6 @@ bool QAlsaAudioSink::open()
+     // Step 6: Start audio processing
+     timer->start(period_time/1000);
+ 
+-    timeStamp.restart();
+     elapsedTimeOffset = 0;
+     errorState  = QAudio::NoError;
+     totalTimeValue = 0;
+diff --git a/src/multimedia/platform/alsa/qalsaaudiosource.cpp b/src/multimedia/platform/alsa/qalsaaudiosource.cpp
+index 19c8554..9302894 100644
+--- a/src/multimedia/platform/alsa/qalsaaudiosource.cpp
++++ b/src/multimedia/platform/alsa/qalsaaudiosource.cpp
+@@ -449,7 +449,7 @@ int QAlsaAudioSource::checkBytesReady()
+     return bytesAvailable;
+ }
+ 
+-int QAlsaAudioSource::bytesReady() const
++qsizetype QAlsaAudioSource::bytesReady() const
+ {
+     return qMax(bytesAvailable, 0);
+ }
+@@ -623,12 +623,12 @@ void QAlsaAudioSource::resume()
+     }
+ }
+ 
+-void QAlsaAudioSource::setBufferSize(int value)
++void QAlsaAudioSource::setBufferSize(qsizetype value)
+ {
+     buffer_size = value;
+ }
+ 
+-int QAlsaAudioSource::bufferSize() const
++qsizetype QAlsaAudioSource::bufferSize() const
+ {
+     return buffer_size;
+ }
+diff --git a/src/multimedia/platform/alsa/qalsaaudiosource_p.h b/src/multimedia/platform/alsa/qalsaaudiosource_p.h
+index 95df800..10588e1 100644
+--- a/src/multimedia/platform/alsa/qalsaaudiosource_p.h
++++ b/src/multimedia/platform/alsa/qalsaaudiosource_p.h
+@@ -142,11 +142,11 @@ private:
+     QTimer* timer;
+     qint64 elapsedTimeOffset;
+     RingBuffer ringBuffer;
+-    int bytesAvailable;
++    qsizetype bytesAvailable;
+     QByteArray m_device;
+     bool pullMode;
+-    int buffer_size;
+-    int period_size;
++    qsizetype buffer_size;
++    qsizetype period_size;
+     unsigned int buffer_time;
+     unsigned int period_time;
+     snd_pcm_uframes_t buffer_frames;
