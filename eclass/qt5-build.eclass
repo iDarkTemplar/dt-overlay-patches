@@ -210,7 +210,9 @@ qt5-build_src_configure() {
 		fi
 	fi
 
-	qt5_foreach_target_subdir qt5_qmake
+	if [[ ${PN} != qtbase-doc ]]; then
+		qt5_foreach_target_subdir qt5_qmake
+	fi
 }
 
 # @FUNCTION: qt5-build_src_compile
