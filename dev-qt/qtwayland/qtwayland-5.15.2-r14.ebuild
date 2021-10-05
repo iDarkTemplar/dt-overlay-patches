@@ -8,6 +8,7 @@ QT5_GENERATE_DOCS="true"
 inherit qt5-build
 
 DESCRIPTION="Wayland platform plugin for Qt"
+SLOT=5/${QT5_PV} # bug 815646
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm arm64 ~hppa ppc ppc64 ~riscv ~sparc x86"
