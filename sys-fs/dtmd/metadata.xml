@@ -9,5 +9,6 @@
 	<use>
 		<flag name="console">Install console client</flag>
 		<flag name="openrc">Install openrc service and configuration</flag>
+		<flag name="qt6">Add support for the Qt 6 application and UI framework</flag>
 	</use>
 </pkgmetadata>

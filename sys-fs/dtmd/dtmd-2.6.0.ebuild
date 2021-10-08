@@ -12,34 +12,23 @@ SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar
 LICENSE="LGPL-3+"
 SLOT="0"
 KEYWORDS="amd64 x86"
-IUSE="+console +cxx +openrc qt5 +syslog udev"
-
-REQUIRED_USE="
-	qt5? ( cxx )
-	"
+IUSE="+console +cxx +openrc qt6 +syslog udev"
+REQUIRED_USE="qt6? ( cxx )"
 
 DEPEND="
 	>=dev-libs/dt-command-2.0.0:=
-
-	qt5? (
-		dev-qt/qtcore:5
-		dev-qt/qtgui:5
-		dev-qt/qtwidgets:5
-	)
-
+	qt6? ( dev-qt/qtbase:6=[gui,widgets] )
 	udev? ( virtual/udev )
 	!udev? ( sys-apps/util-linux )
 	"
 
-RDEPEND="
-	$DEPEND
-	"
+RDEPEND="$DEPEND"
 
 src_configure() {
 	local mycmakeargs=(
 		-DENABLE_SYSLOG=$(usex syslog)
 		-DENABLE_CONSOLE_CLIENT=$(usex console)
-		-DENABLE_QT_CLIENT=$(usex qt5)
+		-DENABLE_QT_CLIENT=$(usex qt6)
 		-DENABLE_CXX=$(usex cxx)
 		-DLINUX_UDEV=$(usex udev)
 	)
@@ -58,7 +47,7 @@ src_install() {
 		fi
 	fi
 
-	if use qt5 ; then
+	if use qt6 ; then
 		newicon "${S}/client/qt/images/normal.png" "dtmd-qt.png"
 		make_desktop_entry dtmd-qt "dtmd client" "dtmd-qt" "System;Filesystem"
 	fi
