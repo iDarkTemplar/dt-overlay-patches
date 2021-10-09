@@ -17,7 +17,7 @@ REQUIRED_USE="qt6? ( cxx )"
 
 DEPEND="
 	>=dev-libs/dt-command-2.0.0:=
-	qt6? ( dev-qt/qtbase:6=[gui,widgets] )
+	qt6? ( dev-qt/qtbase:6[gui,widgets] )
 	udev? ( virtual/udev )
 	!udev? ( sys-apps/util-linux )
 	"
