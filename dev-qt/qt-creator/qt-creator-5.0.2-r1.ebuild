@@ -5,7 +5,7 @@ EAPI=7
 LLVM_MAX_SLOT=13
 PLOCALES="cs da de fr hr ja pl ru sl uk zh-CN zh-TW"
 
-inherit llvm qmake-utils virtualx xdg
+inherit llvm qmake-utils qt6-build virtualx xdg
 
 DESCRIPTION="Lightweight IDE for C++/QML development centering around Qt"
 HOMEPAGE="https://doc.qt.io/qtcreator/"
@@ -28,7 +28,7 @@ QTC_PLUGINS=(android +autotest autotools:autotoolsprojectmanager baremetal bazaa
 	'+clang:clangcodemodel|clangformat|clangpchmanager|clangrefactoring|clangtools' clearcase cmake:cmakeprojectmanager cppcheck
 	ctfvisualizer cvs +designer git glsl:glsleditor +help lsp:languageclient mcu:mcusupport mercurial
 	modeling:modeleditor nim perforce perfprofiler python qbs:qbsprojectmanager +qmldesigner
-	+qmljs:qmljseditor qmlprofiler qnx remotelinux scxml:scxmleditor serialterminal silversearcher
+	+qmljs:qmljseditor qmlprofiler qnx qt6 remotelinux scxml:scxmleditor serialterminal silversearcher
 	subversion valgrind webassembly)
 IUSE="doc systemd test webengine ${QTC_PLUGINS[@]%:*}"
 RESTRICT="!test? ( test )"
@@ -43,27 +43,37 @@ REQUIRED_USE="
 
 # minimum Qt version required
 QT_PV="5.14:5"
+QT6_PV="6.2.1:6"
 
 BDEPEND="
-	>=dev-qt/linguist-tools-${QT_PV}
+	!qt6? ( >=dev-qt/linguist-tools-${QT_PV} )
+	qt6? ( >=dev-qt/qttools-${QT6_PV} )
 	virtual/pkgconfig
-	doc? ( >=dev-qt/qdoc-${QT_PV} )
+	doc? ( !qt6? ( >=dev-qt/qdoc-${QT_PV} ) )
 "
 CDEPEND="
-	>=dev-qt/qtconcurrent-${QT_PV}
-	>=dev-qt/qtcore-${QT_PV}
-	>=dev-qt/qtdeclarative-${QT_PV}[widgets]
-	>=dev-qt/qtgui-${QT_PV}
-	>=dev-qt/qtnetwork-${QT_PV}[ssl]
-	>=dev-qt/qtprintsupport-${QT_PV}
-	>=dev-qt/qtquickcontrols-${QT_PV}
-	>=dev-qt/qtscript-${QT_PV}
-	>=dev-qt/qtsql-${QT_PV}[sqlite]
-	>=dev-qt/qtsvg-${QT_PV}
-	>=dev-qt/qtwidgets-${QT_PV}
-	>=dev-qt/qtx11extras-${QT_PV}
-	>=dev-qt/qtxml-${QT_PV}
-	kde-frameworks/syntax-highlighting:5
+	!qt6? (
+		>=dev-qt/qtconcurrent-${QT_PV}
+		>=dev-qt/qtcore-${QT_PV}
+		>=dev-qt/qtdeclarative-${QT_PV}[widgets]
+		>=dev-qt/qtgui-${QT_PV}
+		>=dev-qt/qtnetwork-${QT_PV}[ssl]
+		>=dev-qt/qtprintsupport-${QT_PV}
+		>=dev-qt/qtquickcontrols-${QT_PV}
+		>=dev-qt/qtscript-${QT_PV}
+		>=dev-qt/qtsql-${QT_PV}[sqlite]
+		>=dev-qt/qtsvg-${QT_PV}
+		>=dev-qt/qtwidgets-${QT_PV}
+		>=dev-qt/qtx11extras-${QT_PV}
+		>=dev-qt/qtxml-${QT_PV}
+		kde-frameworks/syntax-highlighting:5
+	)
+	qt6? (
+		>=dev-qt/qtbase-${QT6_PV}[concurrent,gui,network,sql,ssl,widgets]
+		>=dev-qt/qtdeclarative-${QT6_PV}[widgets]
+		>=dev-qt/qtsvg-${QT6_PV}
+		>=dev-qt/qt5compat-${QT6_PV}
+	)
 	clang? (
 		>=dev-cpp/yaml-cpp-0.6.2:=
 		|| (
@@ -72,21 +82,36 @@ CDEPEND="
 		)
 		<sys-devel/clang-$((LLVM_MAX_SLOT + 1)):=
 	)
-	designer? ( >=dev-qt/designer-${QT_PV} )
+	designer? (
+		!qt6? ( >=dev-qt/designer-${QT_PV} )
+		qt6? ( >=dev-qt/qttools-${QT6_PV} )
+	)
 	help? (
-		>=dev-qt/qthelp-${QT_PV}
-		webengine? ( >=dev-qt/qtwebengine-${QT_PV}[widgets] )
+		!qt6? ( >=dev-qt/qthelp-${QT_PV} )
+		qt6? ( >=dev-qt/qttools-${QT6_PV} )
+		webengine? (
+			!qt6? ( >=dev-qt/qtwebengine-${QT_PV}[widgets] )
+			qt6? ( >=dev-qt/qtwebengine-${QT6_PV}[widgets(+)] )
+		)
 	)
 	perfprofiler? ( dev-libs/elfutils )
-	serialterminal? ( >=dev-qt/qtserialport-${QT_PV} )
+	serialterminal? (
+		!qt6? ( >=dev-qt/qtserialport-${QT_PV} )
+		qt6? ( >=dev-qt/qtserialport-${QT6_PV} )
+	)
 	systemd? ( sys-apps/systemd:= )
 "
 DEPEND="${CDEPEND}
 	test? (
-		>=dev-qt/qtdeclarative-${QT_PV}[localstorage]
-		>=dev-qt/qtquickcontrols2-${QT_PV}
-		>=dev-qt/qttest-${QT_PV}
-		>=dev-qt/qtxmlpatterns-${QT_PV}[qml]
+		!qt6? (
+			>=dev-qt/qtdeclarative-${QT_PV}[localstorage]
+			>=dev-qt/qtquickcontrols2-${QT_PV}
+			>=dev-qt/qttest-${QT_PV}
+			>=dev-qt/qtxmlpatterns-${QT_PV}[qml]
+		)
+		qt6? (
+			>=dev-qt/qtdeclarative-${QT6_PV}[localstorage]
+		)
 	)
 "
 RDEPEND="${CDEPEND}
@@ -98,7 +123,10 @@ RDEPEND="${CDEPEND}
 	git? ( dev-vcs/git )
 	mercurial? ( dev-vcs/mercurial )
 	qbs? ( >=dev-util/qbs-1.18 )
-	qmldesigner? ( >=dev-qt/qtquicktimeline-${QT_PV} )
+	qmldesigner? (
+		!qt6? ( >=dev-qt/qtquicktimeline-${QT_PV} )
+		qt6? ( >=dev-qt/qtquicktimeline-${QT6_PV} )
+	)
 	silversearcher? ( sys-apps/the_silver_searcher )
 	subversion? ( dev-vcs/subversion )
 	valgrind? ( dev-util/valgrind )
@@ -106,9 +134,16 @@ RDEPEND="${CDEPEND}
 # qt translations must also be installed or qt-creator translations won't be loaded
 for x in ${PLOCALES}; do
 	IUSE+=" l10n_${x}"
-	RDEPEND+=" l10n_${x}? ( >=dev-qt/qttranslations-${QT_PV} )"
+	RDEPEND+=" l10n_${x}? (
+		!qt6? ( >=dev-qt/qttranslations-${QT_PV} )
+		qt6? ( >=dev-qt/qttranslations-${QT6_PV} )
+	)"
 done
 unset x
+
+PATCHES=(
+	"${FILESDIR}/qt-creator-5.0.2-qt6-webengine.patch"
+)
 
 llvm_check_deps() {
 	has_version -d "sys-devel/clang:${LLVM_SLOT}"
@@ -188,8 +223,10 @@ src_prepare() {
 	done
 	sed -i -e "/^LANGUAGES\s*=/s:=.*:=${languages}:" share/qtcreator/translations/translations.pro || die
 
-	# remove bundled syntax-highlighting
-	rm -r src/libs/3rdparty/syntax-highlighting || die
+	if ! use qt6; then
+		# remove bundled syntax-highlighting
+		rm -r src/libs/3rdparty/syntax-highlighting || die
+	fi
 
 	# remove bundled yaml-cpp
 	rm -r src/libs/3rdparty/yaml-cpp || die
@@ -201,16 +238,30 @@ src_prepare() {
 }
 
 src_configure() {
-	eqmake5 IDE_LIBRARY_BASENAME="$(get_libdir)" \
-		IDE_PACKAGE_MODE=1 \
-		KSYNTAXHIGHLIGHTING_LIB_DIR="${EPREFIX}/usr/$(get_libdir)" \
-		KSYNTAXHIGHLIGHTING_INCLUDE_DIR="${EPREFIX}/usr/include/KF5/KSyntaxHighlighting" \
-		$(use clang && echo LLVM_INSTALL_DIR="$(get_llvm_prefix ${LLVM_MAX_SLOT})") \
-		$(use qbs && echo QBS_INSTALL_DIR="${EPREFIX}/usr") \
-		CONFIG+=qbs_disable_rpath \
-		CONFIG+=qbs_enable_project_file_updates \
-		$(use systemd && echo CONFIG+=journald) \
-		$(use test && echo BUILD_TESTS=1)
+	if ! use qt6; then
+		eqmake5 IDE_LIBRARY_BASENAME="$(get_libdir)" \
+			IDE_PACKAGE_MODE=1 \
+			KSYNTAXHIGHLIGHTING_LIB_DIR="${EPREFIX}/usr/$(get_libdir)" \
+			KSYNTAXHIGHLIGHTING_INCLUDE_DIR="${EPREFIX}/usr/include/KF5/KSyntaxHighlighting" \
+			$(use clang && echo LLVM_INSTALL_DIR="$(get_llvm_prefix ${LLVM_MAX_SLOT})") \
+			$(use qbs && echo QBS_INSTALL_DIR="${EPREFIX}/usr") \
+			CONFIG+=qbs_disable_rpath \
+			CONFIG+=qbs_enable_project_file_updates \
+			$(use systemd && echo CONFIG+=journald) \
+			$(use test && echo BUILD_TESTS=1)
+	else
+		qt6_prepare_env
+
+		eqmake6 \
+			IDE_LIBRARY_BASENAME="$(get_libdir)" \
+			IDE_PACKAGE_MODE=1 \
+			$(use clang && echo LLVM_INSTALL_DIR="$(get_llvm_prefix ${LLVM_MAX_SLOT})") \
+			$(use qbs && echo QBS_INSTALL_DIR="${EPREFIX}/usr") \
+			CONFIG+=qbs_disable_rpath \
+			CONFIG+=qbs_enable_project_file_updates \
+			$(use systemd && echo CONFIG+=journald) \
+			$(use test && echo BUILD_TESTS=1)
+	fi
 }
 
 src_test() {
