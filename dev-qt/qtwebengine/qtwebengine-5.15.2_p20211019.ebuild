@@ -5,15 +5,17 @@ EAPI=8
 
 QT5_GENERATE_DOCS="true"
 PYTHON_COMPAT=( python2_7 )
+PYTHON_REQ_USE="xml(+)"
 inherit estack flag-o-matic multiprocessing python-any-r1 qt5-build
 
 DESCRIPTION="Library for rendering dynamic web content in Qt5 C++ and QML applications"
 HOMEPAGE="https://www.qt.io/"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 ~arm arm64 ~ppc64 x86"
+	KEYWORDS="amd64 ~arm ~arm64 ~ppc64 ~x86"
 	if [[ ${PV} == ${QT5_PV}_p* ]]; then
 		SRC_URI="https://dev.gentoo.org/~asturm/distfiles/${P}.tar.xz"
+		SRC_URI+=" https://dev.gentoo.org/~sam/distfiles/${CATEGORY}/${PN}/${PN}-5.15.2_p20211019-jumbo-build.patch.bz2"
 		S="${WORKDIR}/${P}"
 		QT5_BUILD_DIR="${S}_build"
 	fi
@@ -56,7 +58,6 @@ RDEPEND="
 	media-libs/libpng:0=
 	>=media-libs/libvpx-1.5:=[svc(+)]
 	media-libs/libwebp:=
-	media-libs/mesa[egl,X(+)]
 	media-libs/opus
 	sys-apps/dbus
 	sys-apps/pciutils
@@ -90,7 +91,9 @@ RDEPEND="
 		=dev-qt/qtquickcontrols2-${QT5_PV}*
 	)
 "
-DEPEND="${RDEPEND}"
+DEPEND="${RDEPEND}
+	media-libs/libglvnd
+"
 BDEPEND="${PYTHON_DEPS}
 	dev-util/gperf
 	dev-util/ninja
@@ -106,10 +109,10 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.15.2-extra_gn.patch" # downstream, bug 774186
 	"${FILESDIR}/${PN}-5.15.2_p20210224-chromium-87-v8-icu68.patch" # downstream, bug 757606
 	"${FILESDIR}/${PN}-5.15.2_p20210224-disable-git.patch" # downstream snapshot fix
-	"${FILESDIR}/${PN}-5.15.2_p20210406-glibc-2.33.patch" # by Fedora, bug 769989
-	"${FILESDIR}/${PN}-5.15.2_p20210521-gcc11.patch" # by Fedora, bug 768261
+	"${FILESDIR}/${PN}-5.15.2_p20211015-pdfium-system-lcms2.patch" # by Debian, QTBUG-61746
 	"${FILESDIR}/${PN}-5.15.2_p20210824-abseil-cpp-glibc-2.34.patch" # bug 811312
 	"${FILESDIR}/${PN}-5.15.2_p20210824-breakpad-glibc-2.34.patch" # bug 811312
+	"${WORKDIR}/${PN}-5.15.2_p20211019-jumbo-build.patch" # bug 813957
 )
 
 pkg_setup() {
@@ -152,6 +155,7 @@ src_prepare() {
 	fi
 	# We need to make sure this integrates well into Qt 5.15.2 installation.
 	# Otherwise revdeps fail w/o heavy changes. This is the simplest way to do it.
+	# See also: https://www.qt.io/blog/building-qt-webengine-against-other-qt-versions
 	sed -e "/^MODULE_VERSION/s/5\.15\.[3456789]/${QT5_PV}/" -i .qmake.conf || die
 
 	# QTBUG-88657 - jumbo-build could still make trouble
@@ -215,13 +219,13 @@ src_configure() {
 		-printing-and-pdf
 		-system-opus
 		-system-webp
-		$(usex alsa '-alsa' '-no-alsa')
-		$(usex bindist '-no-proprietary-codecs' '-proprietary-codecs')
-		$(usex geolocation '-webengine-geolocation' '-no-webengine-geolocation')
-		$(usex kerberos '-webengine-kerberos' '-no-webengine-kerberos')
-		$(usex pulseaudio '-pulseaudio' '-no-pulseaudio')
-		$(usex system-ffmpeg '-system-ffmpeg' '-qt-ffmpeg')
-		$(usex system-icu '-webengine-icu' '-no-webengine-icu')
+		$(qt_use alsa)
+		$(qt_use !bindist proprietary-codecs)
+		$(qt_use geolocation webengine-geolocation)
+		$(qt_use kerberos webengine-kerberos)
+		$(qt_use pulseaudio)
+		$(usex system-ffmpeg -system-ffmpeg -qt-ffmpeg)
+		$(qt_use system-icu webengine-icu)
 	)
 	qt5-build_src_configure
 }

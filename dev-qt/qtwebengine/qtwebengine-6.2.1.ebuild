@@ -25,7 +25,7 @@ BDEPEND="${PYTHON_DEPS}
 	doc? ( ~dev-qt/qttools-${PV}:6=[qml] )
 	"
 
-DEPEND="
+RDEPEND="
 	app-arch/snappy:=
 	dev-libs/glib:2
 	dev-libs/nspr
@@ -47,7 +47,6 @@ DEPEND="
 	media-libs/libpng:0=
 	>=media-libs/libvpx-1.5:=[svc(+)]
 	media-libs/libwebp:=
-	media-libs/mesa[egl,X(+)]
 	media-libs/opus
 	sys-apps/dbus
 	sys-apps/pciutils
@@ -75,8 +74,9 @@ DEPEND="
 	system-icu? ( >=dev-libs/icu-69.1:= )
 	doc? ( !dev-qt/qt-docs:6 )
 "
-RDEPEND="${DEPEND}"
-
+DEPEND="${RDEPEND}
+	media-libs/libglvnd
+"
 PDEPEND="
 	examples? ( ~dev-qt/qtwebengine-examples-${PV} )
 "
