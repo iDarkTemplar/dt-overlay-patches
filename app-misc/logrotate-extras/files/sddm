@@ -1,0 +1,9 @@
+/var/log/sddm.log {
+	compress
+	delaycompress
+	rotate 12
+	monthly
+	missingok
+	nocreate
+	notifempty
+}

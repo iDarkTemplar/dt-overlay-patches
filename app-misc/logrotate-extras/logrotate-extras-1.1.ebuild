@@ -12,9 +12,18 @@ SRC_URI=""
 LICENSE="freedist"
 SLOT="0"
 KEYWORDS="amd64 x86"
-IUSE="+portage"
+IUSE="+portage +sddm"
 
-REQUIRED_USE="portage"
+REQUIRED_USE="|| ( portage sddm )"
 
 RDEPEND=""
 DEPEND="portage? ( app-misc/logrotate-extras-portage )"
+
+S="${WORKDIR}"
+
+INST_DIR="etc/logrotate.d"
+
+src_install() {
+	insinto "${INST_DIR}"
+	doins "${FILESDIR}/sddm"
+}

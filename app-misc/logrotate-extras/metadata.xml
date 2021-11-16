@@ -6,6 +6,7 @@
 		<name>i.Dark_Templar</name>
 	</maintainer>
 	<use>
-		<flag name="portage">pull app-misc/logrotate-extras-portage</flag>
+		<flag name="portage">Pull <pkg>app-misc/logrotate-extras-portage</pkg></flag>
+		<flag name="sddm">Add logrotate file for <pkg>x11-misc/sddm</pkg></flag>
 	</use>
 </pkgmetadata>
