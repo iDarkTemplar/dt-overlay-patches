@@ -9,8 +9,8 @@
 }
 
 /var/log/portage/*.log {
-	su portage portage
-	createolddir 755 portage portage
+	su root portage
+	createolddir 755 root portage
 	olddir /var/log/portage/old
 	compress
 	delaycompress
