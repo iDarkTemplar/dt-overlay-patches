@@ -21,7 +21,7 @@ DEPEND="
 	>=dev-libs/wayland-1.6.0
 	~dev-qt/qtbase-${PV}:6=[gui,egl,opengl,vulkan=,X=]
 	~dev-qt/qtdeclarative-${PV}:6=
-	media-libs/mesa[egl]
+	media-libs/mesa[egl(+)]
 	>=x11-libs/libxkbcommon-0.2.0
 	vulkan? ( dev-util/vulkan-headers )
 	X? (

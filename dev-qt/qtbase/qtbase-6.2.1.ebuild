@@ -52,7 +52,7 @@ DEPEND="
 	sys-libs/zlib:=
 	cups? ( >=net-print/cups-1.4 )
 	dbus? ( >=sys-apps/dbus-1.4.20 )
-	egl? ( media-libs/mesa[egl] )
+	egl? ( media-libs/mesa[egl(+)] )
 	eglfs? (
 		media-libs/mesa[gbm]
 		x11-libs/libdrm
