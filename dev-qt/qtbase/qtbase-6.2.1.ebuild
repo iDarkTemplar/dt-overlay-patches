@@ -54,7 +54,7 @@ DEPEND="
 	dbus? ( >=sys-apps/dbus-1.4.20 )
 	egl? ( media-libs/mesa[egl(+)] )
 	eglfs? (
-		media-libs/mesa[gbm]
+		media-libs/mesa[gbm(+)]
 		x11-libs/libdrm
 	)
 	evdev? ( sys-libs/mtdev )
