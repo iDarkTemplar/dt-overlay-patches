@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
-PYTHON_COMPAT=( python{3_7,3_8,3_9} )
+PYTHON_COMPAT=( python3_{8..10} )
 inherit distutils-r1 qmake-utils toolchain-funcs cmake
 
 DESCRIPTION="Static analyzer of C/C++ code"
@@ -11,7 +11,7 @@ SRC_URI="https://github.com/danmar/cppcheck/archive/${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="GPL-3+"
 SLOT="0"
-KEYWORDS="~amd64 ~arm ~arm64 ~hppa ~ppc64 ~sparc ~x86"
+KEYWORDS="amd64 ~arm ~arm64 ~hppa ~ppc64 ~sparc ~x86"
 IUSE="doc htmlreport pcre qchart qt5 z3"
 REQUIRED_USE="qchart? ( qt5 )"
 
@@ -36,7 +36,6 @@ DEPEND="${RDEPEND}
 	doc? ( app-text/pandoc )
 "
 PATCHES=(
-	"${FILESDIR}"/${PN}-2.4.1-limits.patch
 	"${FILESDIR}"/${PN}-2.2-translations.patch
 )
 
