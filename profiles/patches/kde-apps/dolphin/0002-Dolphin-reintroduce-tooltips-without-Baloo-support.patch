@@ -1,4 +1,4 @@
-From 1b21df03d0e385ef7f4971e02d48d40c57c27c48 Mon Sep 17 00:00:00 2001
+From c3bf8e0faeeb25b29626e5fee12936ce9733022e Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sat, 30 Mar 2019 19:25:50 +0300
 Subject: [PATCH 2/3] Dolphin: reintroduce tooltips without Baloo support
@@ -13,10 +13,10 @@ Tooltips contain only name of item and preview
  5 files changed, 36 insertions(+), 20 deletions(-)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index e045cb7b2..21acd8ae5 100644
+index 98c432982..325b25cb0 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -107,6 +107,8 @@ set(dolphinprivate_LIB_SRCS
+@@ -107,6 +107,8 @@ target_sources(dolphinprivate PRIVATE
      views/dolphinview.cpp
      views/dolphinviewactionhandler.cpp
      views/draganddrophelper.cpp
@@ -25,10 +25,10 @@ index e045cb7b2..21acd8ae5 100644
      views/versioncontrol/updateitemstatesthread.cpp
      views/versioncontrol/versioncontrolobserver.cpp
      views/viewmodecontroller.cpp
-@@ -122,8 +124,6 @@ ecm_qt_declare_logging_category(dolphinprivate_LIB_SRCS HEADER dolphindebug.h ID
+@@ -127,8 +129,6 @@ ecm_qt_declare_logging_category(dolphinprivate
+ 
  if(HAVE_BALOO)
-     set(dolphinprivate_LIB_SRCS
-         ${dolphinprivate_LIB_SRCS}
+     target_sources(dolphinprivate PRIVATE
 -        views/tooltips/dolphinfilemetadatawidget.cpp
 -        views/tooltips/tooltipmanager.cpp
          kitemviews/private/kbaloorolesprovider.cpp
@@ -81,10 +81,10 @@ index 5ca0566a9..c947d04ab 100644
      m_renameInline->setChecked(GeneralSettings::renameInline());
      m_useTabForSplitViewSwitch->setChecked(GeneralSettings::useTabForSwitchingSplitView());
 diff --git a/src/views/dolphinview.cpp b/src/views/dolphinview.cpp
-index 32e962459..0ab9c8185 100644
+index f5c21a2c5..d3bdc7944 100644
 --- a/src/views/dolphinview.cpp
 +++ b/src/views/dolphinview.cpp
-@@ -168,10 +168,8 @@ DolphinView::DolphinView(const QUrl& url, QWidget* parent) :
+@@ -206,10 +206,8 @@ DolphinView::DolphinView(const QUrl& url, QWidget* parent) :
      connect(selectionManager, &KItemListSelectionManager::selectionChanged,
              this, &DolphinView::slotSelectionChanged);
  
@@ -95,7 +95,7 @@ index 32e962459..0ab9c8185 100644
  
      m_versionControlObserver = new VersionControlObserver(this);
      m_versionControlObserver->setView(this);
-@@ -1101,9 +1099,7 @@ void DolphinView::slotItemHovered(int index)
+@@ -1171,9 +1169,7 @@ void DolphinView::slotItemHovered(int index)
          const QPoint pos = m_container->mapToGlobal(itemRect.topLeft().toPoint());
          itemRect.moveTo(pos);
  
@@ -105,7 +105,7 @@ index 32e962459..0ab9c8185 100644
      }
  
      Q_EMIT requestItemInfo(item);
-@@ -1499,13 +1495,9 @@ void DolphinView::updateViewState()
+@@ -1599,13 +1595,9 @@ void DolphinView::updateViewState()
  
  void DolphinView::hideToolTip(const ToolTipManager::HideBehavior behavior)
  {
@@ -118,7 +118,7 @@ index 32e962459..0ab9c8185 100644
 -#endif
  }
  
- void DolphinView::calculateItemCount(int& fileCount,
+ void DolphinView::slotTwoClicksRenamingTimerTimeout()
 diff --git a/src/views/tooltips/dolphinfilemetadatawidget.cpp b/src/views/tooltips/dolphinfilemetadatawidget.cpp
 index b147135bf..35b0d6270 100644
 --- a/src/views/tooltips/dolphinfilemetadatawidget.cpp
@@ -201,7 +201,7 @@ index b147135bf..35b0d6270 100644
  }
  
 diff --git a/src/views/tooltips/dolphinfilemetadatawidget.h b/src/views/tooltips/dolphinfilemetadatawidget.h
-index 87ee87a58..f8a58b759 100644
+index 63a20f170..ab132c1d3 100644
 --- a/src/views/tooltips/dolphinfilemetadatawidget.h
 +++ b/src/views/tooltips/dolphinfilemetadatawidget.h
 @@ -16,9 +16,11 @@
@@ -216,7 +216,7 @@ index 87ee87a58..f8a58b759 100644
  
  /**
   * @brief Widget that shows the meta information and a preview of one
-@@ -62,7 +64,9 @@ signals:
+@@ -62,7 +64,9 @@ Q_SIGNALS:
  private:
      QLabel* m_preview;
      QLabel* m_name;
@@ -227,5 +227,5 @@ index 87ee87a58..f8a58b759 100644
  
  #endif
 -- 
-2.26.3
+2.32.0
 
