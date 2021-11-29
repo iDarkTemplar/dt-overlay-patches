@@ -1,4 +1,4 @@
-From bb24431836b34044a635603c24bf3e6f5b439b5c Mon Sep 17 00:00:00 2001
+From eec863931a06f2b024fe7a38da67afbd1bcdc3d8 Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Tue, 7 Apr 2020 19:01:08 +0300
 Subject: [PATCH 3/3] Workaround for logout confirmation message box issue
