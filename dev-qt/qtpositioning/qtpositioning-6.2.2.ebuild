@@ -5,7 +5,7 @@ EAPI=8
 
 inherit cmake qt6-build
 
-DESCRIPTION="Location (places, maps, navigation) and physical position determination library for the Qt6 framework"
+DESCRIPTION="Physical position determination library for the Qt6 framework"
 
 if [[ ${QT6_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm arm64 ~riscv x86"

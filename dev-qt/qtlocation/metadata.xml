@@ -9,9 +9,7 @@
 		<bugs-to>https://bugreports.qt.io/</bugs-to>
 		<doc>https://doc.qt.io/</doc>
 	</upstream>
-	<use>
-		<flag name="nmea">Use <pkg>dev-qt/qtserialport</pkg> to build nmea plugin</flag>
-	</use>
+	<use/>
 	<slots>
 		<subslots>
 			Must only be used by packages that are known to use private parts of the Qt API.
