@@ -141,10 +141,6 @@ for x in ${PLOCALES}; do
 done
 unset x
 
-PATCHES=(
-	"${FILESDIR}/qt-creator-5.0.2-qt6-webengine.patch"
-)
-
 llvm_check_deps() {
 	has_version -d "sys-devel/clang:${LLVM_SLOT}"
 }
