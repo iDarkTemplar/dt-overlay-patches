@@ -129,7 +129,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-2.82-use-system-glog.patch"
 	"${FILESDIR}/${PN}-2.92-include-deduplication-check-skip.patch"
 	"${FILESDIR}/${PN}-2.80-fix-install-rules.patch"
-	"${FILESDIR}/${PN}-2.90-doc.patch"
+	"${FILESDIR}/${PN}-3.0.0-doc.patch"
 )
 
 CMAKE_BUILD_TYPE="Release"
