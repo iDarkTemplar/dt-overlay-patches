@@ -296,7 +296,6 @@ src_install() {
 	dodoc "${CMAKE_USE_DIR}"/release/text/readme.html
 	rm -r "${ED}"/usr/share/doc/blender || die
 
-	python_fix_shebang "${ED}/usr/bin/blender-thumbnailer.py"
 	python_optimize "${ED}/usr/share/blender/${MY_PV}/scripts"
 }
 
