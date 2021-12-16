@@ -3,7 +3,7 @@
 
 EAPI=8
 
-KDE_ORG_COMMIT=1c33a9d045897ce755a818ebff7ddecae97885d3
+KDE_ORG_COMMIT=7024ac8358f9e576dff013ce2452c1daa0d34506
 QT5_MODULE="qtdeclarative"
 inherit qt5-build
 

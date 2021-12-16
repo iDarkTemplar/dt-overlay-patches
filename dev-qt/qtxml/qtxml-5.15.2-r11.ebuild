@@ -3,12 +3,11 @@
 
 EAPI=8
 
-KDE_ORG_COMMIT=a4f9e56975fa6ab4a1f63a9b34a4d77b1cfe4acd
+KDE_ORG_COMMIT=7c6c0030cf80ef7b9ace42996b0e0c3a72f76860
 QT5_MODULE="qtbase"
-VIRTUALX_REQUIRED="test"
 inherit qt5-build
 
-DESCRIPTION="Unit testing library for the Qt5 framework"
+DESCRIPTION="Implementation of SAX and DOM for the Qt5 framework"
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm arm64 ~hppa ppc ppc64 ~riscv ~sparc x86"
@@ -20,10 +19,7 @@ RDEPEND="
 	=dev-qt/qtcore-${QT5_PV}*:5=
 "
 DEPEND="${RDEPEND}
-	test? (
-		=dev-qt/qtgui-${QT5_PV}*
-		=dev-qt/qtxml-${QT5_PV}*
-	)
+	test? ( =dev-qt/qtnetwork-${QT5_PV}* )
 "
 
 PDEPEND="
@@ -36,9 +32,9 @@ PDEPEND="
 "
 
 QT5_TARGET_SUBDIRS=(
-	src/testlib
+	src/xml
 )
 
 QT5_GENTOO_PRIVATE_CONFIG=(
-	:testlib
+	:xml
 )

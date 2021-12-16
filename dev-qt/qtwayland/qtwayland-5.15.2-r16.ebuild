@@ -3,7 +3,7 @@
 
 EAPI=8
 
-KDE_ORG_COMMIT=efe6edcaf8eba601dff99ec6ad4457c8a4442f86
+KDE_ORG_COMMIT=eb422ab5e07498a7a8d086f6a942ee35ab3c9776
 QT5_GENERATE_DOCS="true"
 inherit qt5-build
 
@@ -22,7 +22,6 @@ DEPEND="
 	=dev-qt/qtdeclarative-${QT5_PV}*:5=
 	=dev-qt/qtgui-${QT5_PV}*:5=[egl,libinput,vulkan=,X?]
 	media-libs/libglvnd
-	>=x11-libs/libxkbcommon-0.2.0
 	vulkan? ( dev-util/vulkan-headers )
 	X? (
 		=dev-qt/qtgui-${QT5_PV}*[-gles2-only]
@@ -32,6 +31,13 @@ DEPEND="
 	doc? ( =dev-qt/qdoc-${QT5_PV}*[qml] )
 "
 RDEPEND="${DEPEND}"
+BDEPEND="
+	dev-util/wayland-scanner
+"
+
+PATCHES=(
+	"${FILESDIR}"/${P}-fix-crash-when-iterating-through-outputs.patch # KDE-bug 438839
+)
 
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples")
