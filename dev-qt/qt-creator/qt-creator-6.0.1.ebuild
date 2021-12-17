@@ -141,6 +141,10 @@ for x in ${PLOCALES}; do
 done
 unset x
 
+PATCHES=(
+	"${FILESDIR}/qt-creator-6.0.1-build.patch"
+)
+
 llvm_check_deps() {
 	has_version -d "sys-devel/clang:${LLVM_SLOT}"
 }
