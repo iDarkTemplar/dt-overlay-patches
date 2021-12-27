@@ -15,7 +15,6 @@ if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 ~arm ~arm64 ~ppc64 ~x86"
 	if [[ ${PV} == ${QT5_PV}_p* ]]; then
 		SRC_URI="https://dev.gentoo.org/~asturm/distfiles/${P}.tar.xz"
-		SRC_URI+=" https://dev.gentoo.org/~sam/distfiles/${CATEGORY}/${PN}/${PN}-5.15.2_p20211019-jumbo-build.patch.bz2"
 		S="${WORKDIR}/${P}"
 		QT5_BUILD_DIR="${S}_build"
 	fi
@@ -28,8 +27,9 @@ else
 	inherit git-r3
 fi
 
-# patchset based on https://github.com/chromium-ppc64le releases
-SRC_URI+=" ppc64? ( https://dev.gentoo.org/~gyakovlev/distfiles/${PN}-5.15.2-chromium87-ppc64le.tar.xz )"
+# ppc64 patchset based on https://github.com/chromium-ppc64le releases
+SRC_URI+=" https://dev.gentoo.org/~sam/distfiles/${CATEGORY}/${PN}/${PN}-5.15.2_p20211019-jumbo-build.patch.bz2
+	ppc64? ( https://dev.gentoo.org/~gyakovlev/distfiles/${PN}-5.15.2-r1-chromium87-ppc64le.tar.xz )"
 
 IUSE="alsa bindist designer examples geolocation +jumbo-build kerberos pulseaudio +system-ffmpeg +system-icu widgets"
 REQUIRED_USE="designer? ( widgets ) examples? ( widgets )"
@@ -110,8 +110,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.15.2_p20210224-chromium-87-v8-icu68.patch" # downstream, bug 757606
 	"${FILESDIR}/${PN}-5.15.2_p20210224-disable-git.patch" # downstream snapshot fix
 	"${FILESDIR}/${PN}-5.15.2_p20211015-pdfium-system-lcms2.patch" # by Debian, QTBUG-61746
-	"${FILESDIR}/${PN}-5.15.2_p20210824-abseil-cpp-glibc-2.34.patch" # bug 811312
-	"${FILESDIR}/${PN}-5.15.2_p20210824-breakpad-glibc-2.34.patch" # bug 811312
+	"${FILESDIR}/${PN}-5.15.2_p20211210-sandbox-glibc-2.34.patch" # bug 828099, systemwide-clang?
 	"${WORKDIR}/${PN}-5.15.2_p20211019-jumbo-build.patch" # bug 813957
 )
 
@@ -179,6 +178,11 @@ src_prepare() {
 		while read file; do
 			echo "#error This file should not be used!" > "${file}" || die
 		done < <(find src/3rdparty/chromium/third_party/icu -type f "(" -name "*.c" -o -name "*.cpp" -o -name "*.h" ")" 2>/dev/null)
+	fi
+
+	# src/3rdparty/gn fails with libc++ due to passing of `-static-libstdc++`
+	if tc-is-clang && has_version 'sys-devel/clang[default-libcxx]'; then
+		eapply "${FILESDIR}/${PN}-5.15.2_p20210521-clang-libc++.patch"
 	fi
 
 	qt_use_disable_config alsa webengine-alsa src/buildtools/config/linux.pri
