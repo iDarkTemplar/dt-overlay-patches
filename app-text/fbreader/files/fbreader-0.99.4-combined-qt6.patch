@@ -1,0 +1,929 @@
+diff --git a/fbreader/Makefile b/fbreader/Makefile
+index 0d5ac7b..6030f44 100644
+--- a/fbreader/Makefile
++++ b/fbreader/Makefile
+@@ -22,7 +22,7 @@ all: .resources
+ 		fi; \
+ 	done;
+ 	@echo -n 'Linking $(TARGET) ...'
+-	@$(LD) $(LDFLAGS) -o $(TARGET) `find src -name *.o` $(TEXT_LIBS) $(CORE_LIBS) $(ZLUI_LIB) -lsqlite3
++	@$(LD) -fuse-ld=bfd $(LDFLAGS) -o $(TARGET) `find src -name *.o` $(TEXT_LIBS) $(CORE_LIBS) $(ZLUI_LIB) -lsqlite3
+ 	@echo ' OK'
+ 
+ FBSHAREDIR = $(DESTDIR)$(SHAREDIR)/FBReader
+diff --git a/fbreader/desktop/desktop b/fbreader/desktop/desktop
+index bb35fe3..c919ee9 100644
+--- a/fbreader/desktop/desktop
++++ b/fbreader/desktop/desktop
+@@ -21,3 +21,4 @@ Terminal=false
+ Type=Application
+ Icon=FBReader
+ Categories=Office;Viewer;Literature;
++MimeType=application/epub+zip;application/rtf;application/x-fictionbook+xml;application/x-zip-compressed-fb2;application/x-mobipocket-ebook;application/xhtml+xml;text/html;text/plain;
+diff --git a/fbreader/src/formats/doc/OleStorage.cpp b/fbreader/src/formats/doc/OleStorage.cpp
+index 016f9fd..a7ab81a 100644
+--- a/fbreader/src/formats/doc/OleStorage.cpp
++++ b/fbreader/src/formats/doc/OleStorage.cpp
+@@ -59,7 +59,7 @@ bool OleStorage::init(shared_ptr<ZLInputStream> stream, std::size_t streamSize)
+ 		clear();
+ 		return false;
+ 	}
+-	static const char OLE_SIGN[] = {0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1, 0};
++	static const char OLE_SIGN[] = {(char)0xD0, (char)0xCF, (char)0x11, (char)0xE0, (char)0xA1, (char)0xB1, (char)0x1A, (char)0xE1, 0};
+ 	if (std::strncmp(oleBuf, OLE_SIGN, 8) != 0) {
+ 		clear();
+ 		return false;
+diff --git a/makefiles/arch/desktop.mk b/makefiles/arch/desktop.mk
+index 3e81598..03b01fc 100644
+--- a/makefiles/arch/desktop.mk
++++ b/makefiles/arch/desktop.mk
+@@ -14,29 +14,11 @@ LD = g++
+ 
+ CFLAGS = -pipe -fno-exceptions -Wall -Wno-ctor-dtor-privacy -W -DLIBICONV_PLUG
+ LDFLAGS =
+-EXTERNAL_INCLUDE = $(shell pkg-config --cflags fribidi) 
++EXTERNAL_INCLUDE = $(shell pkg-config --cflags fribidi)
+ 
+-ifeq "$(UI_TYPE)" "qt"
+-  MOC = moc-qt3
+-  QTINCLUDE = -I /usr/include/qt3
+-else
+-  MOC = $(shell pkg-config QtCore --variable=moc_location)
+-  QTINCLUDE = -I $(shell pkg-config --cflags QtCore)
+-endif
+-
+-GTKINCLUDE = $(shell pkg-config --cflags gtk+-2.0 libpng xft)
+-
+-ifeq "$(UI_TYPE)" "qt"
+-  UILIBS = -lqt-mt
+-endif
+-
+-ifeq "$(UI_TYPE)" "qt4"
+-  UILIBS = $(shell pkg-config --libs QtCore QtGui QtNetwork)
+-endif
+-
+-ifeq "$(UI_TYPE)" "gtk"
+-  UILIBS = $(shell pkg-config --libs gtk+-2.0 gio-2.0) -lpng -ljpeg
+-endif
++MOC = moc-qt6
++QTINCLUDE = -I/usr/include/qt6 -I/usr/include/qt6/QtCore -I/usr/include/qt6/QtGui -I/usr/include/qt6/QtWidgets -I/usr/include/qt6/QtNetwork
++UILIBS = -lQt6Core -lQt6Gui -lQt6Widgets -lQt6Network
+ 
+ RM = rm -rvf
+ RM_QUIET = rm -rf
+diff --git a/zlibrary/ui/src/ezx/dialogs/ZLQtUtil.cpp b/zlibrary/ui/src/ezx/dialogs/ZLQtUtil.cpp
+index 3729c31..e91d65c 100644
+--- a/zlibrary/ui/src/ezx/dialogs/ZLQtUtil.cpp
++++ b/zlibrary/ui/src/ezx/dialogs/ZLQtUtil.cpp
+@@ -32,7 +32,7 @@ QString qtString(const std::string &text) {
+ 
+ QString qtButtonName(const ZLResourceKey &key) {
+ 	if (key.Name.empty()) {
+-		return QString::null;
++		return QString();
+ 	}
+ 	return ::qtButtonString(ZLDialogManager::buttonName(key));
+ }
+diff --git a/zlibrary/ui/src/ezx/view/ZLQtPaintContext.cpp b/zlibrary/ui/src/ezx/view/ZLQtPaintContext.cpp
+index cabe59b..6c451cb 100644
+--- a/zlibrary/ui/src/ezx/view/ZLQtPaintContext.cpp
++++ b/zlibrary/ui/src/ezx/view/ZLQtPaintContext.cpp
+@@ -138,12 +138,12 @@ void ZLQtPaintContext::setFillColor(ZLColor color, FillStyle style) {
+ }
+ 
+ int ZLQtPaintContext::stringWidth(const char *str, int len, bool) const {
+-	return myPainter->fontMetrics().width(QString::fromUtf8(str, len));
++	return myPainter->fontMetrics().horizontalAdvance(QString::fromUtf8(str, len));
+ }
+ 
+ int ZLQtPaintContext::spaceWidth() const {
+ 	if (mySpaceWidth == -1) {
+-		mySpaceWidth = myPainter->fontMetrics().width(" ");
++		mySpaceWidth = myPainter->fontMetrics().horizontalAdvance(" ");
+ 	}
+ 	return mySpaceWidth;
+ }
+diff --git a/zlibrary/ui/src/opie/dialogs/ZLQtUtil.cpp b/zlibrary/ui/src/opie/dialogs/ZLQtUtil.cpp
+index a8014e3..08333f7 100644
+--- a/zlibrary/ui/src/opie/dialogs/ZLQtUtil.cpp
++++ b/zlibrary/ui/src/opie/dialogs/ZLQtUtil.cpp
+@@ -27,7 +27,7 @@ QString qtString(const std::string &text) {
+ 
+ QString qtButtonName(const ZLResourceKey &key) {
+ 	if (key.Name.empty()) {
+-		return QString::null;
++		return QString();
+ 	}
+ 	return ::qtString(ZLDialogManager::buttonName(key));
+ }
+diff --git a/zlibrary/ui/src/opie/view/ZLQtPaintContext.cpp b/zlibrary/ui/src/opie/view/ZLQtPaintContext.cpp
+index 4082e96..ca3f895 100644
+--- a/zlibrary/ui/src/opie/view/ZLQtPaintContext.cpp
++++ b/zlibrary/ui/src/opie/view/ZLQtPaintContext.cpp
+@@ -149,12 +149,12 @@ void ZLQtPaintContext::setFillColor(ZLColor color, FillStyle style) {
+ }
+ 
+ int ZLQtPaintContext::stringWidth(const char *str, int len, bool) const {
+-	return myPainter->fontMetrics().width(QString::fromUtf8(str, len));
++	return myPainter->fontMetrics().horizontalAdvance(QString::fromUtf8(str, len));
+ }
+ 
+ int ZLQtPaintContext::spaceWidth() const {
+ 	if (mySpaceWidth == -1) {
+-		mySpaceWidth = myPainter->fontMetrics().width(" ");
++		mySpaceWidth = myPainter->fontMetrics().horizontalAdvance(" ");
+ 	}
+ 	return mySpaceWidth;
+ }
+diff --git a/zlibrary/ui/src/qt/application-desktop/ZLQtApplicationWindow.cpp b/zlibrary/ui/src/qt/application-desktop/ZLQtApplicationWindow.cpp
+index 8dc8632..d5eb5b1 100644
+--- a/zlibrary/ui/src/qt/application-desktop/ZLQtApplicationWindow.cpp
++++ b/zlibrary/ui/src/qt/application-desktop/ZLQtApplicationWindow.cpp
+@@ -211,8 +211,8 @@ void ZLQtApplicationWindow::keyPressEvent(QKeyEvent *event) {
+ }
+ 
+ void ZLQtApplicationWindow::wheelEvent(QWheelEvent *event) {
+-	if (event->orientation() == Vertical) {
+-		if (event->delta() > 0) {
++	if (event->angleDelta().y() != 0) {
++		if (event->angleDelta().y() > 0) {
+ 			application().doActionByKey(ZLApplication::MouseScrollUpKey);
+ 		} else {
+ 			application().doActionByKey(ZLApplication::MouseScrollDownKey);
+diff --git a/zlibrary/ui/src/qt/dialogs/ZLQtUtil.cpp b/zlibrary/ui/src/qt/dialogs/ZLQtUtil.cpp
+index a8014e3..08333f7 100644
+--- a/zlibrary/ui/src/qt/dialogs/ZLQtUtil.cpp
++++ b/zlibrary/ui/src/qt/dialogs/ZLQtUtil.cpp
+@@ -27,7 +27,7 @@ QString qtString(const std::string &text) {
+ 
+ QString qtButtonName(const ZLResourceKey &key) {
+ 	if (key.Name.empty()) {
+-		return QString::null;
++		return QString();
+ 	}
+ 	return ::qtString(ZLDialogManager::buttonName(key));
+ }
+diff --git a/zlibrary/ui/src/qt/filesystem/ZLQtFSManager.cpp b/zlibrary/ui/src/qt/filesystem/ZLQtFSManager.cpp
+index f0a4a44..1c73fca 100644
+--- a/zlibrary/ui/src/qt/filesystem/ZLQtFSManager.cpp
++++ b/zlibrary/ui/src/qt/filesystem/ZLQtFSManager.cpp
+@@ -27,7 +27,7 @@ std::string ZLQtFSManager::convertFilenameToUtf8(const std::string &name) const
+ 	}
+ 
+ 	QString qString = QString::fromLocal8Bit(name.c_str());
+-	return (qString == QString::null) ? "" : (const char*)qString.utf8();
++	return (qString.isNull()) ? "" : (const char*)qString.utf8();
+ }
+ 
+ shared_ptr<ZLMimeType> ZLQtFSManager::mimeType(const std::string &path) const {
+diff --git a/zlibrary/ui/src/qt/view/ZLQtPaintContext.cpp b/zlibrary/ui/src/qt/view/ZLQtPaintContext.cpp
+index ce1d297..2356a14 100644
+--- a/zlibrary/ui/src/qt/view/ZLQtPaintContext.cpp
++++ b/zlibrary/ui/src/qt/view/ZLQtPaintContext.cpp
+@@ -146,12 +146,12 @@ void ZLQtPaintContext::setFillColor(ZLColor color, FillStyle style) {
+ }
+ 
+ int ZLQtPaintContext::stringWidth(const char *str, int len, bool) const {
+-	return myPainter->fontMetrics().width(QString::fromUtf8(str, len));
++	return myPainter->fontMetrics().horizontalAdvance(QString::fromUtf8(str, len));
+ }
+ 
+ int ZLQtPaintContext::spaceWidth() const {
+ 	if (mySpaceWidth == -1) {
+-		mySpaceWidth = myPainter->fontMetrics().width(' ');
++		mySpaceWidth = myPainter->fontMetrics().horizontalAdvance(' ');
+ 	}
+ 	return mySpaceWidth;
+ }
+diff --git a/zlibrary/ui/src/qt4/application/LineEditParameter.cpp b/zlibrary/ui/src/qt4/application/LineEditParameter.cpp
+index dfcbc0b..bd2689e 100644
+--- a/zlibrary/ui/src/qt4/application/LineEditParameter.cpp
++++ b/zlibrary/ui/src/qt4/application/LineEditParameter.cpp
+@@ -17,9 +17,9 @@
+  * 02110-1301, USA.
+  */
+ 
+-#include <QtGui/QBoxLayout>
+-#include <QtGui/QLineEdit>
+-#include <QtGui/QToolBar>
++#include <QtWidgets/QBoxLayout>
++#include <QtWidgets/QLineEdit>
++#include <QtWidgets/QToolBar>
+ #include <QtGui/QKeyEvent>
+ 
+ #include "ZLQtApplicationWindow.h"
+diff --git a/zlibrary/ui/src/qt4/application/ZLQtApplicationWindow.cpp b/zlibrary/ui/src/qt4/application/ZLQtApplicationWindow.cpp
+index 6241514..c851e18 100644
+--- a/zlibrary/ui/src/qt4/application/ZLQtApplicationWindow.cpp
++++ b/zlibrary/ui/src/qt4/application/ZLQtApplicationWindow.cpp
+@@ -17,17 +17,17 @@
+  * 02110-1301, USA.
+  */
+ 
+-#include <QtGui/QApplication>
++#include <QtWidgets/QApplication>
+ #include <QtGui/QPixmap>
+ #include <QtGui/QImage>
+ #include <QtGui/QIcon>
+-#include <QtGui/QToolBar>
+-#include <QtGui/QMenuBar>
+-#include <QtGui/QMenu>
+-#include <QtGui/QToolButton>
+-#include <QtGui/QLayout>
++#include <QtWidgets/QToolBar>
++#include <QtWidgets/QMenuBar>
++#include <QtWidgets/QMenu>
++#include <QtWidgets/QToolButton>
++#include <QtWidgets/QLayout>
+ #include <QtGui/QWheelEvent>
+-#include <QtGui/QDockWidget>
++#include <QtWidgets/QDockWidget>
+ #include <QtCore/QObjectList>
+ 
+ #include <ZLibrary.h>
+@@ -179,8 +179,8 @@ void ZLQtApplicationWindow::keyPressEvent(QKeyEvent *event) {
+ }
+ 
+ void ZLQtApplicationWindow::wheelEvent(QWheelEvent *event) {
+-	if (event->orientation() == Qt::Vertical) {
+-		if (event->delta() > 0) {
++	if (event->angleDelta().y() != 0) {
++		if (event->angleDelta().y() > 0) {
+ 			application().doActionByKey(ZLApplication::MouseScrollUpKey);
+ 		} else {
+ 			application().doActionByKey(ZLApplication::MouseScrollDownKey);
+diff --git a/zlibrary/ui/src/qt4/application/ZLQtApplicationWindow.h b/zlibrary/ui/src/qt4/application/ZLQtApplicationWindow.h
+index 3b4fd3a..5ac69c0 100644
+--- a/zlibrary/ui/src/qt4/application/ZLQtApplicationWindow.h
++++ b/zlibrary/ui/src/qt4/application/ZLQtApplicationWindow.h
+@@ -22,7 +22,7 @@
+ 
+ #include <map>
+ 
+-#include <QtGui/QMainWindow>
++#include <QtWidgets/QMainWindow>
+ #include <QtGui/QAction>
+ #include <QtGui/QCursor>
+ 
+diff --git a/zlibrary/ui/src/qt4/dialogs/ZLQtDialog.cpp b/zlibrary/ui/src/qt4/dialogs/ZLQtDialog.cpp
+index 24eb897..c17e86c 100644
+--- a/zlibrary/ui/src/qt4/dialogs/ZLQtDialog.cpp
++++ b/zlibrary/ui/src/qt4/dialogs/ZLQtDialog.cpp
+@@ -17,8 +17,8 @@
+  * 02110-1301, USA.
+  */
+ 
+-#include <QtGui/QApplication>
+-#include <QtGui/QPushButton>
++#include <QtWidgets/QApplication>
++#include <QtWidgets/QPushButton>
+ 
+ #include <ZLDialogManager.h>
+ 
+diff --git a/zlibrary/ui/src/qt4/dialogs/ZLQtDialog.h b/zlibrary/ui/src/qt4/dialogs/ZLQtDialog.h
+index 068039d..811cec8 100644
+--- a/zlibrary/ui/src/qt4/dialogs/ZLQtDialog.h
++++ b/zlibrary/ui/src/qt4/dialogs/ZLQtDialog.h
+@@ -20,8 +20,8 @@
+ #ifndef __ZLQTDIALOG_H__
+ #define __ZLQTDIALOG_H__
+ 
+-#include <QtGui/QDialog>
+-#include <QtGui/QLayout>
++#include <QtWidgets/QDialog>
++#include <QtWidgets/QLayout>
+ 
+ #include <ZLDialog.h>
+ 
+diff --git a/zlibrary/ui/src/qt4/dialogs/ZLQtDialogContent.cpp b/zlibrary/ui/src/qt4/dialogs/ZLQtDialogContent.cpp
+index e8ff422..2fa1da2 100644
+--- a/zlibrary/ui/src/qt4/dialogs/ZLQtDialogContent.cpp
++++ b/zlibrary/ui/src/qt4/dialogs/ZLQtDialogContent.cpp
+@@ -17,10 +17,9 @@
+  * 02110-1301, USA.
+  */
+ 
+-#include <QtGui/QApplication>
+-#include <QtGui/QDesktopWidget>
+-#include <QtGui/QWidget>
+-#include <QtGui/QLayout>
++#include <QtWidgets/QApplication>
++#include <QtWidgets/QWidget>
++#include <QtWidgets/QLayout>
+ 
+ #include "ZLQtDialogContent.h"
+ #include "ZLQtOptionView.h"
+diff --git a/zlibrary/ui/src/qt4/dialogs/ZLQtDialogManager.cpp b/zlibrary/ui/src/qt4/dialogs/ZLQtDialogManager.cpp
+index d5eb4d4..6f1996c 100644
+--- a/zlibrary/ui/src/qt4/dialogs/ZLQtDialogManager.cpp
++++ b/zlibrary/ui/src/qt4/dialogs/ZLQtDialogManager.cpp
+@@ -17,11 +17,10 @@
+  * 02110-1301, USA.
+  */
+ 
+-#include <QtGui/QApplication>
+-#include <QtGui/QMessageBox>
+-#include <QtGui/QFileDialog>
++#include <QtWidgets/QApplication>
++#include <QtWidgets/QMessageBox>
++#include <QtWidgets/QFileDialog>
+ #include <QtGui/QClipboard>
+-#include <QtGui/QDesktopWidget>
+ 
+ #include "ZLQtDialogManager.h"
+ #include "ZLQtDialog.h"
+diff --git a/zlibrary/ui/src/qt4/dialogs/ZLQtOpenFileDialog.cpp b/zlibrary/ui/src/qt4/dialogs/ZLQtOpenFileDialog.cpp
+index ec9e73c..a50a40d 100644
+--- a/zlibrary/ui/src/qt4/dialogs/ZLQtOpenFileDialog.cpp
++++ b/zlibrary/ui/src/qt4/dialogs/ZLQtOpenFileDialog.cpp
+@@ -17,7 +17,7 @@
+  * 02110-1301, USA.
+  */
+ 
+-#include <QtGui/QFileDialog>
++#include <QtWidgets/QFileDialog>
+ 
+ #include "ZLQtOpenFileDialog.h"
+ 
+diff --git a/zlibrary/ui/src/qt4/dialogs/ZLQtOptionView.cpp b/zlibrary/ui/src/qt4/dialogs/ZLQtOptionView.cpp
+index 48a1b8f..90d50fb 100644
+--- a/zlibrary/ui/src/qt4/dialogs/ZLQtOptionView.cpp
++++ b/zlibrary/ui/src/qt4/dialogs/ZLQtOptionView.cpp
+@@ -19,16 +19,16 @@
+ 
+ #include <cctype>
+ 
+-#include <QtGui/QCheckBox>
+-#include <QtGui/QComboBox>
+-#include <QtGui/QLabel>
+-#include <QtGui/QGroupBox>
+-#include <QtGui/QRadioButton>
+-#include <QtGui/QPushButton>
+-#include <QtGui/QSpinBox>
+-#include <QtGui/QLineEdit>
+-#include <QtGui/QSlider>
+-#include <QtGui/QLayout>
++#include <QtWidgets/QCheckBox>
++#include <QtWidgets/QComboBox>
++#include <QtWidgets/QLabel>
++#include <QtWidgets/QGroupBox>
++#include <QtWidgets/QRadioButton>
++#include <QtWidgets/QPushButton>
++#include <QtWidgets/QSpinBox>
++#include <QtWidgets/QLineEdit>
++#include <QtWidgets/QSlider>
++#include <QtWidgets/QLayout>
+ 
+ #include <ZLStringUtil.h>
+ #include <ZLDialogManager.h>
+diff --git a/zlibrary/ui/src/qt4/dialogs/ZLQtOptionsDialog.cpp b/zlibrary/ui/src/qt4/dialogs/ZLQtOptionsDialog.cpp
+index f6c36fb..9a8856c 100644
+--- a/zlibrary/ui/src/qt4/dialogs/ZLQtOptionsDialog.cpp
++++ b/zlibrary/ui/src/qt4/dialogs/ZLQtOptionsDialog.cpp
+@@ -17,12 +17,12 @@
+  * 02110-1301, USA.
+  */
+ 
+-#include <QtGui/QApplication>
+-#include <QtGui/QDesktopWidget>
+-#include <QtGui/QLayout>
+-#include <QtGui/QPushButton>
+-#include <QtGui/QButtonGroup>
++#include <QtWidgets/QApplication>
++#include <QtWidgets/QLayout>
++#include <QtWidgets/QPushButton>
++#include <QtWidgets/QButtonGroup>
+ #include <QtGui/QResizeEvent>
++#include <QtGui/QScreen>
+ 
+ #include <ZLDialogManager.h>
+ 
+@@ -61,9 +61,10 @@ ZLQtOptionsDialog::ZLQtOptionsDialog(const ZLResource &resource, shared_ptr<ZLRu
+ 	}
+ 
+ 	if (parent() == 0) {
+-		QDesktopWidget *desktop = qApp->desktop();
+-		if (desktop != 0) {
+-			move((desktop->width() - width()) / 2, (desktop->height() - height()) / 2);
++		QScreen *screen_ptr = screen();
++		if (screen_ptr != nullptr) {
++			QSize screen_size = screen_ptr->availableGeometry().size();
++			move((screen_size.width() - width()) / 2, (screen_size.height() - height()) / 2);
+ 		}
+ 	}
+ }
+diff --git a/zlibrary/ui/src/qt4/dialogs/ZLQtOptionsDialog.h b/zlibrary/ui/src/qt4/dialogs/ZLQtOptionsDialog.h
+index e38b62a..ad26fba 100644
+--- a/zlibrary/ui/src/qt4/dialogs/ZLQtOptionsDialog.h
++++ b/zlibrary/ui/src/qt4/dialogs/ZLQtOptionsDialog.h
+@@ -20,9 +20,9 @@
+ #ifndef __ZLQTOPTIONSDIALOG_H__
+ #define __ZLQTOPTIONSDIALOG_H__
+ 
+-#include <QtGui/QWidget>
+-#include <QtGui/QTabWidget>
+-#include <QtGui/QDialog>
++#include <QtWidgets/QWidget>
++#include <QtWidgets/QTabWidget>
++#include <QtWidgets/QDialog>
+ 
+ #include "../../../../core/src/desktop/dialogs/ZLDesktopOptionsDialog.h"
+ 
+diff --git a/zlibrary/ui/src/qt4/dialogs/ZLQtProgressDialog.cpp b/zlibrary/ui/src/qt4/dialogs/ZLQtProgressDialog.cpp
+index 98e469e..a7fe44c 100644
+--- a/zlibrary/ui/src/qt4/dialogs/ZLQtProgressDialog.cpp
++++ b/zlibrary/ui/src/qt4/dialogs/ZLQtProgressDialog.cpp
+@@ -19,11 +19,10 @@
+ 
+ #include <unistd.h>
+ 
+-#include <QtGui/QApplication>
+-#include <QtGui/QDesktopWidget>
+-#include <QtGui/QWidget>
+-#include <QtGui/QLabel>
+-#include <QtGui/QLayout>
++#include <QtWidgets/QApplication>
++#include <QtWidgets/QWidget>
++#include <QtWidgets/QLabel>
++#include <QtWidgets/QLayout>
+ #include <QtCore/QThreadPool>
+ 
+ #include "../dialogs/ZLQtDialogManager.h"
+diff --git a/zlibrary/ui/src/qt4/dialogs/ZLQtProgressDialog.h b/zlibrary/ui/src/qt4/dialogs/ZLQtProgressDialog.h
+index df6c73b..837bce5 100644
+--- a/zlibrary/ui/src/qt4/dialogs/ZLQtProgressDialog.h
++++ b/zlibrary/ui/src/qt4/dialogs/ZLQtProgressDialog.h
+@@ -22,11 +22,11 @@
+ 
+ #include <string>
+ 
+-#include <QtGui/QWidget>
++#include <QtWidgets/QWidget>
+ #include <QtGui/QCursor>
+-#include <QtGui/QDialog>
+-#include <QtGui/QProgressBar>
+-#include <QtGui/QLabel>
++#include <QtWidgets/QDialog>
++#include <QtWidgets/QProgressBar>
++#include <QtWidgets/QLabel>
+ #include <QtCore/QRunnable>
+ 
+ #include <ZLProgressDialog.h>
+diff --git a/zlibrary/ui/src/qt4/dialogs/ZLQtTreeDialog.cpp b/zlibrary/ui/src/qt4/dialogs/ZLQtTreeDialog.cpp
+index 65530be..d1750e6 100644
+--- a/zlibrary/ui/src/qt4/dialogs/ZLQtTreeDialog.cpp
++++ b/zlibrary/ui/src/qt4/dialogs/ZLQtTreeDialog.cpp
+@@ -19,12 +19,12 @@
+ 
+ #include <algorithm>
+ 
+-#include <QtGui/QSplitter>
+-#include <QtGui/QVBoxLayout>
+-#include <QtGui/QHBoxLayout>
+-#include <QtGui/QScrollBar>
+ #include <QtGui/QResizeEvent>
+ #include <QtCore/QDebug>
++#include <QtWidgets/QSplitter>
++#include <QtWidgets/QVBoxLayout>
++#include <QtWidgets/QHBoxLayout>
++#include <QtWidgets/QScrollBar>
+ 
+ #include <ZLFile.h>
+ #include <ZLibrary.h>
+diff --git a/zlibrary/ui/src/qt4/dialogs/ZLQtTreeDialog.h b/zlibrary/ui/src/qt4/dialogs/ZLQtTreeDialog.h
+index 9cf7c47..03f1223 100644
+--- a/zlibrary/ui/src/qt4/dialogs/ZLQtTreeDialog.h
++++ b/zlibrary/ui/src/qt4/dialogs/ZLQtTreeDialog.h
+@@ -24,12 +24,12 @@
+ #include <QtCore/QSet>
+ #include <QtCore/QMap>
+ 
+-#include <QtGui/QDialog>
+-#include <QtGui/QScrollArea>
+-#include <QtGui/QPushButton>
+-#include <QtGui/QLabel>
+-#include <QtGui/QLineEdit>
+-#include <QtGui/QWidget>
++#include <QtWidgets/QDialog>
++#include <QtWidgets/QScrollArea>
++#include <QtWidgets/QPushButton>
++#include <QtWidgets/QLabel>
++#include <QtWidgets/QLineEdit>
++#include <QtWidgets/QWidget>
+ 
+ #include <ZLTreeDialog.h>
+ 
+diff --git a/zlibrary/ui/src/qt4/dialogs/ZLQtUtil.cpp b/zlibrary/ui/src/qt4/dialogs/ZLQtUtil.cpp
+index a8014e3..08333f7 100644
+--- a/zlibrary/ui/src/qt4/dialogs/ZLQtUtil.cpp
++++ b/zlibrary/ui/src/qt4/dialogs/ZLQtUtil.cpp
+@@ -27,7 +27,7 @@ QString qtString(const std::string &text) {
+ 
+ QString qtButtonName(const ZLResourceKey &key) {
+ 	if (key.Name.empty()) {
+-		return QString::null;
++		return QString();
+ 	}
+ 	return ::qtString(ZLDialogManager::buttonName(key));
+ }
+diff --git a/zlibrary/ui/src/qt4/filesystem/ZLQtFSManager.cpp b/zlibrary/ui/src/qt4/filesystem/ZLQtFSManager.cpp
+index 50a9f09..c76d2f9 100644
+--- a/zlibrary/ui/src/qt4/filesystem/ZLQtFSManager.cpp
++++ b/zlibrary/ui/src/qt4/filesystem/ZLQtFSManager.cpp
+@@ -31,7 +31,7 @@ std::string ZLQtFSManager::convertFilenameToUtf8(const std::string &name) const
+ 	}
+ 
+ 	QString qString = QString::fromLocal8Bit(name.c_str());
+-	return (qString == QString::null) ? "" : (const char*)qString.toUtf8();
++	return (qString.isNull()) ? "" : (const char*)qString.toUtf8();
+ }
+ 
+ shared_ptr<ZLMimeType> ZLQtFSManager::mimeType(const std::string &path) const {
+@@ -48,4 +48,5 @@ void ZLQtFSManager::normalizeRealPath(std::string &path) const {
+ 		static const std::string replacement = (const char*)QDir::homePath().toUtf8();
+ 	  path = replacement + path.substr(1);
+ 	}
++	ZLUnixFSManager::normalizeRealPath(path);
+ }
+diff --git a/zlibrary/ui/src/qt4/library/ZLQApplication.h b/zlibrary/ui/src/qt4/library/ZLQApplication.h
+index c08c536..a714fa9 100644
+--- a/zlibrary/ui/src/qt4/library/ZLQApplication.h
++++ b/zlibrary/ui/src/qt4/library/ZLQApplication.h
+@@ -20,7 +20,7 @@
+ #ifndef __ZLQAPPLICATION_H__
+ #define __ZLQAPPLICATION_H__
+ 
+-#include <QtGui/QApplication>
++#include <QtWidgets/QApplication>
+ 
+ class ZLQApplication : public QApplication {
+ 
+diff --git a/zlibrary/ui/src/qt4/library/ZLibrary.cpp b/zlibrary/ui/src/qt4/library/ZLibrary.cpp
+index 9648e95..43cf538 100644
+--- a/zlibrary/ui/src/qt4/library/ZLibrary.cpp
++++ b/zlibrary/ui/src/qt4/library/ZLibrary.cpp
+@@ -17,9 +17,8 @@
+  * 02110-1301, USA.
+  */
+ 
+-#include <QtCore/QTextCodec>
+ #include <QtCore/QFile>
+-#include <QtGui/QApplication>
++#include <QtWidgets/QApplication>
+ #include <QtGui/QFileOpenEvent>
+ 
+ #include <ZLApplication.h>
+@@ -72,8 +71,6 @@ bool ZLQApplication::event(QEvent *e) {
+ void ZLQtLibraryImplementation::init(int &argc, char **&argv) {
+ 	new ZLQApplication(argc, argv);
+ 
+-	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
+-
+ 	ZLibrary::parseArguments(argc, argv);
+ 
+ 	XMLConfigManager::createInstance();
+diff --git a/zlibrary/ui/src/qt4/network/ZLQtNetworkManager.cpp b/zlibrary/ui/src/qt4/network/ZLQtNetworkManager.cpp
+index 47067d3..39be30a 100644
+--- a/zlibrary/ui/src/qt4/network/ZLQtNetworkManager.cpp
++++ b/zlibrary/ui/src/qt4/network/ZLQtNetworkManager.cpp
+@@ -24,7 +24,9 @@
+ #include <QtCore/QDir>
+ #include <QtCore/QList>
+ #include <QtCore/QTimer>
++#include <QtCore/QUrlQuery>
+ 
++#include <QtNetwork/QNetworkCookie>
+ #include <QtNetwork/QNetworkRequest>
+ #include <QtNetwork/QNetworkReply>
+ #include <QtNetwork/QNetworkProxy>
+@@ -149,12 +151,12 @@ void ZLQtNetworkManager::prepareReply(ZLQtNetworkReplyScope &scope, QNetworkRequ
+ 	QNetworkReply *reply = NULL;
+ 	if (!scope.request->postParameters().empty()) {
+ 		QByteArray data;
+-		QUrl tmp;
++		QUrlQuery tmp;
+ 		typedef std::pair<std::string, std::string> string_pair;
+ 		foreach (const string_pair &pair, scope.request->postParameters()) {
+ 			tmp.addQueryItem(QString::fromStdString(pair.first), QString::fromStdString(pair.second));
+ 		}
+-		data = tmp.encodedQuery();
++		data = tmp.query(QUrl::FullyEncoded).toUtf8(); //encodedQuery();
+ 		reply = const_cast<QNetworkAccessManager&>(myManager).post(networkRequest, data);
+ 	} else {
+ 		reply = const_cast<QNetworkAccessManager&>(myManager).get(networkRequest);
+@@ -168,8 +170,8 @@ void ZLQtNetworkManager::prepareReply(ZLQtNetworkReplyScope &scope, QNetworkRequ
+ 	QObject::connect(reply, SIGNAL(readyRead()), this, SLOT(onReplyReadyRead()));
+ 	QObject::disconnect(scope.timeoutTimer, 0, this, 0);
+ 	QObject::connect(scope.timeoutTimer, SIGNAL(timeout()), this, SLOT(onTimeOut()));
+-	reply->setProperty("scope", qVariantFromValue(scope));
+-	scope.timeoutTimer->setProperty("reply", qVariantFromValue(reply));
++	reply->setProperty("scope", QVariant::fromValue(scope));
++	scope.timeoutTimer->setProperty("reply", QVariant::fromValue(reply));
+ 	scope.timeoutTimer->start(timeoutValue());
+ }
+ 
+@@ -288,7 +290,7 @@ void ZLQtNetworkManager::onAuthenticationRequired(QNetworkReply *reply, QAuthent
+ 	authenticator->setUser(QString::fromStdString(scope.request->userName()));
+ 	authenticator->setPassword(QString::fromStdString(scope.request->password()));
+ 	scope.authAskedAlready = true;
+-	reply->setProperty("scope", qVariantFromValue(scope));
++	reply->setProperty("scope", QVariant::fromValue(scope));
+ }
+ 
+ void ZLQtNetworkManager::onSslErrors(const QList<QSslError> &errors) {
+diff --git a/zlibrary/ui/src/qt4/tree/QtWaitingSpinner.cpp b/zlibrary/ui/src/qt4/tree/QtWaitingSpinner.cpp
+index 1be8569..22c007c 100644
+--- a/zlibrary/ui/src/qt4/tree/QtWaitingSpinner.cpp
++++ b/zlibrary/ui/src/qt4/tree/QtWaitingSpinner.cpp
+@@ -86,7 +86,7 @@ void QtWaitingSpinner::setRadius(int radius) {
+ }
+ 
+ void QtWaitingSpinner::setRoundness(qreal roundness) {
+-	myRoundness = std::max(0.0, std::min(100.0, roundness));
++	myRoundness = std::max(static_cast<qreal>(0.0), std::min(static_cast<qreal>(100.0), roundness));
+ }
+ 
+ void QtWaitingSpinner::setColor(QColor color) {
+@@ -148,7 +148,7 @@ QColor QtWaitingSpinner::countTrailColor(int distance, int lines, int trail, int
+ 	qreal alphaDiff = color.alphaF() - (qreal)minAlphaF;
+ 	qreal gradation = alphaDiff / (qreal)(distanceThreshold + 1);
+ 	qreal resultAlpha = color.alphaF() - gradation * distance;
+-	resultAlpha = std::min(1.0, std::max(0.0, resultAlpha)); //if alpha is out of bound, force it to bounds
++	resultAlpha = std::min(static_cast<qreal>(1.0), std::max(static_cast<qreal>(0.0), resultAlpha)); //if alpha is out of bound, force it to bounds
+ 	color.setAlphaF(resultAlpha);
+ 	return color;
+ }
+diff --git a/zlibrary/ui/src/qt4/tree/QtWaitingSpinner.h b/zlibrary/ui/src/qt4/tree/QtWaitingSpinner.h
+index cdaef01..a259c65 100644
+--- a/zlibrary/ui/src/qt4/tree/QtWaitingSpinner.h
++++ b/zlibrary/ui/src/qt4/tree/QtWaitingSpinner.h
+@@ -3,7 +3,7 @@
+ 
+ #include <QtCore/QTimer>
+ 
+-#include <QtGui/QWidget>
++#include <QtWidgets/QWidget>
+ #include <QtGui/QColor>
+ 
+ class QtWaitingSpinner : public QWidget {
+diff --git a/zlibrary/ui/src/qt4/tree/ZLQtItemsListWidget.cpp b/zlibrary/ui/src/qt4/tree/ZLQtItemsListWidget.cpp
+index a3e5b35..ab41684 100644
+--- a/zlibrary/ui/src/qt4/tree/ZLQtItemsListWidget.cpp
++++ b/zlibrary/ui/src/qt4/tree/ZLQtItemsListWidget.cpp
+@@ -17,14 +17,14 @@
+  * 02110-1301, USA.
+  */
+ 
+-#include <QtGui/QVBoxLayout>
+-#include <QtGui/QHBoxLayout>
+ #include <QtGui/QPixmap>
+ #include <QtGui/QPalette>
+ #include <QtGui/QPainter>
+ #include <QtGui/QPaintEvent>
+-#include <QtGui/QScrollBar>
+ #include <QtCore/QTimer>
++#include <QtWidgets/QVBoxLayout>
++#include <QtWidgets/QHBoxLayout>
++#include <QtWidgets/QScrollBar>
+ 
+ #include <QtCore/QDebug>
+ 
+diff --git a/zlibrary/ui/src/qt4/tree/ZLQtItemsListWidget.h b/zlibrary/ui/src/qt4/tree/ZLQtItemsListWidget.h
+index 4f09cfc..51f1545 100644
+--- a/zlibrary/ui/src/qt4/tree/ZLQtItemsListWidget.h
++++ b/zlibrary/ui/src/qt4/tree/ZLQtItemsListWidget.h
+@@ -20,12 +20,12 @@
+ #ifndef __ZLQTITEMSLISTWIDGET_H__
+ #define __ZLQTITEMSLISTWIDGET_H__
+ 
+-#include <QtGui/QWidget>
+-#include <QtGui/QFrame>
+-#include <QtGui/QPushButton>
+-#include <QtGui/QLabel>
+-#include <QtGui/QVBoxLayout>
+-#include <QtGui/QScrollArea>
++#include <QtWidgets/QWidget>
++#include <QtWidgets/QFrame>
++#include <QtWidgets/QPushButton>
++#include <QtWidgets/QLabel>
++#include <QtWidgets/QVBoxLayout>
++#include <QtWidgets/QScrollArea>
+ 
+ #include <ZLTreeTitledNode.h>
+ 
+diff --git a/zlibrary/ui/src/qt4/tree/ZLQtPreviewWidget.cpp b/zlibrary/ui/src/qt4/tree/ZLQtPreviewWidget.cpp
+index 472f05f..a13d368 100644
+--- a/zlibrary/ui/src/qt4/tree/ZLQtPreviewWidget.cpp
++++ b/zlibrary/ui/src/qt4/tree/ZLQtPreviewWidget.cpp
+@@ -17,10 +17,10 @@
+  * 02110-1301, USA.
+  */
+ 
+-#include <QtGui/QVBoxLayout>
+-#include <QtGui/QHBoxLayout>
+-#include <QtGui/QScrollBar>
+-#include <QtGui/QGraphicsDropShadowEffect>
++#include <QtWidgets/QVBoxLayout>
++#include <QtWidgets/QHBoxLayout>
++#include <QtWidgets/QScrollBar>
++#include <QtWidgets/QGraphicsDropShadowEffect>
+ 
+ #include <QtCore/QDebug>
+ 
+@@ -35,7 +35,7 @@
+ class ZLQtLabelAction : public QLabel {
+ 
+ public:
+-	ZLQtLabelAction(shared_ptr<ZLTreeAction> action, QWidget *parent=0, Qt::WindowFlags f=0);
++	ZLQtLabelAction(shared_ptr<ZLTreeAction> action, QWidget *parent=0, Qt::WindowFlags f = Qt::WindowFlags());
+ 
+ protected:
+ 	 void mousePressEvent(QMouseEvent *ev);
+diff --git a/zlibrary/ui/src/qt4/tree/ZLQtPreviewWidget.h b/zlibrary/ui/src/qt4/tree/ZLQtPreviewWidget.h
+index 1b8ebcc..6f3b4e3 100644
+--- a/zlibrary/ui/src/qt4/tree/ZLQtPreviewWidget.h
++++ b/zlibrary/ui/src/qt4/tree/ZLQtPreviewWidget.h
+@@ -20,11 +20,11 @@
+ #ifndef __ZLQTPREVIEWWIDGET_H__
+ #define __ZLQTPREVIEWWIDGET_H__
+ 
+-#include <QtGui/QWidget>
+-#include <QtGui/QPushButton>
+-#include <QtGui/QLabel>
+-#include <QtGui/QScrollArea>
+-#include <QtGui/QVBoxLayout>
++#include <QtWidgets/QWidget>
++#include <QtWidgets/QPushButton>
++#include <QtWidgets/QLabel>
++#include <QtWidgets/QScrollArea>
++#include <QtWidgets/QVBoxLayout>
+ #include <QtCore/QSet>
+ 
+ #include <ZLTreePageNode.h>
+diff --git a/zlibrary/ui/src/qt4/tree/ZLQtSearchField.cpp b/zlibrary/ui/src/qt4/tree/ZLQtSearchField.cpp
+index 1cddaf9..a66cbb4 100644
+--- a/zlibrary/ui/src/qt4/tree/ZLQtSearchField.cpp
++++ b/zlibrary/ui/src/qt4/tree/ZLQtSearchField.cpp
+@@ -18,9 +18,9 @@
+  */
+ 
+ #include <QtCore/QDebug>
+-#include <QtGui/QStyle>
+-#include <QtGui/QCompleter>
+-#include <QtGui/QStringListModel>
++#include <QtCore/QStringListModel>
++#include <QtWidgets/QStyle>
++#include <QtWidgets/QCompleter>
+ 
+ #include <ZLibrary.h>
+ #include <ZLFile.h>
+@@ -78,7 +78,7 @@ void ZLQtSearchField::onReturnPressed() {
+ }
+ 
+ void ZLQtSearchField::updateSuggestions() {
+-	QStringListModel *model = new QStringListModel(mySuggestions.toList(), this);
++	QStringListModel *model = new QStringListModel(QStringList { mySuggestions.begin(), mySuggestions.end() }, this);
+ 	this->completer()->setModel(model);
+ }
+ 
+diff --git a/zlibrary/ui/src/qt4/tree/ZLQtSearchField.h b/zlibrary/ui/src/qt4/tree/ZLQtSearchField.h
+index f6e174c..c360965 100644
+--- a/zlibrary/ui/src/qt4/tree/ZLQtSearchField.h
++++ b/zlibrary/ui/src/qt4/tree/ZLQtSearchField.h
+@@ -21,8 +21,8 @@
+ #define __ZLQTSEARCHFIELD_H__
+ 
+ #include <QtCore/QSet>
+-#include <QtGui/QLabel>
+-#include <QtGui/QLineEdit>
++#include <QtWidgets/QLabel>
++#include <QtWidgets/QLineEdit>
+ 
+ #include "QtWaitingSpinner.h"
+ #include "ZLQtItemsListWidget.h"
+diff --git a/zlibrary/ui/src/qt4/view/ZLQtPaintContext.cpp b/zlibrary/ui/src/qt4/view/ZLQtPaintContext.cpp
+index f9d1257..96e9fea 100644
+--- a/zlibrary/ui/src/qt4/view/ZLQtPaintContext.cpp
++++ b/zlibrary/ui/src/qt4/view/ZLQtPaintContext.cpp
+@@ -144,12 +144,12 @@ void ZLQtPaintContext::setFillColor(ZLColor color, FillStyle style) {
+ }
+ 
+ int ZLQtPaintContext::stringWidth(const char *str, int len, bool) const {
+-	return myPainter->fontMetrics().width(QString::fromUtf8(str, len));
++	return myPainter->fontMetrics().horizontalAdvance(QString::fromUtf8(str, len));
+ }
+ 
+ int ZLQtPaintContext::spaceWidth() const {
+ 	if (mySpaceWidth == -1) {
+-		mySpaceWidth = myPainter->fontMetrics().width(' ');
++		mySpaceWidth = myPainter->fontMetrics().horizontalAdvance(' ');
+ 	}
+ 	return mySpaceWidth;
+ }
+diff --git a/zlibrary/ui/src/qt4/view/ZLQtViewWidget.cpp b/zlibrary/ui/src/qt4/view/ZLQtViewWidget.cpp
+index 4f5d196..14a3dca 100644
+--- a/zlibrary/ui/src/qt4/view/ZLQtViewWidget.cpp
++++ b/zlibrary/ui/src/qt4/view/ZLQtViewWidget.cpp
+@@ -19,8 +19,8 @@
+ 
+ #include <algorithm>
+ 
+-#include <QtGui/QLayout>
+-#include <QtGui/QScrollBar>
++#include <QtWidgets/QLayout>
++#include <QtWidgets/QScrollBar>
+ #include <QtGui/QPainter>
+ #include <QtGui/QPixmap>
+ #include <QtGui/QMouseEvent>
+@@ -75,7 +75,7 @@ QScrollBar *ZLQtViewWidget::addScrollBar(QGridLayout *layout, Qt::Orientation or
+ ZLQtViewWidget::ZLQtViewWidget(QWidget *parent, ZLApplication *application) : ZLViewWidget((ZLView::Angle)application->AngleStateOption.value()), myApplication(application) {
+ 	myFrame = new QWidget(parent);
+ 	QGridLayout *layout = new QGridLayout();
+-	layout->setMargin(0);
++	layout->setContentsMargins(QMargins());
+ 	layout->setSpacing(0);
+ 	myFrame->setLayout(layout);
+ 	myQWidget = new Widget(myFrame, *this);
+@@ -185,11 +185,11 @@ void ZLQtViewWidget::repaint()	{
+ 
+ void ZLQtViewWidget::setScrollbarEnabled(ZLView::Direction direction, bool enabled) {
+ 	if (direction == ZLView::VERTICAL) {
+-		myRightScrollBar->setShown(enabled && myShowScrollBarAtRight);
+-		myLeftScrollBar->setShown(enabled && !myShowScrollBarAtRight);
++		myRightScrollBar->setVisible(enabled && myShowScrollBarAtRight);
++		myLeftScrollBar->setVisible(enabled && !myShowScrollBarAtRight);
+ 	} else {
+-		myBottomScrollBar->setShown(enabled && myShowScrollBarAtBottom);
+-		myTopScrollBar->setShown(enabled && !myShowScrollBarAtBottom);
++		myBottomScrollBar->setVisible(enabled && myShowScrollBarAtBottom);
++		myTopScrollBar->setVisible(enabled && !myShowScrollBarAtBottom);
+ 	}
+ }
+ 
+diff --git a/zlibrary/ui/src/qt4/view/ZLQtViewWidget.h b/zlibrary/ui/src/qt4/view/ZLQtViewWidget.h
+index 6fabf00..ccec1e3 100644
+--- a/zlibrary/ui/src/qt4/view/ZLQtViewWidget.h
++++ b/zlibrary/ui/src/qt4/view/ZLQtViewWidget.h
+@@ -20,7 +20,7 @@
+ #ifndef __ZLQTVIEWWIDGET_H__
+ #define __ZLQTVIEWWIDGET_H__
+ 
+-#include <QtGui/QWidget>
++#include <QtWidgets/QWidget>
+ 
+ #include "../../../../core/src/view/ZLViewWidget.h"
+ #include <ZLApplication.h>
+diff --git a/zlibrary/ui/src/qtopia/application/ZLQtApplicationWindow.cpp b/zlibrary/ui/src/qtopia/application/ZLQtApplicationWindow.cpp
+index 542d89b..98e6ce1 100644
+--- a/zlibrary/ui/src/qtopia/application/ZLQtApplicationWindow.cpp
++++ b/zlibrary/ui/src/qtopia/application/ZLQtApplicationWindow.cpp
+@@ -85,7 +85,7 @@ QPixmap &ToolBarButton::pixmap() {
+ 		if (myPressedPixmap == 0) {
+ 			const int w = myReleasedPixmap->width();
+ 			const int h = myReleasedPixmap->height();
+-			myPressedPixmap = new QPixmap(w, h);		
++			myPressedPixmap = new QPixmap(w, h);
+ 			myPressedPixmap->fill(Qt::white);
+ 			QPainter painter(myPressedPixmap);
+ 			painter.drawPixmap(0, 0, *myReleasedPixmap);
+@@ -117,7 +117,7 @@ ZLQtApplicationWindow::ZLQtApplicationWindow(ZLApplication *a) : ZLApplicationWi
+ 
+ 	myToolBar = new MyMenuBar(myMainWindow, *this);
+ 	myMenu = new QPopupMenu(myToolBar);
+-	myToolBar->insertItem(QString::null, myMenu, -1, 0);
++	myToolBar->insertItem(QString(), myMenu, -1, 0);
+ 
+ 	((QPEApplication*)qApp)->showMainWidget(myMainWindow);
+ 	myMainWindow->setWFlags(myMainWindow->getWFlags() | QObject::WStyle_Customize);
+diff --git a/zlibrary/ui/src/qtopia/dialogs/ZLQtUtil.cpp b/zlibrary/ui/src/qtopia/dialogs/ZLQtUtil.cpp
+index a8014e3..08333f7 100644
+--- a/zlibrary/ui/src/qtopia/dialogs/ZLQtUtil.cpp
++++ b/zlibrary/ui/src/qtopia/dialogs/ZLQtUtil.cpp
+@@ -27,7 +27,7 @@ QString qtString(const std::string &text) {
+ 
+ QString qtButtonName(const ZLResourceKey &key) {
+ 	if (key.Name.empty()) {
+-		return QString::null;
++		return QString();
+ 	}
+ 	return ::qtString(ZLDialogManager::buttonName(key));
+ }
+diff --git a/zlibrary/ui/src/qtopia/view/ZLQtPaintContext.cpp b/zlibrary/ui/src/qtopia/view/ZLQtPaintContext.cpp
+index 852c857..4cd3920 100644
+--- a/zlibrary/ui/src/qtopia/view/ZLQtPaintContext.cpp
++++ b/zlibrary/ui/src/qtopia/view/ZLQtPaintContext.cpp
+@@ -173,12 +173,12 @@ void ZLQtPaintContext::setFillColor(ZLColor color, FillStyle style) {
+ }
+ 
+ int ZLQtPaintContext::stringWidth(const char *str, int len, bool rtl) const {
+-	return myPainter->fontMetrics().width(QString::fromUtf8(str, len));
++	return myPainter->fontMetrics().horizontalAdvance(QString::fromUtf8(str, len));
+ }
+ 
+ int ZLQtPaintContext::spaceWidth() const {
+ 	if (mySpaceWidth == -1) {
+-		mySpaceWidth = myPainter->fontMetrics().width(" ");
++		mySpaceWidth = myPainter->fontMetrics().horizontalAdvance(" ");
+ 	}
+ 	return mySpaceWidth;
+ }
