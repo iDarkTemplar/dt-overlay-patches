@@ -68,6 +68,16 @@ src_prepare() {
 	sed -e "/^LDFLAGS =$/d" \
 		-i makefiles/arch/desktop.mk || die "LDFLAGS sed failed"
 
+	if ! use qt6 ; then
+		# Qt5 moc
+		sed -e "s:MOC = moc-qt4:MOC = $(qt5_get_bindir)/moc:" \
+			-i makefiles/arch/desktop.mk || die "updating desktop.mk failed"
+	else
+		# Qt6 moc
+		sed -e "s:MOC = moc-qt6:MOC = $(qmake-qt6 -query QT_INSTALL_LIBEXECS)/moc:" \
+			-i makefiles/arch/desktop.mk || die "updating desktop.mk failed"
+	fi
+
 	echo "TARGET_ARCH = desktop" > makefiles/target.mk || die
 	echo "LIBDIR = /usr/$(get_libdir)" >> makefiles/target.mk || die
 
