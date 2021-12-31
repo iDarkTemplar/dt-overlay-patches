@@ -3,7 +3,7 @@
 
 EAPI=7
 
-inherit flag-o-matic qmake-utils xdg
+inherit flag-o-matic qmake-utils toolchain-funcs xdg
 
 DESCRIPTION="E-Book Reader. Supports many e-book formats"
 HOMEPAGE="https://www.fbreader.org/"
@@ -20,7 +20,7 @@ RDEPEND="
 	dev-db/sqlite
 	dev-libs/expat
 	dev-libs/fribidi
-	dev-libs/libunibreak
+	dev-libs/libunibreak:=
 	net-misc/curl
 	sys-libs/zlib
 	!qt6? (
@@ -78,6 +78,9 @@ src_prepare() {
 	else
 		echo "TARGET_STATUS = release" >> makefiles/target.mk || die
 	fi
+
+	# bug #437262
+	tc-ld-disable-gold
 }
 
 src_compile() {
