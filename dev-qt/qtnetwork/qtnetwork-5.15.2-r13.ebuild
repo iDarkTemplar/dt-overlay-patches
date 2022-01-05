@@ -22,7 +22,7 @@ DEPEND="
 	gssapi? ( virtual/krb5 )
 	libproxy? ( net-libs/libproxy )
 	networkmanager? ( =dev-qt/qtdbus-${QT5_PV}* )
-	sctp? ( kernel_linux? ( net-misc/lksctp-tools ) )
+	sctp? ( net-misc/lksctp-tools )
 	ssl? ( >=dev-libs/openssl-1.1.1:0= )
 "
 RDEPEND="${DEPEND}

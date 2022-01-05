@@ -86,7 +86,7 @@ DEPEND="
 	odbc? ( dev-db/unixODBC )
 	png? ( media-libs/libpng:0= )
 	postgres? ( dev-db/postgresql:* )
-	sctp? ( kernel_linux? ( net-misc/lksctp-tools ) )
+	sctp? ( net-misc/lksctp-tools )
 	sqlite? ( dev-db/sqlite:3 )
 	ssl? ( dev-libs/openssl:0= )
 	systemd? ( sys-apps/systemd:= )
@@ -123,7 +123,6 @@ PATCHES=(
 )
 
 pkg_pretend() {
-	use kernel_linux || return
 	get_running_version
 	if kernel_is -lt 4 11 && ! use old-kernel; then
 		ewarn "The running kernel is older than 4.11. USE=old-kernel is needed for"
