@@ -2,6 +2,8 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
+
+KDE_ORG_COMMIT=5e9ca5d36d65dadb98ef90013a1dcf15fbd7ae26
 QT5_GENERATE_DOCS="true"
 QT5_MODULE="qtconnectivity"
 inherit qt5-build
@@ -25,8 +27,6 @@ RDEPEND="
 DEPEND="${RDEPEND}
 	=dev-qt/qtnetwork-${QT5_PV}*
 "
-
-PATCHES=( "${FILESDIR}/${P}-gcc11.patch" ) # bug 752012
 
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples/bluetooth")

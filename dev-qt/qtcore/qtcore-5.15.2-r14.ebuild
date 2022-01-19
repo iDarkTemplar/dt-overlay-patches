@@ -3,12 +3,12 @@
 
 EAPI=8
 
-KDE_ORG_COMMIT=7c6c0030cf80ef7b9ace42996b0e0c3a72f76860
+KDE_ORG_COMMIT=f4ac0b55c37f2b594ffbe639db43dac365825c7c
 QT5_MODULE="qtbase"
 inherit linux-info qt5-build
 
 DESCRIPTION="Cross-platform application development framework"
-SLOT=5/$(ver_cut 1-3)
+SLOT=5/${QT5_PV}
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64 arm arm64 ~hppa ppc ppc64 ~riscv ~sparc x86"

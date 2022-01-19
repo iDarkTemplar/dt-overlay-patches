@@ -3,7 +3,7 @@
 
 EAPI=8
 
-KDE_ORG_COMMIT=eb422ab5e07498a7a8d086f6a942ee35ab3c9776
+KDE_ORG_COMMIT=867540b9d913760a847ff67c8694d817c821f2c2
 QT5_GENERATE_DOCS="true"
 inherit qt5-build
 
@@ -34,10 +34,6 @@ RDEPEND="${DEPEND}"
 BDEPEND="
 	dev-util/wayland-scanner
 "
-
-PATCHES=(
-	"${FILESDIR}"/${P}-fix-crash-when-iterating-through-outputs.patch # KDE-bug 438839
-)
 
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples")

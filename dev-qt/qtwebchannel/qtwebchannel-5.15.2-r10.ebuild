@@ -2,6 +2,8 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
+
+KDE_ORG_COMMIT=fa8b07105b5e274daaa8adcc129fa4aa0447f9f7
 QT5_GENERATE_DOCS="true"
 inherit qt5-build
 
