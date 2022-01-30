@@ -21,7 +21,6 @@ RDEPEND="
 	dev-libs/expat
 	dev-libs/fribidi
 	dev-libs/libunibreak:=
-	net-misc/curl
 	sys-libs/zlib
 	!qt6? (
 		dev-qt/qtcore:5
