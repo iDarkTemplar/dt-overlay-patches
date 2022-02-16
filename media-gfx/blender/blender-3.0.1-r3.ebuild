@@ -17,12 +17,12 @@ SRC_URI="https://download.blender.org/source/${P}.tar.xz"
 MY_PV="$(ver_cut 1-2)"
 
 SLOT="0"
-LICENSE="|| ( GPL-2 BL )"
+LICENSE="|| ( GPL-3 BL )"
 KEYWORDS="~amd64"
 IUSE="+bullet +dds +fluid +openexr +tbb \
 	alembic collada +color-management cuda +cycles \
 	debug doc +embree +ffmpeg +fftw +gmp headless jack jemalloc jpeg2k +llvm \
-	man ndof nls +oceansim openal opencl oidn +openimageio +openmp +opensubdiv \
+	man ndof nls +oceansim openal oidn +openimageio +openmp +opensubdiv \
 	+openvdb +osl +pdf +potrace +pugixml pulseaudio sdl +sndfile standalone +tiff valgrind"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
@@ -31,7 +31,6 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	cycles? ( openexr tbb tiff openimageio )
 	fluid? ( tbb )
 	oceansim? ( fftw tbb )
-	opencl? ( cycles )
 	openvdb? ( tbb )
 	osl? ( cycles llvm )
 	standalone? ( cycles )"
@@ -46,6 +45,7 @@ RDEPEND="${PYTHON_DEPS}
 	$(python_gen_cond_dep '
 		dev-python/numpy[${PYTHON_USEDEP}]
 		dev-python/requests[${PYTHON_USEDEP}]
+		dev-python/zstandard[${PYTHON_USEDEP}]
 	')
 	media-libs/fontconfig:=
 	media-libs/freetype:=
@@ -57,9 +57,9 @@ RDEPEND="${PYTHON_DEPS}
 	virtual/jpeg
 	virtual/libintl
 	virtual/opengl
-	alembic? ( >=media-gfx/alembic-1.7.12[boost(+),hdf(+)] )
+	alembic? ( >=media-gfx/alembic-1.8.3-r2[boost(+),hdf(+)] )
 	collada? ( >=media-libs/opencollada-1.6.68:= )
-	color-management? ( >=media-libs/opencolorio-2.0.0:= )
+	color-management? ( >=media-libs/opencolorio-2.1.1-r4:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
 	cycles? ( media-libs/freeglut )
 	embree? ( >=media-libs/embree-3.10.0[raymask] )
@@ -82,19 +82,18 @@ RDEPEND="${PYTHON_DEPS}
 	)
 	nls? ( virtual/libiconv )
 	openal? ( media-libs/openal )
-	opencl? ( virtual/opencl )
-	oidn? ( >=media-libs/oidn-1.3.0 )
-	openimageio? ( >=media-libs/openimageio-2.2.13.1:= )
+	oidn? ( >=media-libs/oidn-1.4.1 )
+	openimageio? ( >=media-libs/openimageio-2.3.12.0-r1:= )
 	openexr? (
-		media-libs/ilmbase:=
+		dev-libs/imath:=
 		media-libs/openexr:=
 	)
-	opensubdiv? ( >=media-libs/opensubdiv-3.4.0:=[cuda=,opencl=] )
+	opensubdiv? ( >=media-libs/opensubdiv-3.4.0:=[cuda=] )
 	openvdb? (
-		>=media-gfx/openvdb-7.1.0:=
+		>=media-gfx/openvdb-8.2.0-r2:=
 		dev-libs/c-blosc:=
 	)
-	osl? ( >=media-libs/osl-1.11.10.0:= )
+	osl? ( >=media-libs/osl-1.11.16.0-r3:= )
 	pdf? ( media-libs/libharu )
 	potrace? ( media-gfx/potrace )
 	pugixml? ( dev-libs/pugixml )
@@ -130,6 +129,9 @@ PATCHES=(
 	"${FILESDIR}/${PN}-2.92-include-deduplication-check-skip.patch"
 	"${FILESDIR}/${PN}-2.80-fix-install-rules.patch"
 	"${FILESDIR}/${PN}-3.0.0-doc.patch"
+	"${FILESDIR}"/${PN}-3.0.0-intern-ghost-fix-typo-in-finding-XF86VMODE.patch
+	"${FILESDIR}"/${PN}-3.0.1-openexr.patch
+	"${FILESDIR}"/${PN}-3.0.1-openimageio-2.3.patch
 )
 
 CMAKE_BUILD_TYPE="Release"
@@ -188,7 +190,6 @@ src_configure() {
 		-DWITH_CXX_GUARDEDALLOC=$(usex debug)
 		-DWITH_CYCLES=$(usex cycles)
 		-DWITH_CYCLES_DEVICE_CUDA=$(usex cuda TRUE FALSE)
-		-DWITH_CYCLES_DEVICE_OPENCL=$(usex opencl)
 		-DWITH_CYCLES_EMBREE=$(usex embree)
 		-DWITH_CYCLES_OSL=$(usex osl)
 		-DWITH_CYCLES_STANDALONE=$(usex standalone)
@@ -202,6 +203,7 @@ src_configure() {
 		-DWITH_HEADLESS=$(usex headless)
 		-DWITH_INSTALL_PORTABLE=OFF
 		-DWITH_IMAGE_DDS=$(usex dds)
+		-DOPENEXR_ROOT_DIR="${ESYSROOT}/usr/$(get_libdir)/OpenEXR-3"
 		-DWITH_IMAGE_OPENEXR=$(usex openexr)
 		-DWITH_IMAGE_OPENJPEG=$(usex jpeg2k)
 		-DWITH_IMAGE_TIFF=$(usex tiff)
@@ -240,11 +242,18 @@ src_configure() {
 		-DWITH_USD=OFF
 		-DWITH_XR_OPENXR=OFF
 	)
-	if ! use debug ; then
-		append-flags  -DNDEBUG
-	else
-		append-flags  -DDEBUG
+
+	append-flags $(usex debug '-DDEBUG' '-DNDEBUG')
+
+	if tc-is-gcc ; then
+		# These options only exist when GCC is detected.
+		# We disable these to respect the user's choice of linker.
+		mycmakeargs+=(
+			-DWITH_LINKER_GOLD=OFF
+			-DWITH_LINKER_LLD=OFF
+		)
 	fi
+
 	cmake_src_configure
 }
 
