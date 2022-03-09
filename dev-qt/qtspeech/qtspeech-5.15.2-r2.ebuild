@@ -3,6 +3,7 @@
 
 EAPI=8
 QT5_GENERATE_DOCS="true"
+KDE_ORG_COMMIT=16c625528f5e34e698983fc66a7c9cfb96da8052
 inherit qt5-build
 
 DESCRIPTION="Text-to-speech library for the Qt5 framework"
