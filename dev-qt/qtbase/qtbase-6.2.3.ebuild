@@ -120,6 +120,7 @@ PDEPEND="
 PATCHES=(
 	"${FILESDIR}/qtcore-5.14.1-examples.patch"
 	"${FILESDIR}/qtcore-5.14.1-qmake-update-libdirs-order.patch"
+	"${FILESDIR}/${PN}-6.2.3-CVE-2022-25255-qprocess.patch"
 )
 
 pkg_pretend() {
