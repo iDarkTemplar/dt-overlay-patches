@@ -3,7 +3,7 @@
 
 EAPI=7
 
-PYTHON_COMPAT=( python3_9 )
+PYTHON_COMPAT=( python3_10 )
 
 inherit check-reqs cmake flag-o-matic pax-utils python-single-r1 toolchain-funcs xdg-utils
 
@@ -22,7 +22,7 @@ KEYWORDS="~amd64"
 IUSE="+bullet +dds +fluid +openexr +tbb \
 	alembic collada +color-management cuda +cycles \
 	debug doc +embree +ffmpeg +fftw +gmp headless jack jemalloc jpeg2k +llvm \
-	man ndof nls +oceansim openal oidn +openimageio +openmp +opensubdiv \
+	man +nanovdb ndof nls +oceansim openal oidn +openimageio +openmp +opensubdiv \
 	+openvdb +osl +pdf +potrace +pugixml pulseaudio sdl +sndfile standalone +tiff valgrind"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
@@ -90,7 +90,7 @@ RDEPEND="${PYTHON_DEPS}
 	)
 	opensubdiv? ( >=media-libs/opensubdiv-3.4.0:=[cuda=] )
 	openvdb? (
-		>=media-gfx/openvdb-8.2.0-r2:=
+		>=media-gfx/openvdb-9.0.0:=[nanovdb?]
 		dev-libs/c-blosc:=
 	)
 	osl? ( >=media-libs/osl-1.11.16.0-r3:= )
@@ -129,9 +129,6 @@ PATCHES=(
 	"${FILESDIR}/${PN}-2.92-include-deduplication-check-skip.patch"
 	"${FILESDIR}/${PN}-2.80-fix-install-rules.patch"
 	"${FILESDIR}/${PN}-3.0.0-doc.patch"
-	"${FILESDIR}"/${PN}-3.0.0-intern-ghost-fix-typo-in-finding-XF86VMODE.patch
-	"${FILESDIR}"/${PN}-3.0.1-openexr.patch
-	"${FILESDIR}"/${PN}-3.0.1-openimageio-2.3.patch
 )
 
 CMAKE_BUILD_TYPE="Release"
@@ -215,7 +212,7 @@ src_configure() {
 		-DWITH_MEM_VALGRIND=$(usex valgrind)
 		-DWITH_MOD_FLUID=$(usex fluid)
 		-DWITH_MOD_OCEANSIM=$(usex oceansim)
-		-DWITH_NANOVDB=OFF
+		-DWITH_NANOVDB=$(usex nanovdb)
 		-DWITH_OPENAL=$(usex openal)
 		-DWITH_OPENCOLLADA=$(usex collada)
 		-DWITH_OPENCOLORIO=$(usex color-management)
@@ -234,6 +231,7 @@ src_configure() {
 		-DWITH_SDL=$(usex sdl)
 		-DWITH_STATIC_LIBS=OFF
 		-DWITH_SYSTEM_EIGEN3=ON
+		-DWITH_SYSTEM_FREETYPE=ON
 		-DWITH_SYSTEM_GFLAGS=ON
 		-DWITH_SYSTEM_GLEW=ON
 		-DWITH_SYSTEM_GLOG=ON
