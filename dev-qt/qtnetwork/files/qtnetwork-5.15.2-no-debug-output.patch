@@ -1,0 +1,26 @@
+diff --git a/src/network/ssl/qdtls_openssl.cpp b/src/network/ssl/qdtls_openssl.cpp
+index ede9595f..0cb4537f 100644
+--- a/src/network/ssl/qdtls_openssl.cpp
++++ b/src/network/ssl/qdtls_openssl.cpp
+@@ -390,7 +390,7 @@ extern "C" long q_dgram_ctrl(BIO *bio, int cmd, long num, void *ptr)
+     //    command.
+ 
+     if (!bio) {
+-        qDebug(lcSsl, "invalid 'bio' parameter (nullptr)");
++        qCDebug(lcSsl, "invalid 'bio' parameter (nullptr)");
+         return -1;
+     }
+ 
+diff --git a/src/network/ssl/qsslsocket_openssl.cpp b/src/network/ssl/qsslsocket_openssl.cpp
+index af47dbf9..7fec23d5 100644
+--- a/src/network/ssl/qsslsocket_openssl.cpp
++++ b/src/network/ssl/qsslsocket_openssl.cpp
+@@ -455,7 +455,7 @@ bool qt_OCSP_certificate_match(OCSP_SINGLERESP *singleResponse, X509 *peerCert,
+     const QSharedPointer<OCSP_CERTID> guard(recreatedId, q_OCSP_CERTID_free);
+ 
+     if (q_OCSP_id_cmp(const_cast<OCSP_CERTID *>(certId), recreatedId)) {
+-        qDebug(lcSsl, "Certificate ID mismatch");
++        qCDebug(lcSsl, "Certificate ID mismatch");
+         return false;
+     }
+     // Bingo!
