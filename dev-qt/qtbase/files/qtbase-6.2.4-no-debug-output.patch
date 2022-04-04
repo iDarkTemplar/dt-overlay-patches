@@ -1,0 +1,68 @@
+diff --git a/src/gui/text/qdistancefield.cpp b/src/gui/text/qdistancefield.cpp
+index a3fdfd63..4dcc8470 100644
+--- a/src/gui/text/qdistancefield.cpp
++++ b/src/gui/text/qdistancefield.cpp
+@@ -761,7 +761,7 @@ static void initialDistanceFieldFactor()
+     }
+     if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_RADIUS")) {
+         QT_DISTANCEFIELD_DEFAULT_RADIUS = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_RADIUS");
+-        qDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_RADIUS:" << QT_DISTANCEFIELD_DEFAULT_RADIUS;
++        qCDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_RADIUS:" << QT_DISTANCEFIELD_DEFAULT_RADIUS;
+     }
+     if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT")) {
+         QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT");
+diff --git a/src/gui/vulkan/qbasicvulkanplatforminstance.cpp b/src/gui/vulkan/qbasicvulkanplatforminstance.cpp
+index 233f884c..235cf036 100644
+--- a/src/gui/vulkan/qbasicvulkanplatforminstance.cpp
++++ b/src/gui/vulkan/qbasicvulkanplatforminstance.cpp
+@@ -185,7 +185,7 @@ void QBasicPlatformVulkanInstance::init(QLibrary *lib)
+             m_supportedExtensions.append(ext);
+         }
+     }
+-    qDebug(lcPlatVk) << "Supported Vulkan instance extensions:" << m_supportedExtensions;
++    qCDebug(lcPlatVk) << "Supported Vulkan instance extensions:" << m_supportedExtensions;
+ }
+ 
+ QVulkanInfoVector<QVulkanLayer> QBasicPlatformVulkanInstance::supportedLayers() const
+@@ -260,13 +260,13 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
+             if (!m_supportedLayers.contains(layerName))
+                 m_enabledLayers.removeAt(i--);
+         }
+-        qDebug(lcPlatVk) << "Enabling Vulkan instance layers:" << m_enabledLayers;
++        qCDebug(lcPlatVk) << "Enabling Vulkan instance layers:" << m_enabledLayers;
+         for (int i = 0; i < m_enabledExtensions.count(); ++i) {
+             const QByteArray &extName(m_enabledExtensions[i]);
+             if (!m_supportedExtensions.contains(extName))
+                 m_enabledExtensions.removeAt(i--);
+         }
+-        qDebug(lcPlatVk) << "Enabling Vulkan instance extensions:" << m_enabledExtensions;
++        qCDebug(lcPlatVk) << "Enabling Vulkan instance extensions:" << m_enabledExtensions;
+ 
+         VkInstanceCreateInfo instInfo;
+         memset(&instInfo, 0, sizeof(instInfo));
+diff --git a/src/gui/vulkan/qvulkanwindow.cpp b/src/gui/vulkan/qvulkanwindow.cpp
+index cb66e675..3b29531e 100644
+--- a/src/gui/vulkan/qvulkanwindow.cpp
++++ b/src/gui/vulkan/qvulkanwindow.cpp
+@@ -406,7 +406,7 @@ QVulkanInfoVector<QVulkanExtension> QVulkanWindow::supportedDeviceExtensions()
+                 exts.append(ext);
+             }
+             d->supportedDevExtensions.insert(physDev, exts);
+-            qDebug(lcGuiVk) << "Supported device extensions:" << exts;
++            qCDebug(lcGuiVk) << "Supported device extensions:" << exts;
+             return exts;
+         }
+     }
+diff --git a/src/plugins/tls/openssl/qdtls_openssl.cpp b/src/plugins/tls/openssl/qdtls_openssl.cpp
+index 55a82f7f..26c71fb4 100644
+--- a/src/plugins/tls/openssl/qdtls_openssl.cpp
++++ b/src/plugins/tls/openssl/qdtls_openssl.cpp
+@@ -393,7 +393,7 @@ extern "C" long q_dgram_ctrl(BIO *bio, int cmd, long num, void *ptr)
+     //    command.
+ 
+     if (!bio) {
+-        qDebug(lcTlsBackend, "invalid 'bio' parameter (nullptr)");
++        qCDebug(lcTlsBackend, "invalid 'bio' parameter (nullptr)");
+         return -1;
+     }
+ 
