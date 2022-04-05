@@ -112,6 +112,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.15.2_p20211015-pdfium-system-lcms2.patch" # by Debian, QTBUG-61746
 	"${FILESDIR}/${PN}-5.15.2_p20211210-sandbox-glibc-2.34.patch" # bug 828099, systemwide-clang?
 	"${WORKDIR}/${PN}-5.15.2_p20211019-jumbo-build.patch" # bug 813957
+	"${FILESDIR}/${PN}-5.15.2-CVE-2022-1096.patch"
 )
 
 pkg_setup() {
