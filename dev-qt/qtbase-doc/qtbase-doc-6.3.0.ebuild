@@ -52,7 +52,6 @@ DEPEND="
 RDEPEND="${DEPEND}"
 
 PATCHES=(
-	"${FILESDIR}/qtcore-5.14.1-examples.patch"
 	"${FILESDIR}/qtcore-5.14.1-qmake-update-libdirs-order.patch"
 )
 

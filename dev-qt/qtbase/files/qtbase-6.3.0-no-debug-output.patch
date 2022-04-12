@@ -1,3 +1,16 @@
+diff --git a/src/corelib/plugin/qlibrary.cpp b/src/corelib/plugin/qlibrary.cpp
+index c548a338..b6cade00 100644
+--- a/src/corelib/plugin/qlibrary.cpp
++++ b/src/corelib/plugin/qlibrary.cpp
+@@ -396,7 +396,7 @@ inline void QLibraryStore::cleanup()
+     if (lcDebugLibrary().isDebugEnabled()) {
+         for (QLibraryPrivate *lib : qAsConst(data->libraryMap)) {
+             if (lib)
+-                qDebug(lcDebugLibrary)
++                qCDebug(lcDebugLibrary)
+                         << "On QtCore unload," << lib->fileName << "was leaked, with"
+                         << lib->libraryRefCount.loadRelaxed() << "users";
+         }
 diff --git a/src/gui/text/qdistancefield.cpp b/src/gui/text/qdistancefield.cpp
 index a3fdfd63..4dcc8470 100644
 --- a/src/gui/text/qdistancefield.cpp
@@ -12,10 +25,10 @@ index a3fdfd63..4dcc8470 100644
      if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT")) {
          QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT");
 diff --git a/src/gui/vulkan/qbasicvulkanplatforminstance.cpp b/src/gui/vulkan/qbasicvulkanplatforminstance.cpp
-index 233f884c..235cf036 100644
+index dd39f71b..172849db 100644
 --- a/src/gui/vulkan/qbasicvulkanplatforminstance.cpp
 +++ b/src/gui/vulkan/qbasicvulkanplatforminstance.cpp
-@@ -185,7 +185,7 @@ void QBasicPlatformVulkanInstance::init(QLibrary *lib)
+@@ -211,7 +211,7 @@ void QBasicPlatformVulkanInstance::init(QLibrary *lib)
              m_supportedExtensions.append(ext);
          }
      }
@@ -24,7 +37,7 @@ index 233f884c..235cf036 100644
  }
  
  QVulkanInfoVector<QVulkanLayer> QBasicPlatformVulkanInstance::supportedLayers() const
-@@ -260,13 +260,13 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
+@@ -286,13 +286,13 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
              if (!m_supportedLayers.contains(layerName))
                  m_enabledLayers.removeAt(i--);
          }
@@ -41,7 +54,7 @@ index 233f884c..235cf036 100644
          VkInstanceCreateInfo instInfo;
          memset(&instInfo, 0, sizeof(instInfo));
 diff --git a/src/gui/vulkan/qvulkanwindow.cpp b/src/gui/vulkan/qvulkanwindow.cpp
-index cb66e675..3b29531e 100644
+index b5704684..2a10462c 100644
 --- a/src/gui/vulkan/qvulkanwindow.cpp
 +++ b/src/gui/vulkan/qvulkanwindow.cpp
 @@ -406,7 +406,7 @@ QVulkanInfoVector<QVulkanExtension> QVulkanWindow::supportedDeviceExtensions()
@@ -54,7 +67,7 @@ index cb66e675..3b29531e 100644
          }
      }
 diff --git a/src/plugins/tls/openssl/qdtls_openssl.cpp b/src/plugins/tls/openssl/qdtls_openssl.cpp
-index 55a82f7f..26c71fb4 100644
+index a1f2c707..34559856 100644
 --- a/src/plugins/tls/openssl/qdtls_openssl.cpp
 +++ b/src/plugins/tls/openssl/qdtls_openssl.cpp
 @@ -393,7 +393,7 @@ extern "C" long q_dgram_ctrl(BIO *bio, int cmd, long num, void *ptr)

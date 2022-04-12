@@ -81,10 +81,6 @@ PDEPEND="
 	examples? ( ~dev-qt/qtwebengine-examples-${PV} )
 "
 
-PATCHES=(
-	"${FILESDIR}/${PN}-6.2.4-CVE-2022-1096.patch"
-)
-
 src_prepare() {
 	qt_use_disable_target designer Qt::Designer \
 		src/webenginewidgets/CMakeLists.txt
