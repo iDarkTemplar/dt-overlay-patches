@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python2_7 )
+PYTHON_COMPAT=( python3_{9,10} )
 inherit cmake python-any-r1 qt6-build
 
 DESCRIPTION="Library for rendering dynamic web content in Qt6 C++ and QML applications"
