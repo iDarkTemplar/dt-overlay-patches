@@ -2,6 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
+
 PYTHON_COMPAT=( python3_{8..10} )
 inherit distutils-r1 qmake-utils toolchain-funcs cmake
 
@@ -22,17 +23,18 @@ RDEPEND="
 	qt5? (
 		dev-qt/qtcore:5
 		dev-qt/qtgui:5
+		dev-qt/qthelp
 		dev-qt/qtprintsupport:5
-		dev-qt/qthelp:5
-		dev-qt/linguist:5
 	)
 	qchart? ( dev-qt/qtcharts:5 )
 	z3? ( sci-mathematics/z3:= )
 "
-DEPEND="${RDEPEND}
+DEPEND="${RDEPEND}"
+BDEPEND="
 	app-text/docbook-xsl-stylesheets
 	dev-libs/libxslt
 	virtual/pkgconfig
+	qt5? ( dev-qt/linguist-tools:5 )
 	doc? ( app-text/pandoc )
 "
 PATCHES=(
@@ -51,16 +53,16 @@ src_prepare() {
 
 src_configure() {
 	local mycmakeargs=(
-		-DHAVE_RULES=$(usex pcre)
-		-DBUILD_GUI=$(usex qt5)
-		-DUSE_Z3=$(usex z3)
-		-DFILESDIR=/usr/share/Cppcheck
+		-DHAVE_RULES="$(usex pcre)"
+		-DBUILD_GUI="$(usex qt5)"
+		-DUSE_Z3="$(usex z3)"
+		-DFILESDIR="${EPREFIX}/usr/share/Cppcheck"
 		-DENABLE_OSS_FUZZ=OFF
+		-DUSE_BUNDLED_TINYXML2=OFF
 		-DUSE_MATCHCOMPILER=yes
 		-DWITH_QCHART=$(usex qchart)
 		-DBUILD_SHARED_LIBS:BOOL=OFF
 		-DBUILD_TESTS=no
-		-DUSE_BUNDLED_TINYXML2:BOOL=OFF
 	)
 
 	cmake_src_configure
