@@ -7,9 +7,12 @@ CMAKE_ECLASS=cmake
 PYTHON_COMPAT=( python3_{7,8,9} )
 inherit cmake-multilib python-single-r1
 
+LIBBACKTRACE_COMMIT="dedbe13"
+
 DESCRIPTION="Tool for tracing, analyzing, and debugging graphics APIs"
 HOMEPAGE="https://github.com/apitrace/apitrace"
-SRC_URI="https://github.com/${PN}/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
+SRC_URI="https://github.com/${PN}/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz
+	https://github.com/ianlancetaylor/libbacktrace/tarball/${LIBBACKTRACE_COMMIT} -> ${P}-libbacktrace.tar.gz"
 
 LICENSE="MIT"
 SLOT="0"
@@ -39,11 +42,15 @@ RDEPEND="${DEPEND}"
 PATCHES=(
 	# TODO: upstream
 	"${FILESDIR}"/${PN}-9.0-disable-multiarch.patch
-	"${FILESDIR}"/${PN}-9.0-brotli-unbundle.patch
+	"${FILESDIR}"/${PN}-11.0-build.patch
 )
 
 src_prepare() {
 	cmake_src_prepare
+
+	# prepare libbacktrace
+	rm -rf thirdparty/libbacktrace
+	mv "${WORKDIR}/ianlancetaylor-libbacktrace-${LIBBACKTRACE_COMMIT}" "${S}/thirdparty/libbacktrace"
 
 	# The apitrace code grubs around in the internal zlib structures.
 	# We have to extract this header and clean it up to keep that working.
@@ -61,6 +68,7 @@ src_configure() {
 			-DENABLE_GUI=$(multilib_native_usex qt5)
 			-DENABLE_STATIC_SNAPPY=OFF
 			-DENABLE_WAFFLE=ON
+			-DBUILD_TESTING=OFF
 		)
 		cmake_src_configure
 	}
