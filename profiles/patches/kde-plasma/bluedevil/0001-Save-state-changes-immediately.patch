@@ -1,16 +1,16 @@
-From 5a66dcacfe4c08ca961c85871cd45cc4b1255d3f Mon Sep 17 00:00:00 2001
+From 8ed87c0268e113074485b88853315ff7bf52e489 Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Mon, 2 May 2022 22:48:17 +0200
 Subject: [PATCH] Save state changes immediately
 
 It is not saved on kded5 shutdown.
 ---
- src/kded/devicemonitor.cpp | 3 +++
+ src/kded/devicemonitor.cpp | 1 +
  src/kded/devicemonitor.h   | 1 +
- 2 files changed, 4 insertions(+)
+ 2 files changed, 2 insertions(+)
 
 diff --git a/src/kded/devicemonitor.cpp b/src/kded/devicemonitor.cpp
-index 3df3792a..b9b28b6a 100644
+index 3df3792a..862c95d9 100644
 --- a/src/kded/devicemonitor.cpp
 +++ b/src/kded/devicemonitor.cpp
 @@ -37,6 +37,7 @@ DeviceMonitor::DeviceMonitor(BlueDevilDaemon *daemon)
@@ -21,15 +21,6 @@ index 3df3792a..b9b28b6a 100644
  
      // Catch suspend/resume events so we can save status when suspending and
      // resume when waking up
-@@ -195,6 +196,8 @@ void DeviceMonitor::restoreAdapter(BluezQt::AdapterPtr adapter)
- 
-     const QString &key = QStringLiteral("%1_powered").arg(adapter->address());
-     adapter->setPowered(adaptersGroup.readEntry<bool>(key, true));
-+
-+    connect(adapter.get(), &BluezQt::Adapter::poweredChanged, this, &DeviceMonitor::saveState);
- }
- 
- void DeviceMonitor::clearPlaces()
 diff --git a/src/kded/devicemonitor.h b/src/kded/devicemonitor.h
 index de1f27a1..7262143c 100644
 --- a/src/kded/devicemonitor.h
