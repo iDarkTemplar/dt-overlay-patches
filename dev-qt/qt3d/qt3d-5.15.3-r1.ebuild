@@ -23,7 +23,7 @@ RDEPEND="
 	=dev-qt/qtcore-${QT5_PV}*
 	=dev-qt/qtgui-${QT5_PV}*:5=[vulkan=]
 	=dev-qt/qtnetwork-${QT5_PV}*
-	>=media-libs/assimp-4.0.0
+	>=media-libs/assimp-4.0.0:=
 	doc? ( =dev-qt/qdoc-${QT5_PV}*[qml?] )
 	examples? ( !dev-qt/qt3d-examples )
 	gamepad? ( =dev-qt/qtgamepad-${QT5_PV}* )
