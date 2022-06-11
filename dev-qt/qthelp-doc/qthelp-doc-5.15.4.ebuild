@@ -3,7 +3,6 @@
 
 EAPI=8
 
-QT5_KDEPATCHSET_REV=1
 QT5_MODULE="qttools"
 inherit qt5-build
 
@@ -23,6 +22,9 @@ DEPEND="
 	!dev-qt/qt-docs:5
 "
 RDEPEND="${DEPEND}"
+
+# https://invent.kde.org/qt/qt/qttools/-/merge_requests/2
+PATCHES=( "${FILESDIR}/qthelp-5.15.4-bogusdep.patch" )
 
 QT5_TARGET_SUBDIRS=(
 	src/assistant/help

@@ -3,7 +3,7 @@
 
 EAPI=8
 
-QT5_KDEPATCHSET_REV=2
+QT5_KDEPATCHSET_REV=1
 PYTHON_COMPAT=( python3_{8..10} )
 inherit python-any-r1 qt5-build
 

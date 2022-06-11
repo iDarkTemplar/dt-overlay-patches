@@ -3,6 +3,7 @@
 
 EAPI=8
 
+QT5_KDEPATCHSET_REV=1
 QT5_GENERATE_DOCS="true"
 inherit qt5-build
 

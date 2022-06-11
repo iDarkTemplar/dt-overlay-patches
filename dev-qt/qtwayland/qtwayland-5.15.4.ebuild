@@ -3,7 +3,7 @@
 
 EAPI=8
 
-QT5_KDEPATCHSET_REV=2
+QT5_KDEPATCHSET_REV=1
 QT5_GENERATE_DOCS="true"
 inherit qt5-build
 
@@ -35,7 +35,10 @@ BDEPEND="
 	dev-util/wayland-scanner
 "
 
-PATCHES=( "${FILESDIR}/${PN}-5.15.2-QTBUG-90037-QTBUG-91264.patch" ) # upstream pending
+PATCHES=(
+	"${FILESDIR}/${PN}-5.15.2-QTBUG-90037-QTBUG-91264.patch" # upstream pending
+	"${FILESDIR}/${PN}-5.15.3-clang.patch"
+)
 
 pkg_setup() {
 	use examples && QT5_EXAMPLES_SUBDIRS=("examples")

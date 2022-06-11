@@ -3,7 +3,6 @@
 
 EAPI=8
 
-QT5_KDEPATCHSET_REV=1
 QT5_GENERATE_DOCS="true"
 QT5_MODULE="qttools"
 inherit desktop qt5-build xdg-utils

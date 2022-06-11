@@ -3,7 +3,6 @@
 
 EAPI=8
 
-QT5_KDEPATCHSET_REV=1
 QT5_MODULE="qttools"
 inherit qt5-build
 
