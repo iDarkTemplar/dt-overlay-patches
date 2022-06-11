@@ -44,9 +44,6 @@
 		<flag name="headless">
 			Build without graphical support (renderfarm, server mode only).
 		</flag>
-		<flag name="llvm">
-			Enable features depending on llvm.
-		</flag>
 		<flag name="man">
 			Build and install man pages.
 		</flag>

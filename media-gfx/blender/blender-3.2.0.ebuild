@@ -21,7 +21,7 @@ LICENSE="|| ( GPL-3 BL )"
 KEYWORDS="~amd64"
 IUSE="+bullet +dds +fluid +openexr +tbb \
 	alembic collada +color-management cuda +cycles \
-	debug doc +embree +ffmpeg +fftw +gmp headless jack jemalloc jpeg2k +llvm \
+	debug doc +embree +ffmpeg +fftw +gmp headless jack jemalloc jpeg2k \
 	man +nanovdb ndof nls +oceansim openal oidn +openimageio +openmp +opensubdiv \
 	+openvdb +osl +pdf +potrace +pugixml pulseaudio sdl +sndfile standalone +tiff valgrind"
 
@@ -32,7 +32,7 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	fluid? ( tbb )
 	oceansim? ( fftw tbb )
 	openvdb? ( tbb )
-	osl? ( cycles llvm )
+	osl? ( cycles )
 	standalone? ( cycles )"
 
 # Library versions for official builds can be found in the blender source directory in:
@@ -75,7 +75,6 @@ RDEPEND="${PYTHON_DEPS}
 	jack? ( virtual/jack )
 	jemalloc? ( dev-libs/jemalloc:= )
 	jpeg2k? ( media-libs/openjpeg:2= )
-	llvm? ( sys-devel/llvm:= )
 	ndof? (
 		app-misc/spacenavd
 		dev-libs/libspnav
@@ -128,7 +127,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-2.82-use-system-glog.patch"
 	"${FILESDIR}/${PN}-2.92-include-deduplication-check-skip.patch"
 	"${FILESDIR}/${PN}-2.80-fix-install-rules.patch"
-	"${FILESDIR}/${PN}-3.0.0-doc.patch"
+	"${FILESDIR}/${PN}-3.2.0-doc.patch"
 )
 
 CMAKE_BUILD_TYPE="Release"
@@ -207,7 +206,6 @@ src_configure() {
 		-DWITH_INPUT_NDOF=$(usex ndof)
 		-DWITH_INTERNATIONAL=$(usex nls)
 		-DWITH_JACK=$(usex jack)
-		-DWITH_LLVM=$(usex llvm)
 		-DWITH_MEM_JEMALLOC=$(usex jemalloc)
 		-DWITH_MEM_VALGRIND=$(usex valgrind)
 		-DWITH_MOD_FLUID=$(usex fluid)
