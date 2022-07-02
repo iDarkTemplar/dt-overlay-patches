@@ -4,7 +4,7 @@
 EAPI=8
 
 PYTHON_COMPAT=( python3_{8..10} )
-inherit distutils-r1 qmake-utils toolchain-funcs cmake
+inherit distutils-r1 toolchain-funcs cmake
 
 DESCRIPTION="Static analyzer of C/C++ code"
 HOMEPAGE="https://github.com/danmar/cppcheck"
@@ -13,28 +13,24 @@ SRC_URI="https://github.com/danmar/cppcheck/archive/${PV}.tar.gz -> ${P}.tar.gz"
 LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="amd64 ~arm ~arm64 ~hppa ~ppc64 ~sparc ~x86"
-IUSE="doc htmlreport pcre qchart qt5 z3"
-REQUIRED_USE="qchart? ( qt5 )"
+IUSE="doc htmlreport pcre qchart qt6"
+REQUIRED_USE="qchart? ( qt6 )"
 
 RDEPEND="
 	dev-libs/tinyxml2:=
 	htmlreport? ( dev-python/pygments[${PYTHON_USEDEP}] )
 	pcre? ( dev-libs/libpcre )
-	qt5? (
-		dev-qt/qtcore:5
-		dev-qt/qtgui:5
-		dev-qt/qthelp
-		dev-qt/qtprintsupport:5
+	qt6? (
+		dev-qt/qtbase:6
+		dev-qt/qttools:6
 	)
-	qchart? ( dev-qt/qtcharts:5 )
-	z3? ( sci-mathematics/z3:= )
+	qchart? ( dev-qt/qtcharts:6 )
 "
 DEPEND="${RDEPEND}"
 BDEPEND="
 	app-text/docbook-xsl-stylesheets
 	dev-libs/libxslt
 	virtual/pkgconfig
-	qt5? ( dev-qt/linguist-tools:5 )
 	doc? ( app-text/pandoc )
 "
 PATCHES=(
@@ -46,16 +42,18 @@ src_prepare() {
 
 	rm -r externals/tinyxml2 || die
 
-	# Generate the Qt online-help file
-	cd gui/help
-	qhelpgenerator online-help.qhcp -o online-help.qhc
+	if use qt6 ; then
+		# Generate the Qt online-help file
+		cd gui/help
+		$(qmake-qt6 -query QT_INSTALL_LIBEXECS)/qhelpgenerator online-help.qhcp -o online-help.qhc
+	fi
 }
 
 src_configure() {
 	local mycmakeargs=(
 		-DHAVE_RULES="$(usex pcre)"
-		-DBUILD_GUI="$(usex qt5)"
-		-DUSE_Z3="$(usex z3)"
+		-DBUILD_GUI="$(usex qt6)"
+		-DUSE_QT6="$(usex qt6)"
 		-DFILESDIR="${EPREFIX}/usr/share/Cppcheck"
 		-DENABLE_OSS_FUZZ=OFF
 		-DUSE_BUNDLED_TINYXML2=OFF
@@ -63,6 +61,8 @@ src_configure() {
 		-DWITH_QCHART=$(usex qchart)
 		-DBUILD_SHARED_LIBS:BOOL=OFF
 		-DBUILD_TESTS=no
+		-DUSE_THREADS=yes
+		-DUSE_BOOST=no
 	)
 
 	cmake_src_configure
@@ -85,7 +85,7 @@ src_install() {
 		doman ${PN}.1
 	fi
 
-	if use qt5 ; then
+	if use qt6 ; then
 		insinto /usr/share/pixmaps
 		doins gui/cppcheck-gui.png
 
