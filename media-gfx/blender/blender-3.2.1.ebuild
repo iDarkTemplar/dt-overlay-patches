@@ -1,7 +1,7 @@
 # Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 PYTHON_COMPAT=( python3_10 )
 
@@ -23,7 +23,7 @@ IUSE="+bullet +dds +fluid +openexr +tbb \
 	alembic collada +color-management cuda +cycles \
 	debug doc +embree +ffmpeg +fftw +gmp headless jack jemalloc jpeg2k \
 	man +nanovdb ndof nls +oceansim openal oidn +openimageio +openmp +opensubdiv \
-	+openvdb +osl +pdf +potrace +pugixml pulseaudio sdl +sndfile standalone +tiff valgrind"
+	+openvdb +osl +pdf +potrace +pugixml pulseaudio sdl +sndfile +tiff valgrind"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	alembic? ( openexr )
@@ -32,8 +32,7 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	fluid? ( tbb )
 	oceansim? ( fftw tbb )
 	openvdb? ( tbb )
-	osl? ( cycles )
-	standalone? ( cycles )"
+	osl? ( cycles )"
 
 # Library versions for official builds can be found in the blender source directory in:
 # build_files/build_environment/install_deps.sh
@@ -43,6 +42,7 @@ RDEPEND="${PYTHON_DEPS}
 	dev-libs/boost:=[nls?,threads(+)]
 	dev-libs/lzo:2=
 	$(python_gen_cond_dep '
+		dev-python/cython[${PYTHON_USEDEP}]
 		dev-python/numpy[${PYTHON_USEDEP}]
 		dev-python/requests[${PYTHON_USEDEP}]
 		dev-python/zstandard[${PYTHON_USEDEP}]
@@ -50,11 +50,11 @@ RDEPEND="${PYTHON_DEPS}
 	media-libs/fontconfig:=
 	media-libs/freetype:=
 	media-libs/glew:=
+	media-libs/libjpeg-turbo:=
 	media-libs/libpng:=
 	media-libs/libsamplerate
 	sys-libs/zlib:=
 	virtual/glu
-	virtual/jpeg
 	virtual/libintl
 	virtual/opengl
 	alembic? ( >=media-gfx/alembic-1.8.3-r2[boost(+),hdf(+)] )
@@ -152,14 +152,6 @@ pkg_setup() {
 src_prepare() {
 	cmake_src_prepare
 
-	# we don't want static glew, but it's scattered across
-	# multiple files that differ from version to version
-	# !!!CHECK THIS SED ON EVERY VERSION BUMP!!!
-	local file
-	while IFS="" read -d $'\0' -r file ; do
-		sed -i -e '/-DGLEW_STATIC/d' "${file}" || die
-	done < <(find . -type f -name "CMakeLists.txt")
-
 	# Disable MS Windows help generation. The variable doesn't do what it
 	# it sounds like.
 	sed -e "s|GENERATE_HTMLHELP      = YES|GENERATE_HTMLHELP      = NO|" \
@@ -188,8 +180,8 @@ src_configure() {
 		-DWITH_CYCLES_DEVICE_CUDA=$(usex cuda TRUE FALSE)
 		-DWITH_CYCLES_EMBREE=$(usex embree)
 		-DWITH_CYCLES_OSL=$(usex osl)
-		-DWITH_CYCLES_STANDALONE=$(usex standalone)
-		-DWITH_CYCLES_STANDALONE_GUI=$(usex standalone)
+		-DWITH_CYCLES_STANDALONE=OFF
+		-DWITH_CYCLES_STANDALONE_GUI=OFF
 		-DWITH_DOC_MANPAGE=$(usex man)
 		-DWITH_FFTW3=$(usex fftw)
 		-DWITH_GHOST_X11=$(usex !headless)
@@ -282,10 +274,6 @@ src_install() {
 	# Pax mark blender for hardened support.
 	pax-mark m "${BUILD_DIR}"/bin/blender
 
-	if use standalone; then
-		dobin "${BUILD_DIR}"/bin/cycles
-	fi
-
 	if use doc; then
 		docinto "html/API/python"
 		dodoc -r "${CMAKE_USE_DIR}"/doc/python_api/BPY_API/.
@@ -297,7 +285,7 @@ src_install() {
 	cmake_src_install
 
 	# fix doc installdir
-	docinto "html"
+	docinto html
 	dodoc "${CMAKE_USE_DIR}"/release/text/readme.html
 	rm -r "${ED}"/usr/share/doc/blender || die
 

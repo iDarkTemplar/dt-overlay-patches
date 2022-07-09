@@ -77,9 +77,6 @@
 		<flag name="pugixml">
 			Enable PugiXML support (Used for OpenImageIO, Grease Pencil SVG export)
 		</flag>
-		<flag name="standalone">
-			Build the standalone version of Cycles.
-		</flag>
 		<flag name="tbb">
 			Use threading building blocks library from <pkg>dev-cpp/tbb</pkg>.
 		</flag>
