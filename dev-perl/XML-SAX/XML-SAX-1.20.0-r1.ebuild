@@ -1,27 +1,27 @@
 # Copyright 1999-2018 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=8
 
 DIST_AUTHOR=GRANTM
-DIST_VERSION=1.00
-inherit perl-module eutils
+DIST_VERSION=1.02
+inherit perl-module
 
 DESCRIPTION="Perl module for using and building Perl SAX2 XML parsers, filters, and drivers"
 
 SLOT="0"
-KEYWORDS="alpha amd64 arm arm64 hppa ia64 ~m68k ~mips ppc ppc64 s390 ~sh sparc x86"
-IUSE=""
+KEYWORDS="~alpha amd64 arm arm64 hppa ~ia64 ~loong ~m68k ~mips ppc ppc64 ~riscv ~s390 sparc x86 ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~sparc-solaris ~sparc64-solaris ~x64-solaris ~x86-solaris"
 
 RDEPEND="
 	>=dev-perl/XML-SAX-Base-1.50.0
-	>=dev-perl/XML-NamespaceSupport-1.40.0
+	>=dev-perl/XML-NamespaceSupport-0.30.0
 	>=dev-libs/libxml2-2.4.1
 	virtual/perl-File-Temp
 "
-DEPEND="${RDEPEND}
+BDEPEND="${RDEPEND}
 	virtual/perl-ExtUtils-MakeMaker
 "
+
 PATCHES=("${FILESDIR}/${PN}-1.00-noautoini.patch")
 
 src_install() {
@@ -55,7 +55,7 @@ pkg_update_parser() {
 	local action=$1
 	local parser_module=$2
 
-	if [[ "$ROOT" = "/" ]] ; then
+	if [[ -z "${ROOT}" ]] ; then
 		einfo "Update Parser: $1 $2"
 		perl -MXML::SAX -e "XML::SAX->${action}_parser(q(${parser_module}))->save_parsers()" \
 			|| ewarn "Update Parser: $1 $2 failed"
