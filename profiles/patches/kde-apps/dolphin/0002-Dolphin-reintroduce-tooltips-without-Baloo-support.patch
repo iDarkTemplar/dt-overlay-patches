@@ -1,4 +1,4 @@
-From d6622af4cfb8f59288ea535e94a5b94e88cdb7da Mon Sep 17 00:00:00 2001
+From 77d11699b8450a79268dfe231cbc3aa14a28b75c Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sat, 30 Mar 2019 19:25:50 +0300
 Subject: [PATCH 2/3] Dolphin: reintroduce tooltips without Baloo support
@@ -13,10 +13,10 @@ Tooltips contain only name of item and preview
  5 files changed, 36 insertions(+), 20 deletions(-)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 98c432982..325b25cb0 100644
+index 5fbb79f1e..83abe97f1 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -107,6 +107,8 @@ target_sources(dolphinprivate PRIVATE
+@@ -104,6 +104,8 @@ target_sources(dolphinprivate PRIVATE
      views/dolphinview.cpp
      views/dolphinviewactionhandler.cpp
      views/draganddrophelper.cpp
@@ -25,7 +25,7 @@ index 98c432982..325b25cb0 100644
      views/versioncontrol/updateitemstatesthread.cpp
      views/versioncontrol/versioncontrolobserver.cpp
      views/viewmodecontroller.cpp
-@@ -127,8 +129,6 @@ ecm_qt_declare_logging_category(dolphinprivate
+@@ -124,8 +126,6 @@ ecm_qt_declare_logging_category(dolphinprivate
  
  if(HAVE_BALOO)
      target_sources(dolphinprivate PRIVATE
@@ -81,10 +81,10 @@ index 5ca0566a9..c947d04ab 100644
      m_renameInline->setChecked(GeneralSettings::renameInline());
      m_useTabForSplitViewSwitch->setChecked(GeneralSettings::useTabForSwitchingSplitView());
 diff --git a/src/views/dolphinview.cpp b/src/views/dolphinview.cpp
-index f5c21a2c5..d3bdc7944 100644
+index 5646fa982..2fb1c53d5 100644
 --- a/src/views/dolphinview.cpp
 +++ b/src/views/dolphinview.cpp
-@@ -206,10 +206,8 @@ DolphinView::DolphinView(const QUrl& url, QWidget* parent) :
+@@ -209,10 +209,8 @@ DolphinView::DolphinView(const QUrl& url, QWidget* parent) :
      connect(selectionManager, &KItemListSelectionManager::selectionChanged,
              this, &DolphinView::slotSelectionChanged);
  
@@ -95,7 +95,7 @@ index f5c21a2c5..d3bdc7944 100644
  
      m_versionControlObserver = new VersionControlObserver(this);
      m_versionControlObserver->setView(this);
-@@ -1171,9 +1169,7 @@ void DolphinView::slotItemHovered(int index)
+@@ -1224,9 +1222,7 @@ void DolphinView::slotItemHovered(int index)
          const QPoint pos = m_container->mapToGlobal(itemRect.topLeft().toPoint());
          itemRect.moveTo(pos);
  
@@ -105,22 +105,20 @@ index f5c21a2c5..d3bdc7944 100644
      }
  
      Q_EMIT requestItemInfo(item);
-@@ -1599,13 +1595,9 @@ void DolphinView::updateViewState()
- 
+@@ -1660,11 +1656,7 @@ void DolphinView::updateViewState()
  void DolphinView::hideToolTip(const ToolTipManager::HideBehavior behavior)
  {
--#ifdef HAVE_BALOO
      if (GeneralSettings::showToolTips()) {
+-#ifdef HAVE_BALOO
          m_toolTipManager->hideToolTip(behavior);
-     }
 -#else
 -        Q_UNUSED(behavior)
 -#endif
- }
- 
- void DolphinView::slotTwoClicksRenamingTimerTimeout()
+     } else if (m_mode == DolphinView::IconsView) {
+        QToolTip::hideText();
+     }
 diff --git a/src/views/tooltips/dolphinfilemetadatawidget.cpp b/src/views/tooltips/dolphinfilemetadatawidget.cpp
-index b147135bf..dab9eda2e 100644
+index e914593fb..a795e1420 100644
 --- a/src/views/tooltips/dolphinfilemetadatawidget.cpp
 +++ b/src/views/tooltips/dolphinfilemetadatawidget.cpp
 @@ -11,7 +11,11 @@
@@ -166,7 +164,7 @@ index b147135bf..dab9eda2e 100644
      connect(m_fileMetaDataWidget, &Baloo::FileMetaDataWidget::metaDataRequestFinished,
 @@ -68,6 +79,13 @@ DolphinFileMetaDataWidget::DolphinFileMetaDataWidget(QWidget* parent) :
      layout->addWidget(m_preview);
-     layout->addSpacing(layout->margin());
+     layout->addSpacing(layout->contentsMargins().left());
      layout->addLayout(textLayout);
 +#else
 +    QVBoxLayout* textLayout = new QVBoxLayout(this);
@@ -227,5 +225,5 @@ index 63a20f170..ab132c1d3 100644
  
  #endif
 -- 
-2.32.0
+2.35.1
 
