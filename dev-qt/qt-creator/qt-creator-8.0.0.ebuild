@@ -1,7 +1,7 @@
 # Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 LLVM_MAX_SLOT=14
 PLOCALES="cs da de fr hr ja pl ru sl uk zh-CN zh-TW"
 
