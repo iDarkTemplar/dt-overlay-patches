@@ -28,7 +28,7 @@ RDEPEND="
 		media-libs/gst-plugins-bad:1.0
 		media-libs/gst-plugins-base:1.0
 	)
-	pulseaudio? ( media-sound/pulseaudio[glib] )
+	pulseaudio? ( media-libs/libpulse[glib] )
 	qml? (
 		~dev-qt/qtdeclarative-${PV}:6=
 		gles2-only? ( ~dev-qt/qtbase-${PV}:6=[egl] )
