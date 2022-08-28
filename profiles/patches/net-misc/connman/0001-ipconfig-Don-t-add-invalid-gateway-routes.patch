@@ -1,0 +1,29 @@
+From cb05780d86c39cfb5e6d9ac2b288bf3244a95d57 Mon Sep 17 00:00:00 2001
+From: Daniel Wagner <wagi@monom.org>
+Date: Sun, 28 Aug 2022 20:10:52 +0200
+Subject: [PATCH] ipconfig: Don't add invalid gateway routes
+
+When we assign an IPV4LL address we are calling
+__connman_ipconfig_gateway_add() with an invalid GW set. It's propably
+a safe bet to say NULL is never a valid GW, so let's filter it out for
+all callers.
+---
+ src/ipconfig.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/ipconfig.c b/src/ipconfig.c
+index 34b1724a..9f17f498 100644
+--- a/src/ipconfig.c
++++ b/src/ipconfig.c
+@@ -1172,7 +1172,7 @@ int __connman_ipconfig_gateway_add(struct connman_ipconfig *ipconfig)
+ 
+ 	DBG("");
+ 
+-	if (!ipconfig->address)
++	if (!ipconfig->address || !ipconfig->address->gateway)
+ 		return -EINVAL;
+ 
+ 	service = __connman_service_lookup_from_index(ipconfig->index);
+-- 
+2.35.1
+
