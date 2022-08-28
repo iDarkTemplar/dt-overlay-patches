@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{9..10} )
 inherit distutils-r1 toolchain-funcs cmake
 
 DESCRIPTION="Static analyzer of C/C++ code"
@@ -31,7 +31,7 @@ BDEPEND="
 	app-text/docbook-xsl-stylesheets
 	dev-libs/libxslt
 	virtual/pkgconfig
-	doc? ( app-text/pandoc )
+	doc? ( virtual/pandoc )
 "
 PATCHES=(
 	"${FILESDIR}"/${PN}-2.2-translations.patch
