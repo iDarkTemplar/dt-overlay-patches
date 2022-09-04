@@ -1,26 +1,26 @@
 # Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 DESCRIPTION="Manage active wine version"
 HOMEPAGE="https://bitbucket.org/NP-Hardass/eselect-wine"
-SRC_URI="https://bitbucket.org/NP-Hardass/${PN}/raw/v${PV}/wine.eselect -> wine.eselect-${PV}"
+SRC_URI="https://bitbucket.org/NP-Hardass/eselect-wine/get/v${PV}.tar.gz -> ${P}.tar.gz"
+S="${WORKDIR}/NP-Hardass-eselect-wine-f18b76f9c90c"
 
 LICENSE="GPL-2+"
 SLOT="0"
 KEYWORDS="-* amd64 x86"
 IUSE="+desktop"
 
-RDEPEND="app-admin/eselect
+RDEPEND="
+	app-admin/eselect
 	dev-util/desktop-file-utils
-	!!app-emulation/wine:0"
+	!app-emulation/wine:0"
 
-S=${WORKDIR}
-
-src_unpack() {
-	cp "${DISTDIR}"/wine.eselect-${PV} "${S}"/wine.eselect
-}
+PATCHES=(
+	"${FILESDIR}"/${P}-proton.patch
+)
 
 src_prepare() {
 	use desktop || eapply "${FILESDIR}/${P}-skip-desktop-files.patch"
@@ -29,18 +29,18 @@ src_prepare() {
 }
 
 src_install() {
-	keepdir /etc/eselect/wine
-
 	insinto /usr/share/eselect/modules
 	doins wine.eselect
+
+	keepdir /etc/eselect/wine
 }
 
 pkg_postinst() {
 	# <eselect-wine-v0.3_rc7 installed symlinks with leading double-slashes.
 	# In /usr/include this breaks gcc build.
 	# https://bugs.gentoo.org/434180
-	if [[ $(readlink "${EROOT%/}"/usr/include/wine) == //* ]]; then
-		ewarn "Leading double slash in ${EPREFIX}/usr/include/wine symlink detected."
+	if [[ $(readlink "${EROOT}"/usr/include/wine) == //* ]]; then
+		ewarn "Leading double slash in ${EROOT}/usr/include/wine symlink detected."
 		ewarn "Re-setting wine symlinks..."
 		eselect wine update --if-unset
 	fi
