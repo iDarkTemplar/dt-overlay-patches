@@ -1,9 +1,9 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
-inherit eutils cmake
+inherit cmake
 
 DESCRIPTION="Client/server utility to redirect multimedia keys into different X session"
 HOMEPAGE="https://github.com/iDarkTemplar/dt-key-forwarder"

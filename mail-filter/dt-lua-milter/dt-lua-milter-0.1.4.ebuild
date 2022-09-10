@@ -1,9 +1,9 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
-inherit eutils cmake
+inherit cmake
 
 DESCRIPTION="Mail filter based on libmilter allowing to run custom lua scripts"
 HOMEPAGE="https://github.com/iDarkTemplar/dt-lua-milter"

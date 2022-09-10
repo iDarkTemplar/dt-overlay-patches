@@ -1,10 +1,9 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
-CMAKE_ECLASS=cmake
-inherit eutils cmake-multilib
+inherit cmake
 
 DESCRIPTION="Simple library for parsing text commands of simple format"
 HOMEPAGE="https://github.com/iDarkTemplar/dt-command"
