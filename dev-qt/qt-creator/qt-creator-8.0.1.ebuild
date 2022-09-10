@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
-LLVM_MAX_SLOT=14
+LLVM_MAX_SLOT=15
 PLOCALES="cs da de fr hr ja pl ru sl uk zh-CN zh-TW"
 
 inherit llvm cmake qt6-build virtualx xdg
@@ -56,9 +56,9 @@ CDEPEND="
 	clang? (
 		>=dev-cpp/yaml-cpp-0.6.2:=
 		|| (
+			sys-devel/clang:15
 			sys-devel/clang:14
 			sys-devel/clang:13
-			sys-devel/clang:12
 		)
 		<sys-devel/clang-$((LLVM_MAX_SLOT + 1)):=
 	)
