@@ -5,7 +5,7 @@ EAPI=8
 LLVM_MAX_SLOT=15
 PLOCALES="cs da de fr hr ja pl ru sl uk zh-CN zh-TW"
 
-inherit llvm cmake qt6-build virtualx xdg
+inherit llvm qt6-build-extra virtualx xdg
 
 DESCRIPTION="Lightweight IDE for C++/QML development centering around Qt"
 HOMEPAGE="https://doc.qt.io/qtcreator/"
@@ -72,7 +72,7 @@ CDEPEND="
 	systemd? ( sys-apps/systemd:= )
 "
 DEPEND="${CDEPEND}
-	test? ( >=dev-qt/qtdeclarative-${QT_PV}[localstorage] )
+	test? ( >=dev-qt/qtdeclarative-${QT_PV}[sql] )
 "
 RDEPEND="${CDEPEND}
 	sys-devel/gdb[python]
@@ -211,12 +211,10 @@ src_prepare() {
 
 	# TODO: unbundle sqlite
 
-	cmake_src_prepare
+	qt6-build_src_prepare
 }
 
 src_configure() {
-	qt6_prepare_env
-
 	local mycmakeargs=(
 		-DBUILD_HELPVIEWERBACKEND_QTWEBENGINE=$(usex webengine)
 		-DBUILD_TESTS_BY_DEFAULT=$(usex test)
@@ -236,7 +234,7 @@ src_configure() {
 		)
 	fi
 
-	cmake_src_configure
+	qt6-build_src_configure
 }
 
 src_compile() {

@@ -8,7 +8,6 @@
 	<use>
 		<flag name="geoclue">Use enhanced location information from <pkg>app-misc/geoclue</pkg></flag>
 		<flag name="nmea">Use <pkg>dev-qt/qtserialport</pkg> to build nmea plugin</flag>
-		<flag name="qml">Build QML bindings</flag>
 	</use>
 	<upstream>
 		<bugs-to>https://bugreports.qt.io/</bugs-to>
