@@ -23,14 +23,11 @@ DEPEND="
 	~dev-qt/qtbase-${PV}:6=
 	~dev-qt/qtdeclarative-${PV}:6=
 	~dev-qt/qtshadertools-${PV}:6=
+	media-libs/assimp:=
 	doc? ( !dev-qt/qt-docs:6 )
 "
 
 RDEPEND="${DEPEND}"
-
-PATCHES=(
-	"${FILESDIR}/${PN}-6.2.0-bundled-assimp-build.patch"
-)
 
 src_configure() {
 	local mycmakeargs=(
@@ -38,7 +35,7 @@ src_configure() {
 		-DQT_BUILD_EXAMPLES=$(usex examples ON OFF)
 		-DQT_BUILD_TESTS=OFF
 
-		-DINPUT_quick3d_assimp=qt
+		-DINPUT_quick3d_assimp=system
 	)
 
 	qt6-build_src_configure

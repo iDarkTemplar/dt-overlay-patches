@@ -22,6 +22,7 @@ BDEPEND="
 RDEPEND="
 	~dev-qt/qtbase-${PV}:6=[gui,opengl,vulkan=]
 	~dev-qt/qtshadertools-${PV}:6=
+	media-libs/assimp:=
 	examples? (
 		~dev-qt/qtbase-${PV}:6=[widgets]
 		~dev-qt/qtdeclarative-${PV}:6=[widgets]
@@ -36,10 +37,6 @@ RDEPEND="
 DEPEND="${RDEPEND}
 	vulkan? ( dev-util/vulkan-headers )
 "
-
-PATCHES=(
-	"${FILESDIR}/${PN}-6.2.0-bundled-assimp-build.patch"
-)
 
 src_prepare() {
 	qt_use_disable_target qml Qt::QuickWidgets \
@@ -58,7 +55,7 @@ src_configure() {
 		-DQT_BUILD_EXAMPLES=$(usex examples ON OFF)
 		-DQT_BUILD_TESTS=OFF
 
-		-DINPUT_assimp=qt
+		-DINPUT_assimp=system
 	)
 
 	qt6-build_src_configure
