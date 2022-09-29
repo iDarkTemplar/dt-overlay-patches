@@ -1,0 +1,47 @@
+diff --git a/src/linguist/lupdate/lupdatepreprocessoraction.cpp b/src/linguist/lupdate/lupdatepreprocessoraction.cpp
+index d7446c3..79942da 100644
+--- a/src/linguist/lupdate/lupdatepreprocessoraction.cpp
++++ b/src/linguist/lupdate/lupdatepreprocessoraction.cpp
+@@ -156,14 +156,23 @@ void LupdatePPCallbacks::SourceRangeSkipped(clang::SourceRange sourceRange,
+ // To list the included files
+ void LupdatePPCallbacks::InclusionDirective(clang::SourceLocation /*hashLoc*/,
+     const clang::Token & /*includeTok*/, clang::StringRef /*fileName*/, bool /*isAngled*/,
+-    clang::CharSourceRange /*filenameRange*/, const clang::FileEntry *file,
++    clang::CharSourceRange /*filenameRange*/,
++#if LLVM_VERSION_MAJOR >= 15
++    clang::Optional<clang::FileEntryRef> file,
++#else
++    const clang::FileEntry *file,
++#endif
+     clang::StringRef /*searchPath*/, clang::StringRef /*relativePath*/,
+     const clang::Module */*imported*/, clang::SrcMgr::CharacteristicKind /*fileType*/)
+ {
+     if (!file)
+         return;
+
++#if LLVM_VERSION_MAJOR >= 15
++    clang::StringRef fileNameRealPath = file->getFileEntry().tryGetRealPathName();
++#else
+     clang::StringRef fileNameRealPath = file->tryGetRealPathName();
++#endif
+     if (!LupdatePrivate::isFileSignificant(fileNameRealPath.str()))
+         return;
+
+diff --git a/src/linguist/lupdate/lupdatepreprocessoraction.h b/src/linguist/lupdate/lupdatepreprocessoraction.h
+index b1ee468..4acd518 100644
+--- a/src/linguist/lupdate/lupdatepreprocessoraction.h
++++ b/src/linguist/lupdate/lupdatepreprocessoraction.h
+@@ -51,7 +51,12 @@ private:
+     void SourceRangeSkipped(clang::SourceRange sourceRange, clang::SourceLocation endifLoc) override;
+     void InclusionDirective(clang::SourceLocation /*hashLoc*/, const clang::Token &/*includeTok*/,
+                             clang::StringRef /*fileName*/, bool /*isAngled*/,
+-                            clang::CharSourceRange /*filenameRange*/, const clang::FileEntry *file,
++                            clang::CharSourceRange /*filenameRange*/,
++#if LLVM_VERSION_MAJOR >= 15
++                            clang::Optional<clang::FileEntryRef> file,
++#else
++                            const clang::FileEntry *file,
++#endif
+                             clang::StringRef /*searchPath*/, clang::StringRef /*relativePath*/,
+                             const clang::Module */*imported*/,
+                             clang::SrcMgr::CharacteristicKind /*fileType*/) override;

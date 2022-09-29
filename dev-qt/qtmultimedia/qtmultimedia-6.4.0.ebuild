@@ -41,10 +41,6 @@ DEPEND="${RDEPEND}
 	gstreamer? ( x11-base/xorg-proto )
 	"
 
-PATCHES=(
-	"${FILESDIR}/${PN}-6.2.0-alsa.patch"
-)
-
 src_prepare() {
 	qt_use_disable_target qml Qt::Quick \
 		src/CMakeLists.txt \

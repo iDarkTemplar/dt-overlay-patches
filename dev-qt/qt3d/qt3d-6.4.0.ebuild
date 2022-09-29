@@ -13,7 +13,6 @@ fi
 
 IUSE="doc examples gles2-only qml vulkan"
 # TODO: gamepad dep
-# TODO: reintroduce system assimp dependency when both qt3d and qtquick3d would build with system assimp
 
 BDEPEND="
 	doc? ( ~dev-qt/qttools-${PV}:6=[qdoc(+),qtattributionsscanner(+)] )

@@ -12,7 +12,7 @@ if [[ ${QT6_BUILD_TYPE} == release ]]; then
 	KEYWORDS="amd64"
 fi
 
-IUSE="designer geolocation kerberos pepper print screencast widgets"
+IUSE="designer geolocation kerberos +pepper +print screencast +widgets"
 
 DEPEND="
 	~dev-qt/qtwebengine-${PV}:6=[designer=,geolocation=,kerberos=,pepper=,print=,screencast=,widgets=]

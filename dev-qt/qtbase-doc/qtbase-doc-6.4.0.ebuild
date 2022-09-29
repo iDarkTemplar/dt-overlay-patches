@@ -57,6 +57,7 @@ RDEPEND="${DEPEND}"
 
 PATCHES=(
 	"${FILESDIR}/qtcore-5.14.1-qmake-update-libdirs-order.patch"
+	"${FILESDIR}/qtbase-6.4.0-fix-simd.patch"
 )
 
 src_configure() {	local mycmakeargs=(

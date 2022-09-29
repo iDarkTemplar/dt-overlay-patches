@@ -17,8 +17,8 @@ if [[ ${QT6_BUILD_TYPE} == release ]]; then
 fi
 
 IUSE="
-	alsa bindist designer doc examples geolocation +jumbo-build kerberos pepper print pulseaudio screencast
-	+system-ffmpeg +system-icu widgets
+	alsa bindist designer doc examples geolocation +jumbo-build kerberos +pepper +print pulseaudio screencast
+	+system-ffmpeg +system-icu +widgets
 "
 REQUIRED_USE="designer? ( widgets ) print? ( pepper )"
 
