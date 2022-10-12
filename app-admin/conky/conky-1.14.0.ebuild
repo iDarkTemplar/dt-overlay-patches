@@ -15,7 +15,7 @@ KEYWORDS="~alpha amd64 ~arm ppc ppc64 sparc x86"
 IUSE="apcupsd audacious bundled-toluapp cmus curl doc hddtemp ical iconv imlib iostats
 	ipv6 irc lua-cairo lua-imlib lua-rsvg math moc mpd mysql nano-syntax
 	ncurses nvidia +portmon pulseaudio rss systemd thinkpad truetype
-	vim-syntax weather-metar webserver wifi X xinerama xmms2"
+	vim-syntax webserver wifi X xinerama xmms2"
 
 COMMON_DEPEND="
 	audacious? ( media-sound/audacious )
@@ -36,7 +36,6 @@ COMMON_DEPEND="
 	systemd? ( sys-apps/systemd )
 	truetype? ( x11-libs/libXft >=media-libs/freetype-2 )
 	wifi? ( net-wireless/wireless-tools )
-	weather-metar? ( net-misc/curl )
 	webserver? ( net-libs/libmicrohttpd )
 	X? (
 		x11-libs/libX11
@@ -58,7 +57,11 @@ RDEPEND="
 "
 DEPEND="
 	${COMMON_DEPEND}
-	doc? ( app-text/docbook2X dev-libs/libxslt )
+	doc? (
+		app-text/docbook2X
+		dev-libs/libxslt
+		virtual/pandoc
+	)
 "
 
 REQUIRED_USE="
@@ -66,6 +69,7 @@ REQUIRED_USE="
 	lua-cairo? ( X  bundled-toluapp )
 	lua-imlib? ( X  bundled-toluapp )
 	lua-rsvg? ( X  bundled-toluapp )
+	nano-syntax? ( doc )
 	nvidia? ( X )
 	truetype? ( X )
 	xinerama? ( X )
@@ -152,7 +156,6 @@ src_configure() {
 		-DBUILD_PORT_MONITORS=$(usex portmon)
 		-DBUILD_PULSEAUDIO=$(usex pulseaudio)
 		-DBUILD_RSS=$(usex rss)
-		-DBUILD_WEATHER_METAR=$(usex weather-metar)
 		-DBUILD_WLAN=$(usex wifi)
 		-DBUILD_XFT=$(usex truetype)
 		-DBUILD_XINERAMA=$(usex xinerama)
