@@ -10,22 +10,13 @@ SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar
 LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="amd64 x86"
-IUSE="fbsplash luks openrc plymouth rngd swsusp"
+IUSE="luks openrc plymouth rngd swsusp"
 REQUIRED_USE="openrc? ( plymouth )"
 
-COMMONDEPEND="
-	fbsplash? (
-		media-gfx/splashutils:=
-	)
+DEPEND="
 	"
 
-DEPEND="$COMMONDEPEND
-	fbsplash? (
-		virtual/pkgconfig
-	)
-	"
-
-RDEPEND="$COMMONDEPEND
+RDEPEND="
 	sys-apps/coreutils
 	sys-apps/busybox
 	sys-libs/ncurses
@@ -60,12 +51,6 @@ RDEPEND="$COMMONDEPEND
 	)
 	"
 
-src_compile() {
-	if use fbsplash ; then
-		emake
-	fi
-}
-
 src_install() {
 	dodir /etc/dt-init-scripts
 	insinto /etc/dt-init-scripts
@@ -98,23 +83,6 @@ src_install() {
 
 	dosbin "${S}/generate_hooks_initramfs"
 	dosbin "${S}/shutdown-newroot-prepare"
-
-	if use fbsplash ; then
-		insinto /etc/dt-init-scripts
-		doins "${S}/configs/splash-res.conf"
-		doins "${S}/configs/splash-theme.conf"
-
-		exeinto /usr/libexec/dt-init-scripts/modules
-		doexe "${S}/modules/fbsplash"
-
-		insinto /usr/share/dt-init-scripts/helpers
-		doins "${S}/helpers/splash_ctl"
-
-		insinto /usr/share/dt-init-scripts/hooks
-		doins "${S}/hooks/fbsplash"
-
-		dosbin "${S}/generate_splash_initramfs"
-	fi
 
 	if use luks ; then
 		insinto /etc/dt-init-scripts
