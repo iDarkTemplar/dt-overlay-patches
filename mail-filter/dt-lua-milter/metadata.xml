@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>darktemplar@dark-templar-archives.net</email>
+		<name>i.Dark_Templar</name>
+	</maintainer>
+	<longdescription>Mail filter based on libmilter which allows to run custom lua scripts to filter the email</longdescription>
+	<use>
+		<flag name="openrc">Install openrc service and configuration</flag>
+	</use>
+</pkgmetadata>

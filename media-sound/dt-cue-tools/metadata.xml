@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>darktemplar@dark-templar-archives.net</email>
+		<name>i.Dark_Templar</name>
+	</maintainer>
+	<longdescription>Library for parsing cue sheets and a tool to split files into separate flac tracks using this information</longdescription>
+	<use>
+		<flag name="tools">Install additional tools</flag>
+	</use>
+</pkgmetadata>
