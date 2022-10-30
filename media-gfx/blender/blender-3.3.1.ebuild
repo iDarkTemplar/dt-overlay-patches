@@ -45,7 +45,7 @@ RDEPEND="${PYTHON_DEPS}
 		dev-python/cython[${PYTHON_USEDEP}]
 		dev-python/numpy[${PYTHON_USEDEP}]
 		dev-python/requests[${PYTHON_USEDEP}]
-		dev-python/zstandard[${PYTHON_USEDEP}]
+		dev-python/python-zstandard[${PYTHON_USEDEP}]
 	')
 	media-libs/fontconfig:=
 	media-libs/freetype:=
