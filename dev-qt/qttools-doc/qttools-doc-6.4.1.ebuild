@@ -27,10 +27,6 @@ DEPEND="
 
 RDEPEND="${DEPEND}"
 
-PATCHES=(
-	"${FILESDIR}/qttools-6.4.0-llvm-15-compat.patch"
-)
-
 src_configure() {
 	local mycmakeargs=(
 		# exclude examples and tests from default build
