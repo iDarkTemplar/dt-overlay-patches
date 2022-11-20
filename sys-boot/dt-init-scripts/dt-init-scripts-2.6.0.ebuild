@@ -10,7 +10,7 @@ SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar
 LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="amd64 x86"
-IUSE="luks openrc plymouth rngd swsusp"
+IUSE="dm luks openrc plymouth raid rngd swsusp"
 REQUIRED_USE="openrc? ( plymouth )"
 
 DEPEND="
@@ -24,6 +24,10 @@ RDEPEND="
 	sys-fs/e2fsprogs
 	app-misc/pax-utils
 	app-arch/cpio
+
+	dm? (
+		sys-fs/cryptsetup
+	)
 
 	luks? (
 		sys-fs/cryptsetup
@@ -40,6 +44,10 @@ RDEPEND="
 		openrc? (
 			sys-boot/plymouth-openrc-plugin
 		)
+	)
+
+	raid? (
+		sys-fs/mdadm
 	)
 
 	rngd? (
@@ -84,6 +92,17 @@ src_install() {
 	dosbin "${S}/generate_hooks_initramfs"
 	dosbin "${S}/shutdown-newroot-prepare"
 
+	if use dm ; then
+		insinto /etc/dt-init-scripts
+		doins "${S}/configs/dm.conf"
+
+		exeinto /usr/libexec/dt-init-scripts/modules
+		doexe "${S}/modules/dm"
+
+		insinto /usr/share/dt-init-scripts/hooks
+		doins "${S}/hooks/dm"
+	fi
+
 	if use luks ; then
 		insinto /etc/dt-init-scripts
 		doins "${S}/configs/mtab.conf"
@@ -101,6 +120,17 @@ src_install() {
 
 		insinto /usr/share/dt-init-scripts/hooks
 		doins "${S}/hooks/plymouth"
+	fi
+
+	if use raid ; then
+		insinto /etc/dt-init-scripts
+		doins "${S}/configs/raid.conf"
+
+		exeinto /usr/libexec/dt-init-scripts/modules
+		doexe "${S}/modules/raid"
+
+		insinto /usr/share/dt-init-scripts/hooks
+		doins "${S}/hooks/raid"
 	fi
 
 	if use rngd ; then
