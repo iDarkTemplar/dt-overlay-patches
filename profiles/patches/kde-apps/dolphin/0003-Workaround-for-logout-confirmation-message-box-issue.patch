@@ -1,18 +1,18 @@
-From 63a7db15df3074816870ee765ac0a414c2283666 Mon Sep 17 00:00:00 2001
+From 72289dcff149e709180deab7981466775e5db111 Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Tue, 7 Apr 2020 19:01:08 +0300
 Subject: [PATCH 3/3] Workaround for logout confirmation message box issue
 
 ---
  src/dolphinmainwindow.cpp | 7 +++++++
- src/dolphinmainwindow.h   | 1 +
- 2 files changed, 8 insertions(+)
+ src/dolphinmainwindow.h   | 2 ++
+ 2 files changed, 9 insertions(+)
 
 diff --git a/src/dolphinmainwindow.cpp b/src/dolphinmainwindow.cpp
-index 7c2c3cd5e..08c8b8421 100644
+index c01bb5553..1b9b62813 100644
 --- a/src/dolphinmainwindow.cpp
 +++ b/src/dolphinmainwindow.cpp
-@@ -522,6 +522,12 @@ void DolphinMainWindow::showEvent(QShowEvent* event)
+@@ -534,6 +534,12 @@ void DolphinMainWindow::showEvent(QShowEvent* event)
  
  void DolphinMainWindow::closeEvent(QCloseEvent* event)
  {
@@ -25,7 +25,7 @@ index 7c2c3cd5e..08c8b8421 100644
      // Find out if Dolphin is closed directly by the user or
      // by the session manager because the session is closed
      bool closedByUser = true;
-@@ -638,6 +644,7 @@ void DolphinMainWindow::closeEvent(QCloseEvent* event)
+@@ -650,6 +656,7 @@ void DolphinMainWindow::closeEvent(QCloseEvent* event)
  
      GeneralSettings::setVersion(CurrentDolphinVersion);
      GeneralSettings::self()->save();
@@ -34,17 +34,18 @@ index 7c2c3cd5e..08c8b8421 100644
      KXmlGuiWindow::closeEvent(event);
  }
 diff --git a/src/dolphinmainwindow.h b/src/dolphinmainwindow.h
-index 6c70ad3cb..b888449c6 100644
+index 24aef5b26..4abaf468a 100644
 --- a/src/dolphinmainwindow.h
 +++ b/src/dolphinmainwindow.h
-@@ -691,6 +691,7 @@ private:
+@@ -708,6 +708,8 @@ private:
      QMenu m_searchTools;
      KFileItemActions m_fileItemActions;
  
 +    bool m_closeEventAccepted = false;
++
+     friend class DolphinMainWindowTest;
  };
  
- inline DolphinViewContainer* DolphinMainWindow::activeViewContainer() const
 -- 
-2.35.1
+2.37.4
 
