@@ -48,7 +48,7 @@ RDEPEND="${PYTHON_DEPS}
 		dev-python/python-zstandard[${PYTHON_USEDEP}]
 	')
 	media-libs/fontconfig:=
-	media-libs/freetype:=
+	media-libs/freetype:=[brotli]
 	media-libs/glew:=
 	media-libs/libjpeg-turbo:=
 	media-libs/libpng:=
@@ -164,6 +164,7 @@ src_prepare() {
 src_configure() {
 	append-lfs-flags
 
+	# libdecor not packaged yet in Gentoo
 	local mycmakeargs=(
 		-DBUILD_SHARED_LIBS=OFF
 		-DPYTHON_INCLUDE_DIR="$(python_get_includedir)"
@@ -185,6 +186,7 @@ src_configure() {
 		-DWITH_DOC_MANPAGE=$(usex man)
 		-DWITH_FFTW3=$(usex fftw)
 		-DWITH_GHOST_X11=$(usex !headless)
+		-DWITH_GHOST_WAYLAND_LIBDECOR=OFF
 		-DWITH_GMP=$(usex gmp)
 		-DWITH_GTESTS=OFF
 		-DWITH_HARU=$(usex pdf)
@@ -223,7 +225,6 @@ src_configure() {
 		-DWITH_SYSTEM_EIGEN3=ON
 		-DWITH_SYSTEM_FREETYPE=ON
 		-DWITH_SYSTEM_GFLAGS=ON
-		-DWITH_SYSTEM_GLEW=ON
 		-DWITH_SYSTEM_GLOG=ON
 		-DWITH_SYSTEM_LZO=ON
 		-DWITH_TBB=$(usex tbb)
