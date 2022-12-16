@@ -264,5 +264,6 @@ src_install() {
 		popd > /dev/null || die
 	fi
 
-	dodoc dist/{changes-*,known-issues}
+	dodoc -r dist/changelog
+	dodoc dist/known-issues
 }
