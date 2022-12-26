@@ -18,7 +18,7 @@ KEYWORDS="~alpha amd64 ~arm ppc ppc64 sparc x86"
 IUSE="apcupsd audacious bundled-toluapp cmus curl doc extras hddtemp ical iconv imlib
 	intel-backlight iostats irc lua-cairo lua-imlib lua-rsvg math moc mpd
 	mysql ncurses nvidia +portmon pulseaudio rss systemd thinkpad truetype
-	webserver wifi X xinerama xmms2"
+	wayland webserver wifi X xinerama xmms2"
 
 COMMON_DEPEND="
 	audacious? ( media-sound/audacious )
@@ -38,6 +38,11 @@ COMMON_DEPEND="
 	systemd? ( sys-apps/systemd )
 	truetype? ( x11-libs/libXft >=media-libs/freetype-2 )
 	wifi? ( net-wireless/wireless-tools )
+	wayland? (
+		dev-libs/wayland
+		dev-libs/wayland-protocols
+		x11-libs/pango
+	)
 	webserver? ( net-libs/libmicrohttpd )
 	X? (
 		x11-libs/libX11
@@ -172,6 +177,7 @@ src_configure() {
 		-DBUILD_PORT_MONITORS=$(usex portmon)
 		-DBUILD_PULSEAUDIO=$(usex pulseaudio)
 		-DBUILD_RSS=$(usex rss)
+		-DBUILD_WAYLAND=$(usex wayland)
 		-DBUILD_WLAN=$(usex wifi)
 		-DBUILD_XFT=$(usex truetype)
 		-DBUILD_XINERAMA=$(usex xinerama)
