@@ -127,7 +127,7 @@ PDEPEND="
 
 PATCHES=(
 	"${FILESDIR}/qtcore-5.14.1-qmake-update-libdirs-order.patch"
-	"${FILESDIR}/${PN}-6.3.0-no-debug-output.patch"
+	"${FILESDIR}/${PN}-6.4.2-no-debug-output.patch"
 )
 
 src_configure() {
