@@ -128,6 +128,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-2.92-include-deduplication-check-skip.patch"
 	"${FILESDIR}/${PN}-2.80-fix-install-rules.patch"
 	"${FILESDIR}/${PN}-3.2.0-doc.patch"
+	"${FILESDIR}/${PN}-3.4.1-boost-compat.patch"
 )
 
 CMAKE_BUILD_TYPE="Release"
