@@ -34,7 +34,7 @@ BDEPEND="
 	doc? ( virtual/pandoc )
 "
 PATCHES=(
-	"${FILESDIR}"/${PN}-2.2-translations.patch
+	"${FILESDIR}"/${PN}-2.10-translations.patch
 )
 
 src_prepare() {
