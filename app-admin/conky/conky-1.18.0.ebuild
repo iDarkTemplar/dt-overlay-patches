@@ -102,7 +102,6 @@ DOCS=( README.md AUTHORS )
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-1.12.1-network-speed.patch
-	"${FILESDIR}"/${PN}-1.11.5-lua-5.4.patch
 )
 
 DISABLE_AUTOFORMATTING="yes"
