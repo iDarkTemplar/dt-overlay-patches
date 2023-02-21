@@ -124,7 +124,7 @@ BDEPEND="
 	doc? (
 		app-doc/doxygen[dot]
 		dev-python/sphinx[latex]
-		dev-python/sphinx_rtd_theme
+		dev-python/sphinx-rtd-theme
 		dev-texlive/texlive-bibtexextra
 		dev-texlive/texlive-fontsextra
 		dev-texlive/texlive-fontutils
