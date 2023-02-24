@@ -1,9 +1,9 @@
-# Copyright 1999-2022 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
 
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{9..11} )
 
 inherit autotools bash-completion-r1 gnome2-utils python-r1 toolchain-funcs vala virtualx xdg-utils
 
@@ -13,20 +13,23 @@ HOMEPAGE="https://github.com/ibus/ibus/wiki"
 
 [[ -n ${GENTOO_VER} ]] && \
 	GENTOO_PATCHSET_URI="https://dev.gentoo.org/~dlan/distfiles/${P}-gentoo-patches-${GENTOO_VER}.tar.xz"
-SRC_URI="https://github.com/ibus/ibus/archive/refs/tags/${PV}.tar.gz -> ${P}.tar.gz
+SRC_URI="https://github.com/${PN}/${PN}/releases/download/${PV}/${P}.tar.gz
 	${GENTOO_PATCHSET_URI}"
 
 LICENSE="LGPL-2.1"
 SLOT="0"
 KEYWORDS="amd64 arm arm64 ~ia64 ~loong ppc ppc64 ~riscv sparc x86"
-IUSE="X appindicator +emoji gtk2 +gtk3 +gtk4 +gui libnotify nls +python systemd test +unicode wayland"
+IUSE="X appindicator +emoji gtk2 +gtk3 +gtk4 +gui +introspection libnotify nls +python systemd test +unicode +vala wayland"
 RESTRICT="!test? ( test )"
 REQUIRED_USE="
 	appindicator? ( gtk3 )
+	!libnotify? ( vala )
 	python? (
 		${PYTHON_REQUIRED_USE}
+		introspection
 	)
 	test? ( gtk3 )
+	vala? ( introspection )
 	X? ( gtk3 )
 "
 DEPEND="
@@ -46,7 +49,7 @@ DEPEND="
 		x11-libs/libX11
 		x11-libs/libXi
 	)
-	dev-libs/gobject-introspection
+	introspection? ( dev-libs/gobject-introspection )
 	libnotify? ( x11-libs/libnotify )
 	nls? ( virtual/libintl )
 	python? (
@@ -67,7 +70,6 @@ BDEPEND="
 	$(vala_depend)
 	dev-libs/glib:2
 	dev-util/glib-utils
-	dev-util/gtk-doc
 	virtual/pkgconfig
 	x11-misc/xkeyboard-config
 	emoji? (
@@ -79,9 +81,9 @@ BDEPEND="
 
 src_prepare() {
 	vala_src_prepare --ignore-use
-	sed -i "/UCD_DIR=/s/\$with_emoji_annotation_dir/\$with_ucd_dir/" configure.ac
 	if ! has_version 'x11-libs/gtk+:3[wayland]'; then
 		touch ui/gtk3/panelbinding.vala \
+			ui/gtk3/panel.vala \
 			ui/gtk3/emojierapp.vala || die
 	fi
 	if ! use emoji; then
@@ -90,6 +92,9 @@ src_prepare() {
 			ui/gtk3/panel.vala || die
 	fi
 	if ! use appindicator; then
+		touch ui/gtk3/panel.vala || die
+	fi
+	if ! use libnotify; then
 		touch ui/gtk3/panel.vala || die
 	fi
 	if [[ -n ${GENTOO_VER} ]]; then
@@ -102,7 +107,7 @@ src_prepare() {
 	# fix for parallel install
 	sed -i "/^if ENABLE_PYTHON2/,/^endif/d" bindings/pygobject/Makefile.am || die
 	# require user interaction
-	sed -i "/^TESTS += ibus-\(compose\|keypress\)/d" src/tests/Makefile.am || die
+	sed -i "/^TESTS_C += ibus-\(compose\|keypress\)/d" src/tests/Makefile.am || die
 
 	sed -i "/^bash_completion/d" tools/Makefile.am || die
 
@@ -146,14 +151,14 @@ src_configure() {
 		$(use_enable gtk3)
 		$(use_enable gtk4)
 		$(use_enable gui ui)
-		--enable-introspection
+		$(use_enable introspection)
 		$(use_enable libnotify)
 		$(use_enable nls)
 		$(use_enable systemd systemd-services)
 		$(use_enable test tests)
 		$(use_enable unicode unicode-dict)
 		$(use_with unicode ucd-dir "${EPREFIX}/usr/share/unicode-data")
-		--enable-vala
+		$(use_enable vala)
 		$(use_enable wayland)
 		"${python_conf[@]}"
 	)
