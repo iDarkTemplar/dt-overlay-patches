@@ -5,9 +5,11 @@ EAPI=7
 
 inherit flag-o-matic qmake-utils toolchain-funcs xdg
 
+GIT_HASH="8f38b29c1d7d68731541b7afd8c53e10cf890939"
+
 DESCRIPTION="E-Book Reader. Supports many e-book formats"
 HOMEPAGE="https://www.fbreader.org/"
-SRC_URI="https://www.fbreader.org/files/desktop/${PN}-sources-${PV}.tgz
+SRC_URI="https://github.com/geometer/FBReader/archive/${GIT_HASH}.tar.gz -> ${P}.tar.gz
 	!qt6? ( https://dev.gentoo.org/~juippis/distfiles/tmp/fbreader-0.99.4-combined.patch )"
 
 LICENSE="GPL-2"
@@ -36,6 +38,8 @@ DEPEND="${RDEPEND}"
 BDEPEND="
 	virtual/pkgconfig
 "
+
+S="${WORKDIR}/FBReader-${GIT_HASH}"
 
 # bugs #452636, #515698, #516794, #437262, #592588
 pkg_setup() {
