@@ -6,7 +6,7 @@ inherit xdg-utils
 
 DESCRIPTION="Nuvola SVG icon theme"
 HOMEPAGE="http://www.kde-look.org/content/show.php?content=5358"
-SRC_URI="https://web.archive.org/web/20070114072052if_/http://www.icon-king.com/files/${P}.tar.gz"
+SRC_URI="https://web.archive.org/web/20070114072052if_/http://www.icon-king.com/files/${P}.tar.gz -> ${P}.tar"
 
 LICENSE="LGPL-2"
 SLOT="0"
