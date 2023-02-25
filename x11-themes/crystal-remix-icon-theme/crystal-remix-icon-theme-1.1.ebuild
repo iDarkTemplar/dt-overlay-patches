@@ -15,8 +15,6 @@ IUSE=""
 
 RESTRICT="strip binchecks"
 
-S="${WORKDIR}/crystal_remix-${PV}"
-
 src_install() {
 	local themedir=/usr/share/icons/crystal-remix
 
