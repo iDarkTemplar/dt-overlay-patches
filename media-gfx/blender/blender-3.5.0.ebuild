@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_10 )
+PYTHON_COMPAT=( python3_{10,11} )
 
 inherit check-reqs cmake flag-o-matic pax-utils python-single-r1 toolchain-funcs xdg-utils
 
@@ -140,9 +140,8 @@ BDEPEND="
 PATCHES=(
 	"${FILESDIR}/${PN}-2.82-use-system-glog.patch"
 	"${FILESDIR}/${PN}-2.92-include-deduplication-check-skip.patch"
-	"${FILESDIR}/${PN}-2.80-fix-install-rules.patch"
+	"${FILESDIR}/${PN}-3.5.0-fix-install-rules.patch"
 	"${FILESDIR}/${PN}-3.2.0-doc.patch"
-	"${FILESDIR}/${PN}-3.4.1-boost-compat.patch"
 )
 
 CMAKE_BUILD_TYPE="Release"
