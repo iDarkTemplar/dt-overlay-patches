@@ -10,7 +10,8 @@ inherit check-reqs cmake flag-o-matic pax-utils python-single-r1 toolchain-funcs
 DESCRIPTION="3D Creation/Animation/Publishing System"
 HOMEPAGE="https://www.blender.org"
 
-SRC_URI="https://download.blender.org/source/${P}.tar.xz"
+SRC_URI="https://download.blender.org/source/${P}.tar.xz
+	https://projects.blender.org/blender/blender-addons/archive/v${PV}.tar.gz -> ${PN}-addons-${PV}.tar.gz"
 
 # Blender can have letters in the version string,
 # so strip off the letter if it exists.
@@ -163,6 +164,12 @@ pkg_setup() {
 	python-single-r1_pkg_setup
 }
 
+src_unpack() {
+	default
+
+	mv "${WORKDIR}/blender-addons" "${S}/scripts/addons"
+}
+
 src_prepare() {
 	cmake_src_prepare
 
@@ -286,7 +293,7 @@ src_compile() {
 
 		cd "${CMAKE_USE_DIR}" || die
 		einfo "Generating (BPY) Blender Python API docs ..."
-		BLENDER_SYSTEM_SCRIPTS="${CMAKE_USE_DIR}/release/scripts" \
+		BLENDER_SYSTEM_SCRIPTS="${CMAKE_USE_DIR}/scripts" \
 			BLENDER_SYSTEM_DATAFILES="${CMAKE_USE_DIR}/release/datafiles" \
 			"${BUILD_DIR}"/bin/blender --background --python doc/python_api/sphinx_doc_gen.py -noaudio || die "sphinx failed."
 
