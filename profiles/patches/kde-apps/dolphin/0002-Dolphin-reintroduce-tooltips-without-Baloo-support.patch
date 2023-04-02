@@ -1,4 +1,4 @@
-From 89e6334b46a2b4c25788dcdc07bf934e6edd8f33 Mon Sep 17 00:00:00 2001
+From 9650cfd24be73426c0e4bc4e0a9ac8ad1188365b Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sat, 30 Mar 2019 19:25:50 +0300
 Subject: [PATCH 2/3] Dolphin: reintroduce tooltips without Baloo support
@@ -13,7 +13,7 @@ Tooltips contain only name of item and preview
  5 files changed, 36 insertions(+), 21 deletions(-)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index dd27a7e4f..e6593a1e1 100644
+index 144ec550d..03697be71 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -95,6 +95,8 @@ target_sources(dolphinprivate PRIVATE
@@ -25,15 +25,15 @@ index dd27a7e4f..e6593a1e1 100644
      views/versioncontrol/updateitemstatesthread.cpp
      views/versioncontrol/versioncontrolobserver.cpp
      views/viewmodecontroller.cpp
-@@ -115,8 +117,6 @@ ecm_qt_declare_logging_category(dolphinprivate
+@@ -169,8 +171,6 @@ ecm_qt_declare_logging_category(dolphinprivate
  
  if(HAVE_BALOO)
      target_sources(dolphinprivate PRIVATE
 -        views/tooltips/dolphinfilemetadatawidget.cpp
 -        views/tooltips/tooltipmanager.cpp
          kitemviews/private/kbaloorolesprovider.cpp
-     )
- endif()
+         views/tooltips/dolphinfilemetadatawidget.h
+         views/tooltips/tooltipmanager.h
 diff --git a/src/settings/general/behaviorsettingspage.cpp b/src/settings/general/behaviorsettingspage.cpp
 index 4e78447c7..9a7e2e4b0 100644
 --- a/src/settings/general/behaviorsettingspage.cpp
@@ -82,10 +82,10 @@ index 4e78447c7..9a7e2e4b0 100644
      m_renameInline->setChecked(GeneralSettings::renameInline());
      m_useTabForSplitViewSwitch->setChecked(GeneralSettings::useTabForSwitchingSplitView());
 diff --git a/src/views/dolphinview.cpp b/src/views/dolphinview.cpp
-index e7774c907..87e48f7fd 100644
+index c3ef4e0c6..450c2921a 100644
 --- a/src/views/dolphinview.cpp
 +++ b/src/views/dolphinview.cpp
-@@ -208,10 +208,8 @@ DolphinView::DolphinView(const QUrl& url, QWidget* parent) :
+@@ -211,10 +211,8 @@ DolphinView::DolphinView(const QUrl& url, QWidget* parent) :
      connect(selectionManager, &KItemListSelectionManager::selectionChanged,
              this, &DolphinView::slotSelectionChanged);
  
@@ -96,7 +96,7 @@ index e7774c907..87e48f7fd 100644
  
      m_versionControlObserver = new VersionControlObserver(this);
      m_versionControlObserver->setView(this);
-@@ -1226,12 +1224,10 @@ void DolphinView::slotItemHovered(int index)
+@@ -1258,12 +1256,10 @@ void DolphinView::slotItemHovered(int index)
          const QPoint pos = m_container->mapToGlobal(itemRect.topLeft().toPoint());
          itemRect.moveTo(pos);
  
@@ -109,7 +109,7 @@ index e7774c907..87e48f7fd 100644
      }
  
      Q_EMIT requestItemInfo(item);
-@@ -1668,11 +1664,7 @@ void DolphinView::updateViewState()
+@@ -1710,11 +1706,7 @@ void DolphinView::updateViewState()
  void DolphinView::hideToolTip(const ToolTipManager::HideBehavior behavior)
  {
      if (GeneralSettings::showToolTips()) {
@@ -229,5 +229,5 @@ index 63bd8b093..b83c5a4e6 100644
  
  #endif
 -- 
-2.37.4
+2.39.2
 
