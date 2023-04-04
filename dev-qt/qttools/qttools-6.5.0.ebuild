@@ -84,7 +84,7 @@ src_install() {
 
 	if use linguist; then
 		local size
-		for size in 16 32 48 64 128; do
+		for size in 128; do
 			newicon -s ${size} src/linguist/linguist/images/icons/linguist-${size}-32.png linguist-qt6.png
 		done
 		make_desktop_entry "${QT6_BINDIR}"/linguist 'Qt 6 Linguist' linguist-qt6 'Qt;Development;Translation' Comment="Graphical tool for translating Qt applications"

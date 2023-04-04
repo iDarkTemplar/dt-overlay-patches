@@ -5,8 +5,6 @@ EAPI=8
 
 PYTHON_COMPAT=( python3_{9,10,11} )
 PYTHON_REQ_USE="xml(+)"
-CHROMIUM_VER="94.0.4606.126"
-CHROMIUM_PATCHES_VER="101.0.4951.64"
 
 inherit check-reqs estack flag-o-matic multiprocessing python-any-r1 qt6-build-extra
 
@@ -142,17 +140,6 @@ pkg_pretend() {
 pkg_setup() {
 	qtwebengine_check-reqs
 	python-any-r1_pkg_setup
-}
-
-pkg_preinst() {
-	elog "This version of Qt WebEngine is based on Chromium version ${CHROMIUM_VER}, with"
-	elog "additional security fixes up to ${CHROMIUM_PATCHES_VER}. Extensive as it is, the"
-	elog "list of backports is impossible to evaluate, but always bound to be behind"
-	elog "Chromium's release schedule."
-	elog "In addition, various online services may deny service based on an outdated"
-	elog "user agent version (and/or other checks). Google is already known to do so."
-	elog
-	elog "tldr: Your web browsing experience will be compromised."
 }
 
 src_unpack() {
