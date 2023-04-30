@@ -4,7 +4,7 @@
 EAPI=7
 
 CMAKE_ECLASS=cmake
-PYTHON_COMPAT=( python3_{8,9,10} )
+PYTHON_COMPAT=( python{3_10,3_11} )
 inherit cmake-multilib python-single-r1
 
 LIBBACKTRACE_COMMIT="dedbe13"

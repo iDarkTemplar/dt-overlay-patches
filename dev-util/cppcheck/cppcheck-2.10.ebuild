@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{9..10} )
+PYTHON_COMPAT=( python{3_10,3_11} )
 inherit distutils-r1 toolchain-funcs cmake
 
 DESCRIPTION="Static analyzer of C/C++ code"
