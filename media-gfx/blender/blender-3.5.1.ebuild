@@ -10,8 +10,7 @@ inherit check-reqs cmake flag-o-matic pax-utils python-single-r1 toolchain-funcs
 DESCRIPTION="3D Creation/Animation/Publishing System"
 HOMEPAGE="https://www.blender.org"
 
-SRC_URI="https://download.blender.org/source/${P}.tar.xz
-	https://projects.blender.org/blender/blender-addons/archive/v${PV}.tar.gz -> ${PN}-addons-${PV}.tar.gz"
+SRC_URI="https://download.blender.org/source/${P}.tar.xz"
 
 # Blender can have letters in the version string,
 # so strip off the letter if it exists.
@@ -162,12 +161,6 @@ pkg_pretend() {
 pkg_setup() {
 	blender_check_requirements
 	python-single-r1_pkg_setup
-}
-
-src_unpack() {
-	default
-
-	mv "${WORKDIR}/blender-addons" "${S}/scripts/addons"
 }
 
 src_prepare() {
