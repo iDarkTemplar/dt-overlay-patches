@@ -43,6 +43,7 @@ PATCHES=(
 	# TODO: upstream
 	"${FILESDIR}"/${PN}-9.0-disable-multiarch.patch
 	"${FILESDIR}"/${PN}-11.0-build.patch
+	"${FILESDIR}"/${PN}-11.1-waffle-build.patch
 )
 
 src_prepare() {
