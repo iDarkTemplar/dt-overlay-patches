@@ -35,6 +35,7 @@ BDEPEND="
 "
 PATCHES=(
 	"${FILESDIR}"/${PN}-2.10-translations.patch
+	"${FILESDIR}"/${PN}-2.10.3-qt6-compat.patch
 )
 
 src_prepare() {
