@@ -1,0 +1,25 @@
+diff --git a/src/unix/ibus/gen_mozc_xml.py b/src/unix/ibus/gen_mozc_xml.py
+index a88a4eed..00e49e86 100755
+--- a/src/unix/ibus/gen_mozc_xml.py
++++ b/src/unix/ibus/gen_mozc_xml.py
+@@ -112,7 +112,7 @@ def GetIbusConfigTextProto(engines):
+     for key, value in engine.items():
+       output.append(GetTextProtoElement(key, value))
+     output.append('}')
+-  output.append('active_on_launch: False')
++  output.append('active_on_launch: True')
+   return '\n'.join(output)
+ 
+ 
+diff --git a/src/unix/ibus/ibus_config.cc b/src/unix/ibus/ibus_config.cc
+index 9b9b3e21..ee0bf4c3 100644
+--- a/src/unix/ibus/ibus_config.cc
++++ b/src/unix/ibus/ibus_config.cc
+@@ -182,6 +182,6 @@ bool IbusConfig::IsActiveOnLaunch() const {
+ 
+   // The default value is off as IBus team's recommentation.
+   // https://github.com/google/mozc/issues/201
+-  return false;
++  return true;
+ }
+ }  // namespace mozc
