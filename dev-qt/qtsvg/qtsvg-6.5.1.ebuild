@@ -24,10 +24,6 @@ DEPEND="
 
 RDEPEND="${DEPEND}"
 
-PATCHES=(
-	"${FILESDIR}/CVE-2023-32573-qtsvg-6.5.diff"
-)
-
 src_configure() {
 	local mycmakeargs=(
 		# exclude examples and tests from default build
