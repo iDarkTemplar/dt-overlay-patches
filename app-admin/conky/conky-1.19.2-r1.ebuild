@@ -3,7 +3,7 @@
 
 EAPI=8
 
-LUA_COMPAT=( lua5-{3,4} )
+LUA_COMPAT=( lua5-4 )
 PYTHON_COMPAT=( python{3_10,3_11} )
 
 inherit cmake linux-info lua-single python-any-r1 readme.gentoo-r1 xdg
@@ -37,13 +37,12 @@ COMMON_DEPEND="
 	rss? ( dev-libs/libxml2 net-misc/curl dev-libs/glib:2 )
 	systemd? ( sys-apps/systemd )
 	truetype? ( x11-libs/libXft >=media-libs/freetype-2 )
-	wifi? ( net-wireless/wireless-tools )
 	wayland? (
 		dev-libs/wayland
-		dev-libs/wayland-protocols
 		x11-libs/pango
 	)
-	webserver? ( net-libs/libmicrohttpd )
+	wifi? ( net-wireless/wireless-tools )
+	webserver? ( net-libs/libmicrohttpd:= )
 	X? (
 		x11-libs/libX11
 		x11-libs/libXdamage
@@ -63,6 +62,9 @@ RDEPEND="
 "
 DEPEND="
 	${COMMON_DEPEND}
+	wayland? (
+		dev-libs/wayland-protocols
+	)
 "
 BDEPEND="
 	doc? (
@@ -78,6 +80,7 @@ BDEPEND="
 			dev-python/jinja[${PYTHON_USEDEP}]
 		')
 	)
+	wayland? ( dev-util/wayland-scanner )
 "
 
 python_check_deps() {
@@ -121,24 +124,29 @@ pkg_setup() {
 }
 
 src_prepare() {
+	# pin lua 5.4
+	sed -i -e 's|Lua "5.3" REQUIRED|Lua "5.4" EXACT|g' \
+		cmake/ConkyPlatformChecks.cmake || die "ConkyPlatformChecks.cmake"
+
 	cmake_src_prepare
 	xdg_environment_reset
 }
 
 src_configure() {
-	local mycmakeargs
+	local mycmakeargs=()
 
 	if use X; then
-		mycmakeargs=(
+		mycmakeargs+=(
 			-DBUILD_ARGB=yes
 			-DBUILD_X11=yes
 			-DBUILD_XDAMAGE=yes
 			-DBUILD_XDBE=yes
 			-DBUILD_XSHAPE=yes
+			-DBUILD_MOUSE_EVENTS=yes
 			-DOWN_WINDOW=yes
 		)
 	else
-		mycmakeargs=(
+		mycmakeargs+=(
 			-DBUILD_X11=no
 		)
 	fi
