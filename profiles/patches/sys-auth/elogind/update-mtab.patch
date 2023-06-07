@@ -1,0 +1,186 @@
+diff --git a/src/login/user-runtime-dir.c b/src/login/user-runtime-dir.c
+index 59b33184e..9a50b832f 100644
+--- a/src/login/user-runtime-dir.c
++++ b/src/login/user-runtime-dir.c
+@@ -2,6 +2,9 @@
+ 
+ #include <stdint.h>
+ #include <sys/mount.h>
++#include <mntent.h>
++#include <sys/stat.h>
++#include <fcntl.h>
+ 
+ #include "sd-bus.h"
+ 
+@@ -52,6 +55,122 @@ static int acquire_runtime_dir_properties(uint64_t *size, uint64_t *inodes) {
+ }
+ #endif // 0
+ 
++static int is_mtab_writable(void)
++{
++	struct stat stats;
++
++	if (lstat("/etc/mtab", &stats) != 0)
++	{
++		return 0;
++	}
++
++	if (!S_ISREG(stats.st_mode))
++	{
++		return 0;
++	}
++
++	return 1;
++}
++
++static int add_to_mtab(const char *path, const char *mount_point, const char *type, const char *mount_opts)
++{
++	int result;
++	FILE *mntfile;
++	struct mntent ent;
++
++	mntfile = setmntent("/etc/mtab", "a");
++	if (mntfile == NULL)
++	{
++		return -EACCES;
++	}
++
++	ent.mnt_dir    = (char*) mount_point;
++	ent.mnt_fsname = (char*) path;
++	ent.mnt_type   = (char*) type;
++	ent.mnt_opts   = (char*) mount_opts;
++	ent.mnt_freq   = 0;
++	ent.mnt_passno = 0;
++
++	result = addmntent(mntfile, &ent);
++
++	endmntent(mntfile);
++
++	if (result == 0)
++	{
++		return 1;
++	}
++	else
++	{
++		return 0;
++	}
++}
++
++static int remove_from_mtab(const char *path, const char *mount_point, const char *type)
++{
++	FILE *mntfile_old;
++	FILE *mntfile_new;
++	struct mntent *ent;
++	struct stat stats;
++
++	mntfile_old = setmntent("/etc/mtab", "r");
++	if (mntfile_old == NULL)
++	{
++		return -EACCES;
++	}
++
++	mntfile_new = setmntent("/etc/.mtab.elogind", "w");
++	if (mntfile_new == NULL)
++	{
++		endmntent(mntfile_old);
++		return -EACCES;
++	}
++
++	while ((ent = getmntent(mntfile_old)) != NULL)
++	{
++		if ((strcmp(ent->mnt_dir, mount_point) != 0)
++			|| (strcmp(ent->mnt_fsname, path) != 0)
++			|| (strcmp(ent->mnt_type, type) != 0))
++		{
++			if (addmntent(mntfile_new, ent) != 0)
++			{
++				endmntent(mntfile_old);
++				endmntent(mntfile_new);
++				unlink("/etc/.mtab.elogind");
++				return -EIO;
++			}
++		}
++	}
++
++	endmntent(mntfile_old);
++	endmntent(mntfile_new);
++
++	if (stat("/etc/mtab", &stats) != 0)
++	{
++		unlink("/etc/.mtab.elogind");
++		return -EACCES;
++	}
++
++	if (chmod("/etc/.mtab.elogind", stats.st_mode & (S_IRWXU|S_IRWXG|S_IRWXO)) != 0)
++	{
++		unlink("/etc/.mtab.elogind");
++		return -EACCES;
++	}
++
++	if (chown("/etc/.mtab.elogind", stats.st_uid, stats.st_gid) != 0)
++	{
++		unlink("/etc/.mtab.elogind");
++		return -EACCES;
++	}
++
++	if (rename("/etc/.mtab.elogind", "/etc/mtab") != 0)
++	{
++		unlink("/etc/.mtab.elogind");
++		return -EACCES;
++	}
++
++	return 1;
++}
++
+ static int user_mkdir_runtime_path(
+                 const char *runtime_path,
+                 uid_t uid,
+@@ -79,11 +198,22 @@ static int user_mkdir_runtime_path(
+                              + DECIMAL_STR_MAX(uint64_t)
+                              + DECIMAL_STR_MAX(uint64_t)];
+ 
++                char fulloptions[sizeof("rw,nodev,nosuid,mode=0700,uid=,gid=,size=,nr_inodes=,smackfsroot=*")
++                             + DECIMAL_STR_MAX(uid_t)
++                             + DECIMAL_STR_MAX(gid_t)
++                             + DECIMAL_STR_MAX(uint64_t)
++                             + DECIMAL_STR_MAX(uint64_t)];
++
+                 xsprintf(options,
+                          "mode=0700,uid=" UID_FMT ",gid=" GID_FMT ",size=%" PRIu64 ",nr_inodes=%" PRIu64 "%s",
+                          uid, gid, runtime_dir_size, runtime_dir_inodes,
+                          mac_smack_use() ? ",smackfsroot=*" : "");
+ 
++                xsprintf(fulloptions,
++                         "rw,nodev,nosuid,mode=0700,uid=" UID_FMT ",gid=" GID_FMT ",size=%" PRIu64 ",nr_inodes=%" PRIu64 "%s",
++                         uid, gid, runtime_dir_size, runtime_dir_inodes,
++                         mac_smack_use() ? ",smackfsroot=*" : "");
++
+                 (void) mkdir_label(runtime_path, 0700);
+ 
+                 r = mount("tmpfs", runtime_path, "tmpfs", MS_NODEV|MS_NOSUID, options);
+@@ -107,6 +237,12 @@ static int user_mkdir_runtime_path(
+                 r = label_fix(runtime_path, 0);
+                 if (r < 0)
+                         log_warning_errno(r, "Failed to fix label of \"%s\", ignoring: %m", runtime_path);
++
++                if (is_mtab_writable()) {
++                        r = add_to_mtab("tmpfs", runtime_path, "tmpfs", fulloptions);
++                        if (r < 0)
++                                log_warning_errno(r, "Failed to write mtab entry of \"%s\", ignoring: %m", runtime_path);
++                }
+         }
+ 
+         return 0;
+@@ -137,6 +273,12 @@ static int user_remove_runtime_path(const char *runtime_path) {
+         if (r < 0 && r != -ENOENT)
+                 return log_error_errno(r, "Failed to remove runtime directory %s (after unmounting): %m", runtime_path);
+ 
++        if (is_mtab_writable()) {
++                r = remove_from_mtab("tmpfs", runtime_path, "tmpfs");
++                if (r < 0)
++                        return log_error_errno(r, "Failed to remove mtab entry for directory %s (after unmounting): %m", runtime_path);
++        }
++
+         return 0;
+ }
+ 
