@@ -128,6 +128,8 @@ PDEPEND="
 PATCHES=(
 	"${FILESDIR}/qtcore-5.14.1-qmake-update-libdirs-order.patch"
 	"${FILESDIR}/${PN}-6.4.2-no-debug-output.patch"
+	"${FILESDIR}/CVE-2023-34410-qtbase-6.5-1.diff"
+	"${FILESDIR}/CVE-2023-34410-qtbase-6.5-2.diff"
 )
 
 src_configure() {
