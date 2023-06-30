@@ -63,6 +63,7 @@ src_install() {
 	dodir /etc/dt-init-scripts
 	insinto /etc/dt-init-scripts
 	doins "${S}/configs/dt-init-scripts.conf"
+	doins "${S}/configs/module.conf"
 
 	dodir /usr/libexec/dt-init-scripts/functions
 	exeinto /usr/libexec/dt-init-scripts/functions
@@ -71,6 +72,7 @@ src_install() {
 	dodir /usr/libexec/dt-init-scripts/modules
 	exeinto /usr/libexec/dt-init-scripts/modules
 	doexe "${S}/modules/base"
+	doexe "${S}/modules/module"
 	doexe "${S}/modules/suspend"
 
 	dodir /usr/share/dt-init-scripts/helpers
@@ -87,6 +89,7 @@ src_install() {
 	dodir /usr/share/dt-init-scripts/hooks
 	insinto /usr/share/dt-init-scripts/hooks
 	doins "${S}/hooks/base"
+	doins "${S}/hooks/module"
 	doins "${S}/hooks/suspend"
 
 	dosbin "${S}/generate_hooks_initramfs"
