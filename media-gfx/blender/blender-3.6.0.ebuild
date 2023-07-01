@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{10,11} )
+PYTHON_COMPAT=( python3_{11,12} )
 
 inherit check-reqs cmake flag-o-matic pax-utils python-single-r1 toolchain-funcs xdg-utils
 
@@ -19,17 +19,17 @@ MY_PV="$(ver_cut 1-2)"
 SLOT="0"
 LICENSE="|| ( GPL-3 BL )"
 KEYWORDS="~amd64"
-IUSE="+bullet +dds +fluid +openexr +tbb \
+IUSE="+bullet +fluid +openexr +tbb \
 	alembic collada +color-management cuda +cycles \
 	debug doc +embree +ffmpeg +fftw +gmp jack jemalloc jpeg2k \
-	man +nanovdb ndof nls +oceansim openal oidn +openimageio +openmp +opensubdiv \
+	man +nanovdb ndof nls +oceansim openal oidn +openmp +opensubdiv \
 	+openvdb optix +osl +pdf +potrace +pugixml pulseaudio sdl +sndfile \
-	+tiff valgrind wayland X"
+	valgrind wayland X"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	alembic? ( openexr )
 	cuda? ( cycles )
-	cycles? ( openexr tbb tiff openimageio )
+	cycles? ( openexr tbb )
 	fluid? ( tbb )
 	oceansim? ( fftw tbb )
 	openvdb? ( tbb )
@@ -56,6 +56,8 @@ RDEPEND="${PYTHON_DEPS}
 	media-libs/libjpeg-turbo:=
 	media-libs/libpng:=
 	media-libs/libsamplerate
+	>=media-libs/openimageio-2.4.6.0:=
+	media-libs/tiff:=
 	sys-libs/zlib:=
 	virtual/glu
 	virtual/libintl
@@ -79,7 +81,6 @@ RDEPEND="${PYTHON_DEPS}
 	nls? ( virtual/libiconv )
 	openal? ( media-libs/openal )
 	oidn? ( >=media-libs/oidn-1.4.1 )
-	openimageio? ( >=media-libs/openimageio-2.3.12.0-r3:= )
 	openexr? (
 		>=dev-libs/imath-3.1.4-r2:=
 		>=media-libs/openexr-3:0=
@@ -94,11 +95,10 @@ RDEPEND="${PYTHON_DEPS}
 	pdf? ( media-libs/libharu )
 	potrace? ( media-gfx/potrace )
 	pugixml? ( dev-libs/pugixml )
-	pulseaudio? ( media-sound/pulseaudio )
+	pulseaudio? ( media-libs/libpulse )
 	sdl? ( media-libs/libsdl2[sound,joystick] )
 	sndfile? ( media-libs/libsndfile )
 	tbb? ( dev-cpp/tbb:= )
-	tiff? ( media-libs/tiff:= )
 	valgrind? ( dev-util/valgrind )
 	wayland? (
 		>=dev-libs/wayland-1.12
@@ -210,10 +210,8 @@ src_configure() {
 		-DWITH_HARU=$(usex pdf)
 		-DWITH_HEADLESS=$($(use X || use wayland) && echo OFF || echo ON)
 		-DWITH_INSTALL_PORTABLE=OFF
-		-DWITH_IMAGE_DDS=$(usex dds)
 		-DWITH_IMAGE_OPENEXR=$(usex openexr)
 		-DWITH_IMAGE_OPENJPEG=$(usex jpeg2k)
-		-DWITH_IMAGE_TIFF=$(usex tiff)
 		-DWITH_INPUT_NDOF=$(usex ndof)
 		-DWITH_INTERNATIONAL=$(usex nls)
 		-DWITH_JACK=$(usex jack)
@@ -226,7 +224,6 @@ src_configure() {
 		-DWITH_OPENCOLLADA=$(usex collada)
 		-DWITH_OPENCOLORIO=$(usex color-management)
 		-DWITH_OPENIMAGEDENOISE=$(usex oidn)
-		-DWITH_OPENIMAGEIO=$(usex openimageio)
 		-DWITH_OPENMP=$(usex openmp)
 		-DWITH_OPENSUBDIV=$(usex opensubdiv)
 		-DWITH_OPENVDB=$(usex openvdb)

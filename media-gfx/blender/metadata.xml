@@ -29,9 +29,6 @@
 			Build cycles renderer (requires <pkg>media-libs/openimageio</pkg> and
 			<pkg>dev-libs/boost</pkg>).
 		</flag>
-		<flag name="dds">
-			Adds DDS textures support to Blender.
-		</flag>
 		<flag name="doc">
 			Build C and Python API documentation directly from the source code.
 		</flag>
@@ -60,7 +57,6 @@
 		<flag name="opencl">
 			Allow OpenCL Graphics Acceleration. This may
 			require extra graphics card drivers.</flag>
-		<flag name="openimageio">Enable OpenImageIO Support</flag>
 		<flag name="opensubdiv">
 			Add rendering support form OpenSubdiv from Dreamworks Animation
 			through <pkg>media-libs/opensubdiv</pkg>.
