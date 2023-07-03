@@ -190,7 +190,7 @@ src_configure() {
 
 	local mycmakeargs=(
 		# exclude examples and tests from default build
-		-DQT_BUILD_EXAMPLES=$(usex examples ON OFF)
+		-DQT_BUILD_EXAMPLES=OFF
 		-DQT_BUILD_TESTS=OFF
 
 		#-DQT_FEATURE_accessibility=off
