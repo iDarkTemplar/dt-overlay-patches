@@ -31,7 +31,7 @@ src_compile() {
 }
 
 src_install() {
-	qt_install_example_sources examples
+	qt_install_example_sources .
 
 	eqmake6_install
 }
