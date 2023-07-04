@@ -23,6 +23,16 @@ RDEPEND="${DEPEND}"
 
 S="${S}/examples"
 
+PATCHES=(
+	"${FILESDIR}/${PN}-no-tests.patch"
+)
+
+src_prepare() {
+	rm -rf qmltest
+
+	qt6-build_src_prepare
+}
+
 src_configure() {
 	eqmake6_configure
 }
