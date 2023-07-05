@@ -33,7 +33,7 @@ src_prepare() {
 	qt_use_disable_target qml Qt::Quick \
 		src/CMakeLists.txt
 
-	cmake_src_prepare
+	qt6-build_src_prepare
 }
 
 src_configure() {
