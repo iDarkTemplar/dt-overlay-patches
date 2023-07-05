@@ -125,6 +125,10 @@ qt_use_disable_target() {
 qt_install_bin_symlinks() {
 	local binary
 
+	if [ -z "${QT6_BINDIR}" ] ; then
+		die "QT6_BINDIR is not defined"
+	fi
+
 	if [ -d "${D}/${QT6_BINDIR}" ] ; then
 		for binary in "${D}/${QT6_BINDIR}"/* ; do
 			if [ -x "${binary}" ] ; then
@@ -146,6 +150,10 @@ qt_install_example_sources() {
 
 	if [ -z "${stripdir}" ] ; then
 		stripdir="${inputdir}"
+	fi
+
+	if [ -z "${QT6_EXAMPLESDIR}" ] ; then
+		die "QT6_EXAMPLESDIR is not defined"
 	fi
 
 	# QTBUG-86302: install example sources manually
