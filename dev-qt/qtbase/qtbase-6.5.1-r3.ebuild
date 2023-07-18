@@ -132,6 +132,7 @@ PATCHES=(
 	"${FILESDIR}/CVE-2023-34410-qtbase-6.5-2.diff"
 	"${FILESDIR}/CVE-2023-37369-qtbase-6.5-1.diff"
 	"${FILESDIR}/CVE-2023-37369-qtbase-6.5-2.diff"
+	"${FILESDIR}/CVE-2023-38197-qtbase-6.5.diff"
 )
 
 src_configure() {
