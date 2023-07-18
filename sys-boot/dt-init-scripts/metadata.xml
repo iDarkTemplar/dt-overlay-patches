@@ -14,5 +14,6 @@
 		<flag name="raid">Install raid support hooks</flag>
 		<flag name="rngd">Enable support for entropy generation with <pkg>sys-apps/rng-tools</pkg> when using <pkg>sys-boot/dt-init-scripts</pkg></flag>
 		<flag name="swsusp">Pull in <pkg>sys-power/suspend</pkg></flag>
+		<flag name="unsafe">Install unsafe decrypted luks hooks</pkg></flag>
 	</use>
 </pkgmetadata>

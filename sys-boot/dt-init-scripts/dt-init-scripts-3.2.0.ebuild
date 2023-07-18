@@ -10,8 +10,8 @@ SRC_URI="https://github.com/iDarkTemplar/${PN}/archive/v${PV}.tar.gz -> ${P}.tar
 LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="amd64 x86"
-IUSE="dm luks openrc plymouth raid rngd swsusp"
-REQUIRED_USE="openrc? ( plymouth )"
+IUSE="dm luks openrc plymouth raid rngd swsusp unsafe"
+REQUIRED_USE="openrc? ( plymouth ) unsafe? ( luks )"
 
 DEPEND="
 	"
@@ -112,9 +112,11 @@ src_install() {
 
 		exeinto /usr/libexec/dt-init-scripts/modules
 		doexe "${S}/modules/luks"
+		use unsafe && doexe "${S}/modules/luks_decrypted"
 
 		insinto /usr/share/dt-init-scripts/hooks
 		doins "${S}/hooks/luks"
+		use unsafe && doins "${S}/hooks/luks_decrypted"
 	fi
 
 	if use plymouth ; then
