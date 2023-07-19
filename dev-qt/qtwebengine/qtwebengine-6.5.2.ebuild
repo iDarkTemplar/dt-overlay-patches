@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{9,10,11} )
+PYTHON_COMPAT=( python3_{10,11,12} )
 PYTHON_REQ_USE="xml(+)"
 
 inherit check-reqs estack flag-o-matic multiprocessing python-any-r1 qt6-build-extra
