@@ -1,9 +1,7 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
-
-inherit eutils
+EAPI=8
 
 DESCRIPTION="Make.conf syntax highlight files for Nano text editor"
 HOMEPAGE="http://gentoo-en.vfose.ru/wiki/Nano_syntax_highlighting"
