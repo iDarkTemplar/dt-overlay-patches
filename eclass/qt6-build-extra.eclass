@@ -119,25 +119,6 @@ qt_use_disable_target() {
 	fi
 }
 
-# @FUNCTION: qt_install_bin_symlinks
-#
-# This function installs suffixed symlinks for all qt6 binaries into /usr/bin
-qt_install_bin_symlinks() {
-	local binary
-
-	if [ -z "${QT6_BINDIR}" ] ; then
-		die "QT6_BINDIR is not defined"
-	fi
-
-	if [ -d "${D}/${QT6_BINDIR}" ] ; then
-		for binary in "${D}/${QT6_BINDIR}"/* ; do
-			if [ -x "${binary}" ] ; then
-				dosym -r "${QT6_BINDIR#${EPREFIX}}"/$(basename ${binary}) /usr/bin/$(basename ${binary})-qt6
-			fi
-		done
-	fi
-}
-
 # @FUNCTION: qt_install_example_sources
 #
 # This function installs example sources
@@ -164,4 +145,11 @@ qt_install_example_sources() {
 		insinto "${QT6_EXAMPLESDIR}/${installexampledir}"
 		doins -r "${exampledir}"
 	done < <(find "${1}" -name CMakeLists.txt 2>/dev/null | xargs grep -l -i project)
+}
+
+# @FUNCTION: qt_install_docs
+#
+# This function installs documentation
+qt_install_docs() {
+	DESTDIR="${D}" cmake_build install_docs
 }
