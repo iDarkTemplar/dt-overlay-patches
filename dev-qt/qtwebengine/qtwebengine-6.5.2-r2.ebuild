@@ -79,7 +79,7 @@ RDEPEND="
 	kerberos? ( virtual/krb5 )
 	pulseaudio? ( media-libs/libpulse:= )
 	screencast? ( media-video/pipewire:= )
-	system-ffmpeg? ( media-video/ffmpeg:= )
+	system-ffmpeg? ( <media-video/ffmpeg-5:= )
 	system-icu? ( >=dev-libs/icu-69.1:= )
 	widgets? (
 		~dev-qt/qtbase-${PV}:6=[widgets]
