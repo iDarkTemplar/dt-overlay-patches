@@ -35,7 +35,6 @@ BDEPEND="
 "
 PATCHES=(
 	"${FILESDIR}"/${PN}-2.10-translations.patch
-	"${FILESDIR}"/${PN}-2.10.3-qt6-compat.patch
 )
 
 src_prepare() {
@@ -46,7 +45,7 @@ src_prepare() {
 	if use qt6 ; then
 		# Generate the Qt online-help file
 		cd gui/help
-		$(qmake-qt6 -query QT_INSTALL_LIBEXECS)/qhelpgenerator online-help.qhcp -o online-help.qhc
+		$(qmake6 -query QT_INSTALL_LIBEXECS)/qhelpgenerator online-help.qhcp -o online-help.qhc
 	fi
 }
 
@@ -56,7 +55,6 @@ src_configure() {
 		-DBUILD_GUI="$(usex qt6)"
 		-DUSE_QT6="$(usex qt6)"
 		-DFILESDIR="${EPREFIX}/usr/share/Cppcheck"
-		-DENABLE_OSS_FUZZ=OFF
 		-DUSE_BUNDLED_TINYXML2=OFF
 		-DUSE_MATCHCOMPILER=yes
 		-DWITH_QCHART=$(usex qchart)
