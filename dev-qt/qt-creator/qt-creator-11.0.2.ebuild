@@ -5,7 +5,7 @@ EAPI=8
 LLVM_MAX_SLOT=16
 PLOCALES="cs da de fr hr ja pl ru sl uk zh-CN zh-TW"
 
-inherit llvm qt6-build-extra virtualx xdg
+inherit cmake llvm virtualx xdg
 
 DESCRIPTION="Lightweight IDE for C++/QML development centering around Qt"
 HOMEPAGE="https://doc.qt.io/qtcreator/"
@@ -211,7 +211,7 @@ src_prepare() {
 
 	# TODO: unbundle sqlite
 
-	qt6-build_src_prepare
+	cmake_src_prepare
 }
 
 src_configure() {
@@ -234,7 +234,7 @@ src_configure() {
 		)
 	fi
 
-	qt6-build_src_configure
+	cmake_src_configure
 }
 
 src_compile() {
