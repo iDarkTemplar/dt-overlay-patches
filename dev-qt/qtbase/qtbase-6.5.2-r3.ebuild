@@ -12,7 +12,7 @@ if [[ ${QT6_BUILD_TYPE} == release ]]; then
 fi
 
 # Qt Modules
-IUSE="+concurrent +dbus +gui +network +sql +opengl +widgets zstd"
+IUSE="+concurrent +dbus +gui +network +sql +opengl +xml +widgets zstd"
 REQUIRED_USE="
 	opengl? ( gui )
 	widgets? ( gui )
@@ -214,7 +214,7 @@ src_configure() {
 		-DQT_BUILD_EXAMPLES=$(usex examples ON OFF)
 		-DQT_BUILD_TESTS=OFF
 
-		-DFEATURE_xml=ON
+		$(qt_feature xml)
 
 		# kernel features
 		-DFEATURE_renameat2=ON # needs Linux 3.16, bug 669994
