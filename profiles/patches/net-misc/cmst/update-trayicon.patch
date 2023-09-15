@@ -1,0 +1,27 @@
+diff --git a/apps/cmstapp/code/control_box/controlbox.cpp b/apps/cmstapp/code/control_box/controlbox.cpp
+index 76a58d4..c03c878 100755
+--- a/apps/cmstapp/code/control_box/controlbox.cpp
++++ b/apps/cmstapp/code/control_box/controlbox.cpp
+@@ -1126,6 +1126,7 @@ void ControlBox::dbsPropertyChanged(QString prop, QDBusVariant dbvalue)
+          notifyclient->setBody(tr("Power has been restored to all previously powered network devices.") );
+       }
+       this->sendNotifications();
++      updateDisplayWidgets();
+    } // if contains offlinemode
+ 
+    // state property
+@@ -1141,12 +1142,14 @@ void ControlBox::dbsPropertyChanged(QString prop, QDBusVariant dbvalue)
+             notifyclient->setBody(tr("The system is online.") );
+             notifyclient->setIcon(iconman->getIconName("state_online") );
+             this->sendNotifications();
++            updateDisplayWidgets();
+          } // if
+       } // if
+       else {
+          notifyclient->setBody(tr("The system is offline.") );
+          notifyclient->setIcon(iconman->getIconName("state_not_ready") );
+          this->sendNotifications();
++         updateDisplayWidgets();
+       } // else
+ 
+       // execute external program if specified
