@@ -1,19 +1,21 @@
 # Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
-PYTHON_COMPAT=( python3_{9..11} )
+PYTHON_COMPAT=( python3_{10..12} )
 
-inherit autotools bash-completion-r1 gnome2-utils python-r1 toolchain-funcs vala virtualx xdg-utils
+inherit autotools bash-completion-r1 gnome2-utils python-r1 toolchain-funcs vala virtualx
 
-GENTOO_VER=
 DESCRIPTION="Intelligent Input Bus for Linux / Unix OS"
 HOMEPAGE="https://github.com/ibus/ibus/wiki"
 
+MY_PV=$(ver_rs 3 '-')
+MY_PV_DERP="${MY_PV}-rc2" # Upstream retagged rc2 as the final release
+GENTOO_VER=
 [[ -n ${GENTOO_VER} ]] && \
 	GENTOO_PATCHSET_URI="https://dev.gentoo.org/~dlan/distfiles/${P}-gentoo-patches-${GENTOO_VER}.tar.xz"
-SRC_URI="https://github.com/${PN}/${PN}/releases/download/${PV}/${P}.tar.gz
+SRC_URI="https://github.com/${PN}/${PN}/releases/download/${MY_PV}/${PN}-${MY_PV_DERP}.tar.gz
 	${GENTOO_PATCHSET_URI}"
 
 LICENSE="LGPL-2.1"
@@ -32,6 +34,7 @@ REQUIRED_USE="
 	vala? ( introspection )
 	X? ( gtk3 )
 "
+REQUIRED_USE+=" gtk3? ( wayland? ( introspection ) )" # bug 915359
 DEPEND="
 	app-text/iso-codes
 	>=dev-libs/glib-2.65.0:2
@@ -42,6 +45,7 @@ DEPEND="
 		x11-libs/libX11
 		>=x11-libs/libXfixes-6.0.0
 	)
+	appindicator? ( dev-libs/libdbusmenu[gtk3?] )
 	gtk2? ( x11-libs/gtk+:2 )
 	gtk3? ( x11-libs/gtk+:3 )
 	gtk4? ( gui-libs/gtk:4 )
@@ -77,10 +81,13 @@ BDEPEND="
 		app-i18n/unicode-emoji
 	)
 	nls? ( sys-devel/gettext )
+	test? ( x11-apps/setxkbmap )
 	unicode? ( app-i18n/unicode-data )"
 
+S=${WORKDIR}/${PN}-${MY_PV_DERP}
+
 src_prepare() {
-	vala_src_prepare --ignore-use
+	vala_setup --ignore-use
 	if ! has_version 'x11-libs/gtk+:3[wayland]'; then
 		touch ui/gtk3/panelbinding.vala \
 			ui/gtk3/panel.vala \
@@ -183,7 +190,7 @@ src_compile() {
 
 src_test() {
 	unset DBUS_SESSION_BUS_ADDRESS
-	virtx emake -j1 check
+	virtx dbus-run-session emake check
 }
 
 src_install() {
@@ -213,9 +220,6 @@ src_install() {
 
 	insinto /etc/X11/xinit/xinput.d
 	newins xinput-${PN} ${PN}.conf
-
-	# Undo compression of man page
-	find "${ED}"/usr/share/man -type f -name '*.gz' -exec gzip -d {} \; || die
 }
 
 pkg_postinst() {
