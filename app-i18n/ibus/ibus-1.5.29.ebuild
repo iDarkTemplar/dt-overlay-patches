@@ -45,7 +45,7 @@ DEPEND="
 		x11-libs/libX11
 		>=x11-libs/libXfixes-6.0.0
 	)
-	appindicator? ( dev-libs/libdbusmenu[gtk3?] )
+	appindicator? ( dev-libs/libdbusmenu[gtk3?,introspection?] )
 	gtk2? ( x11-libs/gtk+:2 )
 	gtk3? ( x11-libs/gtk+:3 )
 	gtk4? ( gui-libs/gtk:4 )
