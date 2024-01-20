@@ -126,7 +126,7 @@ DEPEND="${RDEPEND}
 BDEPEND="
 	virtual/pkgconfig
 	doc? (
-		app-doc/doxygen[dot]
+		app-text/doxygen[dot]
 		dev-python/sphinx[latex]
 		dev-python/sphinx-rtd-theme
 		dev-texlive/texlive-bibtexextra
