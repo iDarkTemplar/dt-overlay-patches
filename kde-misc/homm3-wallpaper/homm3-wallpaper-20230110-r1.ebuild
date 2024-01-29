@@ -24,7 +24,7 @@ COMMON_DEPEND="
 DEPEND="${COMMON_DEPEND}
 	dev-libs/boost
 	kde-frameworks/extra-cmake-modules
-	kde-frameworks/plasma
+	kde-plasma/libplasma
 	"
 
 RDEPEND="${COMMON_DEPEND}
