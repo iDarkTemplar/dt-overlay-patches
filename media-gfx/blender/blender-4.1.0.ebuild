@@ -144,7 +144,6 @@ BDEPEND="
 PATCHES=(
 	"${FILESDIR}/${PN}-2.82-use-system-glog.patch"
 	"${FILESDIR}/${PN}-2.92-include-deduplication-check-skip.patch"
-	"${FILESDIR}/${PN}-4.0.1-openvdb-11.patch"
 )
 
 CMAKE_BUILD_TYPE="Release"
