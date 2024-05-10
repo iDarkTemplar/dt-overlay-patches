@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python{3_10,3_11} )
+PYTHON_COMPAT=( python3_{10..12} )
 inherit distutils-r1 toolchain-funcs cmake
 
 DESCRIPTION="Static analyzer of C/C++ code"
@@ -56,11 +56,10 @@ src_configure() {
 		-DUSE_QT6="$(usex qt6)"
 		-DFILESDIR="${EPREFIX}/usr/share/Cppcheck"
 		-DUSE_BUNDLED_TINYXML2=OFF
-		-DUSE_MATCHCOMPILER=yes
+		-DUSE_MATCHCOMPILER=On
 		-DWITH_QCHART=$(usex qchart)
 		-DBUILD_SHARED_LIBS:BOOL=OFF
 		-DBUILD_TESTS=no
-		-DUSE_THREADS=yes
 		-DUSE_BOOST=no
 	)
 
