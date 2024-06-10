@@ -1,8 +1,17 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index a863b47c..321fcbbb 100644
+index 34123b30..3fef594a 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -492,7 +492,9 @@ if (NOT WIN32 AND NOT ENABLE_STATIC_EXE)
+@@ -535,7 +535,7 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR}/compat)
+ if (NOT WIN32 AND NOT ENABLE_STATIC_EXE)
+ 
+     if (NOT ENABLE_STATIC_SNAPPY)
+-        find_package (Snappy)
++        find_package (Snappy CONFIG REQUIRED)
+     endif ()
+ 
+     # zlib 1.2.4-1.2.5 made it impossible to read the last block of incomplete
+@@ -556,7 +556,9 @@ if (NOT WIN32 AND NOT ENABLE_STATIC_EXE)
          pkg_check_modules (BROTLIENC IMPORTED_TARGET libbrotlienc>=1.0.7)
      endif ()
  
@@ -14,21 +23,22 @@ index a863b47c..321fcbbb 100644
  
  add_subdirectory (thirdparty)
 diff --git a/thirdparty/CMakeLists.txt b/thirdparty/CMakeLists.txt
-index 7eae7e55..fb35c3fc 100644
+index 34eb7f7e..13b1cf83 100644
 --- a/thirdparty/CMakeLists.txt
 +++ b/thirdparty/CMakeLists.txt
-@@ -13,41 +13,23 @@ function (include_with_scope)
+@@ -16,42 +16,23 @@ function (include_with_scope)
      include (${ARGV})
  endfunction ()
  
 -set (SUBMODULES_MISSING FALSE)
 -foreach (path IN ITEMS
 -    brotli/LICENSE
--    gtest/googletest/LICENSE
+-    gtest/LICENSE
 -    libbacktrace/LICENSE
 -    libpng/LICENSE
 -    snappy/COPYING
 -    zlib/README
+-    directxmath/LICENSE
 -)
 -    if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${path}")
 -        message (SEND_ERROR "error: ${CMAKE_CURRENT_SOURCE_DIR}/${path} does not exist")
@@ -63,7 +73,7 @@ index 7eae7e55..fb35c3fc 100644
      include_with_scope (brotli.cmake)
  endif ()
  
-@@ -55,10 +37,12 @@ if (CMAKE_EXECUTABLE_FORMAT STREQUAL "ELF")
+@@ -59,10 +40,12 @@ if (CMAKE_EXECUTABLE_FORMAT STREQUAL "ELF")
      include_with_scope (libbacktrace.cmake)
  endif ()
  

@@ -7,7 +7,7 @@ CMAKE_ECLASS=cmake
 PYTHON_COMPAT=( python3_{10..12} )
 inherit cmake-multilib python-single-r1
 
-LIBBACKTRACE_COMMIT="dedbe13"
+LIBBACKTRACE_COMMIT="8602fda"
 
 DESCRIPTION="Tool for tracing, analyzing, and debugging graphics APIs"
 HOMEPAGE="https://github.com/apitrace/apitrace"
@@ -17,32 +17,27 @@ SRC_URI="https://github.com/${PN}/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz
 LICENSE="MIT"
 SLOT="0"
 KEYWORDS="~amd64 ~arm ~x86"
-IUSE="qt5 X"
+IUSE="qt6 X"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}"
 
 DEPEND="${PYTHON_DEPS}
 	app-arch/brotli:=[${MULTILIB_USEDEP}]
-	>=app-arch/snappy-1.1.1[${MULTILIB_USEDEP}]
+	>=app-arch/snappy-1.1.1:=[${MULTILIB_USEDEP}]
 	media-libs/libpng:0=
 	media-libs/mesa[egl(+),gles1(+),gles2(+),X?,${MULTILIB_USEDEP}]
 	>=media-libs/waffle-1.6.0-r1[egl(+),${MULTILIB_USEDEP}]
 	sys-libs/zlib[${MULTILIB_USEDEP}]
 	sys-process/procps:=[${MULTILIB_USEDEP}]
 	X? ( x11-libs/libX11 )
-	qt5? (
-		dev-qt/qtcore:5
-		dev-qt/qtgui:5[-gles2-only]
-		dev-qt/qtnetwork:5
-		dev-qt/qtwidgets:5[-gles2-only]
-	)
+	qt6? ( dev-qt/qtbase:6[gui,network,widgets] )
 "
 RDEPEND="${DEPEND}"
 
 PATCHES=(
 	# TODO: upstream
 	"${FILESDIR}"/${PN}-9.0-disable-multiarch.patch
-	"${FILESDIR}"/${PN}-11.0-build.patch
+	"${FILESDIR}"/${PN}-12.0-build.patch
 	"${FILESDIR}"/${PN}-11.1-waffle-build.patch
 )
 
@@ -56,7 +51,7 @@ src_prepare() {
 	# The apitrace code grubs around in the internal zlib structures.
 	# We have to extract this header and clean it up to keep that working.
 	# Do not be surprised if a zlib upgrade breaks things ...
-	rm -rf thirdparty/{brotli,snappy,getopt,less,libpng,zlib,dxerr,directxtex,devcon} || die
+	rm -rf thirdparty/{brotli,snappy,snappy.cmake,getopt,less,libpng,zlib,dxerr,directxtex,devcon} || die
 }
 
 src_configure() {
@@ -66,7 +61,8 @@ src_configure() {
 			-DENABLE_X11=$(usex X)
 			-DENABLE_EGL=ON
 			-DENABLE_CLI=ON
-			-DENABLE_GUI=$(multilib_native_usex qt5)
+			-DENABLE_GUI=$(multilib_native_usex qt6)
+			-DENABLE_QT6=$(multilib_native_usex qt6)
 			-DENABLE_STATIC_SNAPPY=OFF
 			-DENABLE_WAFFLE=ON
 			-DBUILD_TESTING=OFF
