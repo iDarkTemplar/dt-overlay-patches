@@ -1,4 +1,4 @@
-From 721adf1029df9b9a92c3d1f6c93e4867afdc1b24 Mon Sep 17 00:00:00 2001
+From da243d801948f530f6868be3dc3cb64f5a0d9417 Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sat, 30 Mar 2019 19:25:50 +0300
 Subject: [PATCH 2/3] Dolphin: reintroduce tooltips without Baloo support
@@ -6,17 +6,18 @@ Subject: [PATCH 2/3] Dolphin: reintroduce tooltips without Baloo support
 Tooltips contain only name of item and preview
 ---
  src/CMakeLists.txt                            |  4 +--
- src/settings/general/behaviorsettingspage.cpp |  9 ------
+ .../viewmodes/generalviewsettingspage.cpp     |  8 ------
+ .../viewmodes/generalviewsettingspage.h       |  2 --
  src/views/dolphinview.cpp                     |  8 ------
  .../tooltips/dolphinfilemetadatawidget.cpp    | 28 +++++++++++++++++++
  .../tooltips/dolphinfilemetadatawidget.h      |  4 +++
- 5 files changed, 34 insertions(+), 19 deletions(-)
+ 6 files changed, 34 insertions(+), 20 deletions(-)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 400dbe87b..df7d4035b 100644
+index 211e7b045..969b800eb 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -95,6 +95,8 @@ target_sources(dolphinprivate PRIVATE
+@@ -97,6 +97,8 @@ target_sources(dolphinprivate PRIVATE
      views/dolphinview.cpp
      views/dolphinviewactionhandler.cpp
      views/draganddrophelper.cpp
@@ -25,7 +26,7 @@ index 400dbe87b..df7d4035b 100644
      views/versioncontrol/updateitemstatesthread.cpp
      views/versioncontrol/versioncontrolobserver.cpp
      views/viewmodecontroller.cpp
-@@ -169,8 +171,6 @@ ecm_qt_declare_logging_category(dolphinprivate
+@@ -171,8 +173,6 @@ ecm_qt_declare_logging_category(dolphinprivate
  
  if(HAVE_BALOO)
      target_sources(dolphinprivate PRIVATE
@@ -34,58 +35,71 @@ index 400dbe87b..df7d4035b 100644
          kitemviews/private/kbaloorolesprovider.cpp
          views/tooltips/dolphinfilemetadatawidget.h
          views/tooltips/tooltipmanager.h
-diff --git a/src/settings/general/behaviorsettingspage.cpp b/src/settings/general/behaviorsettingspage.cpp
-index db5361ff6..19e428348 100644
---- a/src/settings/general/behaviorsettingspage.cpp
-+++ b/src/settings/general/behaviorsettingspage.cpp
-@@ -72,11 +72,9 @@ BehaviorSettingsPage::BehaviorSettingsPage(const QUrl &url, QWidget *parent)
+diff --git a/src/settings/viewmodes/generalviewsettingspage.cpp b/src/settings/viewmodes/generalviewsettingspage.cpp
+index cd68cdaeb..1906691ab 100644
+--- a/src/settings/viewmodes/generalviewsettingspage.cpp
++++ b/src/settings/viewmodes/generalviewsettingspage.cpp
+@@ -58,11 +58,9 @@ GeneralViewSettingsPage::GeneralViewSettingsPage(const QUrl &url, QWidget *paren
  
      topLayout->addItem(new QSpacerItem(0, Dolphin::VERTICAL_SPACER_HEIGHT, QSizePolicy::Fixed, QSizePolicy::Fixed));
  
 -#if HAVE_BALOO
      // 'Show tooltips'
-     m_showToolTips = new QCheckBox(i18nc("@option:check", "Show tooltips"));
+     m_showToolTips = new QCheckBox(i18nc("@option:check", "Show item information on hover"));
      topLayout->addRow(i18nc("@title:group", "Miscellaneous: "), m_showToolTips);
 -#endif
  
      // 'Show selection marker'
      m_showSelectionToggle = new QCheckBox(i18nc("@option:check", "Show selection marker"));
-@@ -94,9 +92,7 @@ BehaviorSettingsPage::BehaviorSettingsPage(const QUrl &url, QWidget *parent)
+@@ -92,9 +90,7 @@ GeneralViewSettingsPage::GeneralViewSettingsPage(const QUrl &url, QWidget *paren
  
-     connect(m_localViewProps, &QRadioButton::toggled, this, &BehaviorSettingsPage::changed);
-     connect(m_globalViewProps, &QRadioButton::toggled, this, &BehaviorSettingsPage::changed);
+     connect(m_openArchivesAsFolder, &QCheckBox::toggled, this, &GeneralViewSettingsPage::changed);
+     connect(m_autoExpandFolders, &QCheckBox::toggled, this, &GeneralViewSettingsPage::changed);
 -#if HAVE_BALOO
-     connect(m_showToolTips, &QCheckBox::toggled, this, &BehaviorSettingsPage::changed);
+     connect(m_showToolTips, &QCheckBox::toggled, this, &GeneralViewSettingsPage::changed);
 -#endif
-     connect(m_showSelectionToggle, &QCheckBox::toggled, this, &BehaviorSettingsPage::changed);
-     connect(m_naturalSorting, &QRadioButton::toggled, this, &BehaviorSettingsPage::changed);
-     connect(m_caseInsensitiveSorting, &QRadioButton::toggled, this, &BehaviorSettingsPage::changed);
-@@ -117,9 +113,7 @@ void BehaviorSettingsPage::applySettings()
- 
+     connect(m_showSelectionToggle, &QCheckBox::toggled, this, &GeneralViewSettingsPage::changed);
+     connect(m_renameInline, &QCheckBox::toggled, this, &GeneralViewSettingsPage::changed);
+     connect(m_hideXtrashFiles, &QCheckBox::toggled, this, &GeneralViewSettingsPage::changed);
+@@ -110,9 +106,7 @@ void GeneralViewSettingsPage::applySettings()
+     ViewProperties props(m_url); // read current view properties
      const bool useGlobalViewProps = m_globalViewProps->isChecked();
      settings->setGlobalViewProps(useGlobalViewProps);
 -#if HAVE_BALOO
      settings->setShowToolTips(m_showToolTips->isChecked());
 -#endif
      settings->setShowSelectionToggle(m_showSelectionToggle->isChecked());
-     setSortingChoiceValue(settings);
      settings->setRenameInline(m_renameInline->isChecked());
-@@ -150,10 +144,7 @@ void BehaviorSettingsPage::loadSettings()
+     settings->setHideXTrashFile(m_hideXtrashFiles->isChecked());
+@@ -142,9 +136,7 @@ void GeneralViewSettingsPage::loadSettings()
      const bool useGlobalViewProps = GeneralSettings::globalViewProps();
-     m_localViewProps->setChecked(!useGlobalViewProps);
-     m_globalViewProps->setChecked(useGlobalViewProps);
--
+     m_openArchivesAsFolder->setChecked(GeneralSettings::browseThroughArchives());
+     m_autoExpandFolders->setChecked(GeneralSettings::autoExpandFolders());
 -#if HAVE_BALOO
      m_showToolTips->setChecked(GeneralSettings::showToolTips());
 -#endif
      m_showSelectionToggle->setChecked(GeneralSettings::showSelectionToggle());
      m_renameInline->setChecked(GeneralSettings::renameInline());
-     m_useTabForSplitViewSwitch->setChecked(GeneralSettings::useTabForSwitchingSplitView());
+     m_hideXtrashFiles->setChecked(GeneralSettings::hideXTrashFile());
+diff --git a/src/settings/viewmodes/generalviewsettingspage.h b/src/settings/viewmodes/generalviewsettingspage.h
+index 234fb03cb..ececb0186 100644
+--- a/src/settings/viewmodes/generalviewsettingspage.h
++++ b/src/settings/viewmodes/generalviewsettingspage.h
+@@ -40,9 +40,7 @@ private:
+     QUrl m_url;
+     QRadioButton *m_localViewProps = nullptr;
+     QRadioButton *m_globalViewProps = nullptr;
+-#if HAVE_BALOO
+     QCheckBox *m_showToolTips = nullptr;
+-#endif
+     QCheckBox *m_showSelectionToggle = nullptr;
+     QCheckBox *m_renameInline = nullptr;
+     QCheckBox *m_openArchivesAsFolder = nullptr;
 diff --git a/src/views/dolphinview.cpp b/src/views/dolphinview.cpp
-index 8d4a765bb..a63ca96c6 100644
+index 613f99405..39a8e0f63 100644
 --- a/src/views/dolphinview.cpp
 +++ b/src/views/dolphinview.cpp
-@@ -223,10 +223,8 @@ DolphinView::DolphinView(const QUrl &url, QWidget *parent)
+@@ -221,10 +221,8 @@ DolphinView::DolphinView(const QUrl &url, QWidget *parent)
      KItemListSelectionManager *selectionManager = controller->selectionManager();
      connect(selectionManager, &KItemListSelectionManager::selectionChanged, this, &DolphinView::slotSelectionChanged);
  
@@ -96,7 +110,7 @@ index 8d4a765bb..a63ca96c6 100644
  
      m_versionControlObserver = new VersionControlObserver(this);
      m_versionControlObserver->setView(this);
-@@ -1304,12 +1302,10 @@ void DolphinView::slotItemHovered(int index)
+@@ -1312,12 +1310,10 @@ void DolphinView::slotItemHovered(int index)
          const QPoint pos = m_container->mapToGlobal(itemRect.topLeft().toPoint());
          itemRect.moveTo(pos);
  
@@ -109,7 +123,7 @@ index 8d4a765bb..a63ca96c6 100644
      }
  
      Q_EMIT requestItemInfo(item);
-@@ -1750,11 +1746,7 @@ void DolphinView::updateViewState()
+@@ -1783,11 +1779,7 @@ void DolphinView::updateViewState()
  void DolphinView::hideToolTip(const ToolTipManager::HideBehavior behavior)
  {
      if (GeneralSettings::showToolTips()) {
@@ -122,7 +136,7 @@ index 8d4a765bb..a63ca96c6 100644
          QToolTip::hideText();
      }
 diff --git a/src/views/tooltips/dolphinfilemetadatawidget.cpp b/src/views/tooltips/dolphinfilemetadatawidget.cpp
-index 3686b0f18..3606a258b 100644
+index ba068d3f4..c6b5aa223 100644
 --- a/src/views/tooltips/dolphinfilemetadatawidget.cpp
 +++ b/src/views/tooltips/dolphinfilemetadatawidget.cpp
 @@ -8,7 +8,11 @@
@@ -177,7 +191,7 @@ index 3686b0f18..3606a258b 100644
  }
  
  DolphinFileMetaDataWidget::~DolphinFileMetaDataWidget()
-@@ -124,10 +142,20 @@ QString DolphinFileMetaDataWidget::name() const
+@@ -124,12 +142,22 @@ QString DolphinFileMetaDataWidget::name() const
  
  void DolphinFileMetaDataWidget::setItems(const KFileItemList &items)
  {
@@ -198,6 +212,8 @@ index 3686b0f18..3606a258b 100644
 +    return KFileItemList();
 +#endif
  }
+ 
+ #include "moc_dolphinfilemetadatawidget.cpp"
 diff --git a/src/views/tooltips/dolphinfilemetadatawidget.h b/src/views/tooltips/dolphinfilemetadatawidget.h
 index 89f947498..00571d2ae 100644
 --- a/src/views/tooltips/dolphinfilemetadatawidget.h
@@ -226,5 +242,5 @@ index 89f947498..00571d2ae 100644
  
  #endif
 -- 
-2.41.0
+2.44.2
 
