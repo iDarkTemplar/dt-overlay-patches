@@ -26,7 +26,6 @@ DEPEND="${COMMON_DEPEND}
 	"
 
 RDEPEND="${COMMON_DEPEND}
-	dev-qt/qtquickcontrols2:6
 	kde-frameworks/kirigami:6
 	"
 
