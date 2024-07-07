@@ -16,20 +16,18 @@ IUSE="+utils"
 
 COMMON_DEPEND="
 	sys-libs/zlib:=
-	dev-qt/qtcore:5=
-	dev-qt/qtgui:5=
-	dev-qt/qtdeclarative:5=
+	dev-qt/qtbase:6=[gui(+),opengl(+)]
+	dev-qt/qtdeclarative:6=
 	"
 
 DEPEND="${COMMON_DEPEND}
 	dev-libs/boost
-	kde-frameworks/extra-cmake-modules
-	kde-plasma/libplasma
+	kde-plasma/libplasma:6
 	"
 
 RDEPEND="${COMMON_DEPEND}
-	dev-qt/qtquickcontrols2:5
-	kde-frameworks/kirigami
+	dev-qt/qtquickcontrols2:6
+	kde-frameworks/kirigami:6
 	"
 
 src_configure() {
