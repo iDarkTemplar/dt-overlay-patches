@@ -1,0 +1,703 @@
+From 041583d5ec6963cb232170b60b0ba716814e0cf8 Mon Sep 17 00:00:00 2001
+From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
+Date: Mon, 8 Jul 2024 20:50:03 +0200
+Subject: [PATCH] Port to Qt6
+
+---
+ lib/libebook/ebook_chm.cpp                    | 12 +++----
+ lib/libebook/ebook_chm.h                      |  2 +-
+ lib/libebook/ebook_epub.cpp                   |  2 +-
+ lib/libebook/ebook_search.cpp                 |  2 +-
+ lib/libebook/helper_entitydecoder.cpp         |  6 ++--
+ lib/libebook/helper_entitydecoder.h           |  1 +
+ lib/libebook/helper_search_index.cpp          | 16 +++++----
+ lib/libebook/helper_search_index.h            |  1 +
+ lib/libebook/helperxmlhandler_epubcontainer.h |  2 +-
+ lib/libebook/helperxmlhandler_epubcontent.h   |  2 +-
+ lib/libebook/helperxmlhandler_epubtoc.h       |  2 +-
+ src/checknewversion.cpp                       | 33 +++++++++++--------
+ src/dialog_setup.cpp                          |  4 +--
+ src/mainwindow.cpp                            |  7 ++--
+ src/recentfiles.cpp                           |  2 +-
+ src/recentfiles.h                             |  2 +-
+ src/settings.cpp                              | 12 +++----
+ src/settings.h                                |  4 +--
+ src/src.pro                                   | 28 +++-------------
+ src/tab_bookmarks.cpp                         |  4 +--
+ src/treeitem_index.cpp                        |  2 +-
+ src/viewwindow_webengine.cpp                  | 33 ++++++++++---------
+ src/viewwindowmgr.cpp                         |  9 ++---
+ 23 files changed, 91 insertions(+), 97 deletions(-)
+
+diff --git a/lib/libebook/ebook_chm.cpp b/lib/libebook/ebook_chm.cpp
+index ba39be0..2a8e664 100644
+--- a/lib/libebook/ebook_chm.cpp
++++ b/lib/libebook/ebook_chm.cpp
+@@ -44,7 +44,6 @@ EBook_CHM::EBook_CHM()
+ {
+ 	m_envOptions = getenv("KCHMVIEWEROPTS");
+ 	m_chmFile = NULL;
+-	m_filename = m_font = QString::null;
+ 
+ 	m_textCodec = 0;
+ 	m_textCodecForSpecialFiles = 0;
+@@ -67,7 +66,8 @@ void EBook_CHM::close()
+ 	chm_close( m_chmFile );
+ 
+ 	m_chmFile = NULL;
+-	m_filename = m_font = QString::null;
++	m_filename.clear();
++	m_font.clear();
+ 
+ 	m_home.clear();
+ 	m_topicsFile.clear();
+@@ -334,7 +334,7 @@ int EBook_CHM::findStringInQuotes (const QString& tag, int offset, QString& valu
+ 	// If we do not need to decode HTML entities, just return.
+ 	if ( decodeentities )
+ 	{
+-		QString htmlentity = QString::null;
++		QString htmlentity;
+ 		bool fill_entity = false;
+ 
+ 		value.reserve (qend - qbegin); // to avoid multiple memory allocations
+@@ -359,7 +359,7 @@ int EBook_CHM::findStringInQuotes (const QString& tag, int offset, QString& valu
+ 						break;
+ 
+ 					value.append ( decode );
+-					htmlentity = QString::null;
++					htmlentity.clear();
+ 					fill_entity = false;
+ 				}
+ 				else
+@@ -472,7 +472,7 @@ bool EBook_CHM::parseFileAndFillArray( const QString& file, QList< ParsedEntry >
+ 				data.push_back( entry );
+ 			}
+ 
+-			entry.name = QString::null;
++			entry.name.clear();
+ 			entry.urls.clear();
+ 			entry.iconid = defaultimagenum;
+ 			entry.seealso.clear();
+@@ -787,7 +787,7 @@ QString EBook_CHM::getTopicByUrl( const QUrl& url )
+ 	QMap< QUrl, QString >::const_iterator it = m_url2topics.find( url );
+ 
+ 	if ( it == m_url2topics.end() )
+-		return QString::null;
++		return QString();
+ 
+ 	return it.value();
+ }
+diff --git a/lib/libebook/ebook_chm.h b/lib/libebook/ebook_chm.h
+index 5577d9b..87383e2 100644
+--- a/lib/libebook/ebook_chm.h
++++ b/lib/libebook/ebook_chm.h
+@@ -20,7 +20,7 @@
+ #define EBOOK_CHM_H
+ 
+ #include <QMap>
+-#include <QTextCodec>
++#include <QtCore5Compat/QTextCodec>
+ 
+ // Enable Unicode use in libchm
+ #if defined (WIN32)
+diff --git a/lib/libebook/ebook_epub.cpp b/lib/libebook/ebook_epub.cpp
+index f854052..a0e9cba 100644
+--- a/lib/libebook/ebook_epub.cpp
++++ b/lib/libebook/ebook_epub.cpp
+@@ -23,7 +23,7 @@
+ #endif
+ 
+ #include <QMessageBox>
+-#include <QtXml/QXmlSimpleReader>
++#include <QtCore5Compat/QXmlSimpleReader>
+ 
+ #include "ebook_epub.h"
+ #include "helperxmlhandler_epubcontainer.h"
+diff --git a/lib/libebook/ebook_search.cpp b/lib/libebook/ebook_search.cpp
+index 5f7dfce..c8fd222 100644
+--- a/lib/libebook/ebook_search.cpp
++++ b/lib/libebook/ebook_search.cpp
+@@ -203,7 +203,7 @@ bool EBookSearch::searchQuery(const QString & query, QList< QUrl > * results, EB
+ 
+ 		// Just add the word; it is most likely a space or terminated by tokenizer.
+ 		keeper.addTerm( term );
+-		term = QString::null;			
++		term.clear();
+ 	}
+ 	
+ 	keeper.addTerm( term );
+diff --git a/lib/libebook/helper_entitydecoder.cpp b/lib/libebook/helper_entitydecoder.cpp
+index 188a158..4765d40 100644
+--- a/lib/libebook/helper_entitydecoder.cpp
++++ b/lib/libebook/helper_entitydecoder.cpp
+@@ -16,8 +16,6 @@
+  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+ 
+-#include <QTextCodec>
+-
+ #include "helper_entitydecoder.h"
+ 
+ 
+@@ -212,7 +210,7 @@ QString HelperEntityDecoder::decode( const QString &entity ) const
+ 		if ( !valid )
+ 		{
+ 			qWarning ( "HelperEntityDecoder::decode: could not decode HTML entity '%s'", qPrintable( entity ) );
+-			return QString::null;
++			return QString();
+ 		}
+ 
+ 		return (QString) (QChar( ascode ));
+@@ -224,7 +222,7 @@ QString HelperEntityDecoder::decode( const QString &entity ) const
+ 		if ( it == m_entityDecodeMap.end() )
+ 		{
+ 			qWarning ("HelperEntityDecoder::decode: could not decode HTML entity '%s'", qPrintable( entity ));
+-			return "";
++			return QString();
+ 		}
+ 
+ 		return *it;
+diff --git a/lib/libebook/helper_entitydecoder.h b/lib/libebook/helper_entitydecoder.h
+index bb2a12b..27d9268 100644
+--- a/lib/libebook/helper_entitydecoder.h
++++ b/lib/libebook/helper_entitydecoder.h
+@@ -21,6 +21,7 @@
+ 
+ #include <QMap>
+ #include <QString>
++#include <QtCore5Compat/QTextCodec>
+ 
+ //
+ // This helper class decodes the Unicode HTML entities into the Unicode characters
+diff --git a/lib/libebook/helper_search_index.cpp b/lib/libebook/helper_search_index.cpp
+index 3d6c704..58542f3 100644
+--- a/lib/libebook/helper_search_index.cpp
++++ b/lib/libebook/helper_search_index.cpp
+@@ -17,12 +17,14 @@
+  */
+ 
+ #include <QApplication>
+-#include <QTextCodec>
++#include <QtCore5Compat/QTextCodec>
+ 
+ #include "ebook.h"
+ #include "ebook_search.h"
+ #include "helper_search_index.h"
+ 
++#include <algorithm>
++
+ static const int DICT_VERSION = 4;
+ 
+ namespace QtAs {
+@@ -260,7 +262,7 @@ bool Index::parseDocumentToStringlist(EBook *chmFile, const QUrl& filename, QStr
+ 		if ( ch == '&' )
+ 		{
+ 			state = STATE_IN_HTML_ENTITY;
+-			parseentity = QString::null;
++			parseentity.clear();
+ 			continue;
+ 		}
+ 		
+@@ -283,7 +285,7 @@ bool Index::parseDocumentToStringlist(EBook *chmFile, const QUrl& filename, QStr
+ 				tokenlist.push_back( parsedbuf.toLower() );
+ 			
+ 			tokenlist.push_back( ch.toLower() );
+-			parsedbuf = QString::null;
++			parsedbuf.clear();
+ 			continue;
+ 		}
+ 		
+@@ -292,7 +294,7 @@ tokenize_buf:
+ 		if ( !parsedbuf.isEmpty() )
+ 		{
+ 			tokenlist.push_back( parsedbuf.toLower() );
+-			parsedbuf = QString::null;
++			parsedbuf.clear();
+ 		}
+ 	}
+ 	
+@@ -379,8 +381,8 @@ QList< QUrl > Index::query(const QStringList &terms, const QStringList &termSeq,
+ 	
+ 	if ( !termList.count() )
+ 		return QList< QUrl >();
+-	
+-	qSort( termList );
++
++	std::sort(termList.begin(), termList.end());
+ 
+ 	QVector<Document> minDocs = termList.takeFirst().documents;
+ 	for(QList<Term>::Iterator it = termList.begin(); it != termList.end(); ++it) {
+@@ -403,7 +405,7 @@ QList< QUrl > Index::query(const QStringList &terms, const QStringList &termSeq,
+ 	}
+ 
+ 	QList< QUrl > results;
+-	qSort( minDocs );
++	std::sort(minDocs.begin(), minDocs.end());
+ 	if ( termSeq.isEmpty() ) {
+ 		for(QVector<Document>::Iterator it = minDocs.begin(); it != minDocs.end(); ++it)
+ 			results << docList.at((int)(*it).docNumber);
+diff --git a/lib/libebook/helper_search_index.h b/lib/libebook/helper_search_index.h
+index 37af22f..2f8c0d8 100644
+--- a/lib/libebook/helper_search_index.h
++++ b/lib/libebook/helper_search_index.h
+@@ -19,6 +19,7 @@
+ #ifndef EBOOK_SEARCH_INDEX_H
+ #define EBOOK_SEARCH_INDEX_H
+ 
++#include <QObject>
+ #include <QUrl>
+ #include <QHash>
+ #include <QVector>
+diff --git a/lib/libebook/helperxmlhandler_epubcontainer.h b/lib/libebook/helperxmlhandler_epubcontainer.h
+index 3de9a60..5204874 100644
+--- a/lib/libebook/helperxmlhandler_epubcontainer.h
++++ b/lib/libebook/helperxmlhandler_epubcontainer.h
+@@ -19,7 +19,7 @@
+ #ifndef HELPERXMLHANDLER_EPUBCONTAINER_H
+ #define HELPERXMLHANDLER_EPUBCONTAINER_H
+ 
+-#include <QtXml/QXmlDefaultHandler>
++#include <QtCore5Compat/QXmlDefaultHandler>
+ 
+ class HelperXmlHandler_EpubContainer : public QXmlDefaultHandler
+ {
+diff --git a/lib/libebook/helperxmlhandler_epubcontent.h b/lib/libebook/helperxmlhandler_epubcontent.h
+index 874a49c..77d342d 100644
+--- a/lib/libebook/helperxmlhandler_epubcontent.h
++++ b/lib/libebook/helperxmlhandler_epubcontent.h
+@@ -21,7 +21,7 @@
+ 
+ #include <QMap>
+ #include <QString>
+-#include <QtXml/QXmlDefaultHandler>
++#include <QtCore5Compat/QXmlDefaultHandler>
+ 
+ class HelperXmlHandler_EpubContent : public QXmlDefaultHandler
+ {
+diff --git a/lib/libebook/helperxmlhandler_epubtoc.h b/lib/libebook/helperxmlhandler_epubtoc.h
+index cdb155b..173c2fd 100644
+--- a/lib/libebook/helperxmlhandler_epubtoc.h
++++ b/lib/libebook/helperxmlhandler_epubtoc.h
+@@ -19,7 +19,7 @@
+ #ifndef HELPERXMLHANDLER_EPUBTOC_H
+ #define HELPERXMLHANDLER_EPUBTOC_H
+ 
+-#include <QtXml/QXmlDefaultHandler>
++#include <QtCore5Compat/QXmlDefaultHandler>
+ #include "ebook_epub.h"
+ 
+ class HelperXmlHandler_EpubTOC : public QXmlDefaultHandler
+diff --git a/src/checknewversion.cpp b/src/checknewversion.cpp
+index 324331b..46e6e07 100644
+--- a/src/checknewversion.cpp
++++ b/src/checknewversion.cpp
+@@ -19,6 +19,7 @@
+ #include <QUrl>
+ #include <QStringList>
+ #include <QMetaType>
++#include <QRegularExpression>
+ 
+ #if !defined (WIN32)
+ 	#include <sys/socket.h>
+@@ -241,7 +242,7 @@ void CheckNewVersion::run()
+ 	}
+ 
+ 	// Make sure server didn't return error
+-	if ( header.isEmpty() || header[0].indexOf( QRegExp( "^http/1.\\d\\s+2\\d\\d", Qt::CaseInsensitive )) == -1 )
++	if ( header.isEmpty() || header[0].indexOf( QRegularExpression( "^http/1.\\d\\s+2\\d\\d", QRegularExpression::CaseInsensitiveOption )) == -1 )
+ 	{
+ #if defined (ENABLE_DEBUG_MESSAGES)
+ 		if ( !header.isEmpty() )
+@@ -252,11 +253,15 @@ void CheckNewVersion::run()
+ 	}
+ 
+ 	// Find content-length
+-	QRegExp clr( "^content-length: (\\d+)$" );
+-	clr.setCaseSensitivity( Qt::CaseInsensitive );
+-
+-	if ( header.indexOf( clr ) != -1 )
+-		contentlen = clr.cap( 1 ).toInt();
++	{
++		QRegularExpression clr( "^content-length: (\\d+)$", QRegularExpression::CaseInsensitiveOption );
++		auto index = header.indexOf( clr );
++		if ( index != -1 )
++		{
++			QRegularExpressionMatch clr_match = clr.match(header[index]);
++			contentlen = clr_match.captured( 1 ).toInt();
++		}
++	}
+ 
+ 	// Read the rest of content until we have contentlen or connection closed
+ 	while ( contentlen == -1 || contentlen < m_inputOffset )
+@@ -284,15 +289,16 @@ void CheckNewVersion::run()
+ 	reportStatus( Status_Proceeding );
+ 
+ 	m_inputBuffer.replace( '\r', '\n' );
+-	QStringList content_list = QString::fromUtf8( m_inputBuffer ).split( '\n', QString::SkipEmptyParts );
++	QStringList content_list = QString::fromUtf8( m_inputBuffer ).split( '\n', Qt::SkipEmptyParts );
+ 	QMap<QString,QString> contentMap;
+ 
+ 	// Validate the file, and parse it into map
+ 	for ( int i = 0; i < content_list.size(); i++ )
+ 	{
+-		QRegExp reg( "^(\\w+)\\s*:(.*)$" );
++		QRegularExpression reg( "^(\\w+)\\s*:(.*)$" );
+ 
+-		if ( content_list[i].indexOf( reg ) == -1 )
++		auto index = content_list[i].indexOf( reg );
++		if ( index == -1 )
+ 		{
+ #if defined (ENABLE_DEBUG_MESSAGES)
+ 			qDebug("CheckNewVersion::run: invalid line found: '%s'", qPrintable( content_list[i] ) );
+@@ -302,10 +308,11 @@ void CheckNewVersion::run()
+ 		}
+ 
+ 		// Decode \n back to 0x0A
+-		QString value = reg.cap( 2 ).trimmed();
++		QRegularExpressionMatch reg_match = reg.match(content_list[i][index]);
++		QString value = reg_match.captured( 2 ).trimmed();
+ 		value.replace( "\\n", "\n" );
+ 		value.replace( "\\\\", "\\" );
+-		contentMap[ reg.cap(1) ] = value;
++		contentMap[ reg_match.captured(1) ] = value;
+ 	}
+ 
+ 	// Validate signature
+@@ -357,7 +364,7 @@ QString CheckNewVersion::readLine()
+ 
+ 		// No line in buffer yet
+ 		if ( m_inputOffset + 1 > m_inputBuffer.size() )
+-			return QString::null;
++			return QString();
+ 
+ 		int bytes = ::recv( m_sockfd, m_inputBuffer.data() + m_inputOffset, m_inputBuffer.size() - m_inputOffset, 0 );
+ 
+@@ -376,5 +383,5 @@ QString CheckNewVersion::readLine()
+ 		m_inputOffset += bytes;
+ 	}
+ 
+-	return QString::null;
++	return QString();
+ }
+diff --git a/src/dialog_setup.cpp b/src/dialog_setup.cpp
+index 4503a6b..96b287f 100644
+--- a/src/dialog_setup.cpp
++++ b/src/dialog_setup.cpp
+@@ -212,8 +212,8 @@ void DialogSetup::browseExternalEditor()
+         QString exec = KFileDialog::getOpenFileName( KUrl(), i18n("*|Executables"), this, i18n("Choose an editor executable"));
+ #else
+ 	QString exec = QFileDialog::getOpenFileName(this,
+-								i18n("Choose an editor executable"), 
+-			   					QString::null, 
++								i18n("Choose an editor executable"),
++								QString(),
+ 	  							i18n( "Executables (*)") );
+ #endif
+ 
+diff --git a/src/mainwindow.cpp b/src/mainwindow.cpp
+index 2e4850e..c6f9d5d 100644
+--- a/src/mainwindow.cpp
++++ b/src/mainwindow.cpp
+@@ -21,6 +21,7 @@
+ #include <QSettings>
+ #include <QDateTime>
+ #include <QTextStream>
++#include <QActionGroup>
+ 
+ #include "kde-qt.h"
+ 
+@@ -403,7 +404,7 @@ bool MainWindow::openPage( const QUrl& url, unsigned int flags )
+ 				 i18n("%1 - remote link clicked - %2") . arg(QCoreApplication::applicationName()) . arg(otherlink),
+ 				 i18n("A remote link %1 will start the external program to open it.\n\nDo you want to continue?").arg( url.toString() ),
+ 				 i18n("&Yes"), i18n("&No"),
+-				 QString::null, 0, 1 ) )
++				 QString(), 0, 1 ) )
+ 					return false;
+ 				
+ 			// no break! should continue to open.
+@@ -894,7 +895,7 @@ void MainWindow::actionExtractCHM()
+ 	QString outdir = QFileDialog::getExistingDirectory (
+ 		this,
+ 		i18n("Choose a directory to store CHM content"),
+-		QString::null,
++		QString(),
+ 		QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks );
+ #endif
+ 	
+@@ -1350,7 +1351,7 @@ void MainWindow::setupLangEncodingMenu()
+ 		
+ 		QString text = i18n("%1 ( %2 )") .arg( languages[idx] ) .arg( qencodings[idx] );
+ 		action->setText( text );
+-		action->setData( qVariantFromValue( qencodings[idx] ) );
++		action->setData( QVariant::fromValue( qencodings[idx] ) );
+ 		action->setCheckable( true );
+ 		
+ 		// Add to the action group, so only one is checkable
+diff --git a/src/recentfiles.cpp b/src/recentfiles.cpp
+index 3d9fe95..50fb91b 100644
+--- a/src/recentfiles.cpp
++++ b/src/recentfiles.cpp
+@@ -111,7 +111,7 @@ QString	RecentFiles::latestFile()
+ 	QStringList files = loadRecentFiles();
+ 
+ 	if ( files.isEmpty() )
+-		return QString::null;
++		return QString();
+ 	else
+ 		return files[0];
+ }
+diff --git a/src/recentfiles.h b/src/recentfiles.h
+index 1ba0633..4549bf6 100644
+--- a/src/recentfiles.h
++++ b/src/recentfiles.h
+@@ -39,7 +39,7 @@ class RecentFiles : public QObject
+ 
+ 	public:
+ 		// A constructor specifies the menu to add recent files to, and the action to add it before.
+-		RecentFiles( QMenu * menu, QAction * before, int maxfiles = 5, const QString& settingsname = QString::null );
++		RecentFiles( QMenu * menu, QAction * before, int maxfiles = 5, const QString& settingsname = QString() );
+ 		virtual ~RecentFiles();
+ 
+ 	signals:
+diff --git a/src/settings.cpp b/src/settings.cpp
+index d749624..3134fc0 100644
+--- a/src/settings.cpp
++++ b/src/settings.cpp
+@@ -129,15 +129,15 @@ bool Settings::loadSettings( const QString & filename )
+ 
+ 	QFileInfo finfo ( filename );
+ 
+-	m_settingsFile = QString::null;
+-	m_searchIndex = QString::null;
+-	
++	m_settingsFile.clear();
++	m_searchIndex.clear();
++
+ 	if ( !finfo.size() )
+ 		return false;
+ 	
+ 	// Init those params, as they'll be used during save the first time even if the file is not here
+ 	m_currentfilesize = finfo.size();
+-	m_currentfiledate = finfo.lastModified().toTime_t();
++	m_currentfiledate = finfo.lastModified().toMSecsSinceEpoch();
+ 	m_settingsFile = pConfig->getEbookSettingFile( filename );
+ 	m_searchIndex = pConfig->getEbookIndexFile( filename );
+ 	
+@@ -189,9 +189,9 @@ bool Settings::loadSettings( const QString & filename )
+ 			
+ 		case MARKER_FILETIME:
+ 			stream >> m_currentfiledate;
+-			if ( m_currentfiledate != finfo.lastModified().toTime_t() )
++			if ( m_currentfiledate != finfo.lastModified().toMSecsSinceEpoch() )
+ 			{
+-				m_currentfiledate = finfo.lastModified().toTime_t();
++				m_currentfiledate = finfo.lastModified().toMSecsSinceEpoch();
+ 				return false;
+ 			}
+ 			break;
+diff --git a/src/settings.h b/src/settings.h
+index 5337ec7..2923069 100644
+--- a/src/settings.h
++++ b/src/settings.h
+@@ -71,8 +71,8 @@ class Settings
+ 		viewindow_saved_settings_t	m_viewwindows;
+ 	
+ 	private:
+-		unsigned int				m_currentfilesize;
+-		unsigned int				m_currentfiledate;
++		qint64				m_currentfilesize;
++		qint64				m_currentfiledate;
+ 		QString						m_settingsFile;
+ 		QString						m_searchIndex;
+ };
+diff --git a/src/src.pro b/src/src.pro
+index 14c31a1..6f09b59 100644
+--- a/src/src.pro
++++ b/src/src.pro
+@@ -107,26 +107,8 @@ unix:!macx: {
+ }
+ LIBS += -lchm -lzip
+ 
+-greaterThan(QT_MAJOR_VERSION, 4) {
+-    # Qt 5
+-    greaterThan(QT_MINOR_VERSION, 5) {
+-        # Qt 5.6+
+-#        error("You use Qt5.6+ - QWebEngine is not yet suitable for kchmviewer and is not supported")
+-        QT += webengine webenginewidgets
+-        DEFINES += USE_WEBENGINE
+-        SOURCES += viewwindow_webengine.cpp dataprovider_qwebengine.cpp
+-        HEADERS += dataprovider_qwebengine.h viewwindow_webengine.h
+-    } else {
+-        # Qt 5.0-5.5
+-        QT += webkit webkitwidgets
+-        DEFINES += USE_WEBKIT
+-        SOURCES += viewwindow_webkit.cpp dataprovider_qwebkit.cpp
+-        HEADERS += dataprovider_qwebkit.h viewwindow_webkit.h
+-    }
+-} else {
+-    message("Qt4 is not supported anymore, please do not report any errors")
+-    QT += webkit webkitwidgets
+-    DEFINES += USE_WEBKIT
+-    SOURCES += viewwindow_webkit.cpp dataprovider_qwebkit.cpp
+-    HEADERS += dataprovider_qwebkit.h viewwindow_webkit.h
+-}
++QT += core5compat webenginecore webenginewidgets
++DEFINES += USE_WEBENGINE
++SOURCES += viewwindow_webengine.cpp dataprovider_qwebengine.cpp
++HEADERS += dataprovider_qwebengine.h viewwindow_webengine.h
++
+diff --git a/src/tab_bookmarks.cpp b/src/tab_bookmarks.cpp
+index 85611f1..4edc860 100644
+--- a/src/tab_bookmarks.cpp
++++ b/src/tab_bookmarks.cpp
+@@ -32,8 +32,8 @@ class BookmarkItem : public QListWidgetItem
+ 			m_url = url;
+ 			m_scroll_y = pos;
+ 			m_action = new QAction( name, widget );
+-			m_action->setData( qVariantFromValue( (void*) this ) );
+-			
++			m_action->setData( QVariant::fromValue( (void*) this ) );
++
+ 			QObject::connect( m_action,
+ 			         SIGNAL( triggered() ),
+ 			         widget,
+diff --git a/src/treeitem_index.cpp b/src/treeitem_index.cpp
+index 0e1e1ca..4e2f27a 100644
+--- a/src/treeitem_index.cpp
++++ b/src/treeitem_index.cpp
+@@ -53,7 +53,7 @@ QUrl TreeItem_Index::getUrl() const
+ 		if ( title.isEmpty() )
+ 		{
+ 			qWarning( "Could not get item name for url '%s'", qPrintable( m_urls[i].toString() ) );
+-			titles.push_back(QString::null);
++			titles.push_back(QString());
+ 		}
+ 		else
+ 			titles.push_back(title);
+diff --git a/src/viewwindow_webengine.cpp b/src/viewwindow_webengine.cpp
+index 1bcdf6f..bb575c3 100644
+--- a/src/viewwindow_webengine.cpp
++++ b/src/viewwindow_webengine.cpp
+@@ -20,12 +20,12 @@
+ #include <QString>
+ #include <QPrinter>
+ #include <QPrintDialog>
++#include <QWebEngineContextMenuRequest>
+ #include <QWebEngineHistory>
+ #include <QWebEngineView>
+ #include <QWebEnginePage>
+ #include <QWebEngineProfile>
+ #include <QWebEngineSettings>
+-#include <QWebEngineContextMenuData>
+ 
+ #include "config.h"
+ #include "viewwindow_webengine.h"
+@@ -100,7 +100,7 @@ ViewWindow::~ViewWindow()
+ 
+ void ViewWindow::invalidate( )
+ {
+-    m_newTabLinkKeeper = QString::null;
++	m_newTabLinkKeeper.clear();
+     m_storedScrollbarPosition = 0;
+     reload();
+ }
+@@ -202,10 +202,7 @@ bool ViewWindow::printCurrentPage()
+         return false;
+     }
+ 
+-    page()->print( printer, [printer](bool ok){
+-            ::mainWindow->showInStatusBar( ok ? i18n( "Printing finished successfully") : i18n( "Failed to print") );
+-            delete printer;
+-        });
++	print( printer );
+ 
+     return true;
+ }
+@@ -281,15 +278,19 @@ void ViewWindow::contextMenuEvent(QContextMenuEvent *e)
+     QMenu *m = new QMenu(0);
+ 
+     // See https://stackoverflow.com/questions/48126230/pyqt5-right-click-and-open-in-new-tab
+-    QString link = page()->contextMenuData().linkUrl().toString();
+-
+-    if ( !link.isEmpty() )
+-    {
+-        m->addAction( i18n("Open Link in a new tab\tShift+LMB"), ::mainWindow, SLOT( onOpenPageInNewTab() ) );
+-        m->addAction( i18n("Open Link in a new background tab\tCtrl+LMB"), ::mainWindow, SLOT( onOpenPageInNewBackgroundTab() ) );
+-        m->addSeparator();
+-        setTabKeeper( link );
+-    }
++	auto context_menu = lastContextMenuRequest();
++	if (context_menu)
++	{
++		QString link = context_menu->linkUrl().toString();
++
++		if ( !link.isEmpty() )
++		{
++			m->addAction( i18n("Open Link in a new tab\tShift+LMB"), ::mainWindow, SLOT( onOpenPageInNewTab() ) );
++			m->addAction( i18n("Open Link in a new background tab\tCtrl+LMB"), ::mainWindow, SLOT( onOpenPageInNewBackgroundTab() ) );
++			m->addSeparator();
++			setTabKeeper( link );
++		}
++	}
+ 
+     ::mainWindow->setupPopupMenu( m );
+     m->exec( e->globalPos() );
+@@ -345,7 +346,7 @@ void ViewWindow::onLoadFinished ( bool )
+ 
+ void ViewWindow::applySettings()
+ {
+-    QWebEngineSettings * setup = QWebEngineSettings::globalSettings();
++    QWebEngineSettings * setup = QWebEngineProfile::defaultProfile()->settings();
+ 
+     setup->setAttribute( QWebEngineSettings::AutoLoadImages, pConfig->m_browserEnableImages );
+     setup->setAttribute( QWebEngineSettings::JavascriptEnabled, pConfig->m_browserEnableJS );
+diff --git a/src/viewwindowmgr.cpp b/src/viewwindowmgr.cpp
+index 29a21fc..daf229c 100644
+--- a/src/viewwindowmgr.cpp
++++ b/src/viewwindowmgr.cpp
+@@ -21,6 +21,7 @@
+ #include "viewwindow.h"
+ #include "viewwindowmgr.h"
+ 
++#include <QWebEngineFindTextResult>
+ 
+ // A small overriden class to handle a middle click
+ class ViewWindowTabWidget : public QTabWidget
+@@ -31,7 +32,7 @@ class ViewWindowTabWidget : public QTabWidget
+ 	protected:
+ 		void mouseReleaseEvent ( QMouseEvent * event )
+ 		{
+-			if ( event->button() == Qt::MidButton)
++			if ( event->button() == Qt::MiddleButton)
+ 			{
+ 				int tab = tabBar()->tabAt( event->pos() );
+ 
+@@ -350,7 +351,7 @@ void ViewWindowMgr::onActivateFind()
+ void ViewWindowMgr::find( bool backward )
+ {
+ #if defined (USE_WEBENGINE)
+-    QWebEnginePage::FindFlags flags = 0;
++	QWebEnginePage::FindFlags flags = {};
+ 
+     if ( checkCase->isChecked() )
+         flags |= QWebEnginePage::FindCaseSensitively;
+@@ -361,14 +362,14 @@ void ViewWindowMgr::find( bool backward )
+     // Pre-hide the wrapper
+     labelWrapped->hide();
+ 
+-    current()->findText( editFind->text(), flags, [this](bool found) {
++    current()->findText( editFind->text(), flags, [this](const QWebEngineFindTextResult &result) {
+         // If we didn't find anything, enable the wrap and try again
+         if ( !frameFind->isVisible() )
+             frameFind->show();
+ 
+         QPalette p = editFind->palette();
+ 
+-        if ( !found )
++		if ( result.numberOfMatches() == 0 )
+             p.setColor( QPalette::Active, QPalette::Base, QColor(255, 102, 102) );
+         else
+             p.setColor( QPalette::Active, QPalette::Base, Qt::white );
+-- 
+2.44.2
+

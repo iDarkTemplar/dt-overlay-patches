@@ -1,7 +1,7 @@
 # Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 inherit desktop qmake-utils xdg-utils
 
@@ -21,14 +21,9 @@ IUSE=""
 DEPEND="
 	dev-libs/chmlib
 	dev-libs/libzip:=
-	dev-qt/qtcore:5
-	dev-qt/qtdbus:5
-	dev-qt/qtgui:5
-	dev-qt/qtnetwork:5
-	dev-qt/qtprintsupport:5
-	dev-qt/qtwidgets:5
-	dev-qt/qtxml:5
-	dev-qt/qtwebengine:5[widgets]
+	dev-qt/qtbase:6[dbus,gui,network,xml,widgets]
+	dev-qt/qt5compat:6
+	dev-qt/qtwebengine:6[widgets]
 "
 RDEPEND="${DEPEND}"
 
@@ -39,13 +34,15 @@ PATCHES=(
 	"${FILESDIR}/${P}-disable-linkClicked-signal.patch"
 	"${FILESDIR}/${P}-implement-opening-additional-windows.patch"
 	"${FILESDIR}/${P}-synchronize-url-with-navigation-panel.patch"
+	"${FILESDIR}/${P}-port-to-qt6.patch"
 	"${FILESDIR}/${P}-remove-updates-check.patch"
 	"${FILESDIR}/${P}-remove-whats-this-function.patch"
 	"${FILESDIR}/${P}-remove-debug-output.patch"
+	"${FILESDIR}/${P}-upstream-return-initialization.patch"
 )
 
 src_configure() {
-	eqmake5
+	eqmake6
 }
 
 src_install() {
