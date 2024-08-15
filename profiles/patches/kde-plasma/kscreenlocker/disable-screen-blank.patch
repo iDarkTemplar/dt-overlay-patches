@@ -1,0 +1,23 @@
+diff --git a/greeter/greeterapp.cpp b/greeter/greeterapp.cpp
+index 4c1d621..739b746 100644
+--- a/greeter/greeterapp.cpp
++++ b/greeter/greeterapp.cpp
+@@ -616,18 +616,6 @@ bool UnlockApp::eventFilter(QObject *obj, QEvent *event)
+         if (ke->key() != Qt::Key_Escape) {
+             shareEvent(event, qobject_cast<PlasmaQuick::QuickViewSharedEngine *>(obj));
+             return false; // irrelevant
+-        } else {
+-            auto dpms = new KScreen::Dpms(this);
+-            if (dpms->isSupported()) {
+-                connect(dpms, &KScreen::Dpms::hasPendingChangesChanged, this, [dpms](bool hasPendingChanges) {
+-                    if (!hasPendingChanges) {
+-                        dpms->deleteLater();
+-                    }
+-                });
+-                dpms->switchMode(KScreen::Dpms::Off);
+-            } else {
+-                dpms->deleteLater();
+-            }
+         }
+         return true; // don't pass
+     }
