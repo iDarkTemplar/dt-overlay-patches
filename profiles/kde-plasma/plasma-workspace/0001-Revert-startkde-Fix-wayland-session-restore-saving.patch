@@ -1,0 +1,26 @@
+From a3506813e0c1eec8eaafcea144c1b1264ba01d57 Mon Sep 17 00:00:00 2001
+From: Dark Templar <darktemplar@dark-templar-archives.net>
+Date: Mon, 16 Sep 2024 01:55:58 +0200
+Subject: [PATCH] Revert "startkde: Fix wayland session restore saving"
+
+This reverts commit 4dff1973116597210cf9fb1c102e5c9433d13b1d.
+---
+ startkde/plasma-shutdown/shutdown.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/startkde/plasma-shutdown/shutdown.cpp b/startkde/plasma-shutdown/shutdown.cpp
+index ab93cca6ef..11c002bcd8 100644
+--- a/startkde/plasma-shutdown/shutdown.cpp
++++ b/startkde/plasma-shutdown/shutdown.cpp
+@@ -84,7 +84,7 @@ void Shutdown::ksmServerComplete()
+ {
+     const KConfigGroup c(KSharedConfig::openConfig(QStringLiteral("ksmserverrc")), QStringLiteral("General"));
+ 
+-    if (c.readEntry("loginMode", "restorePreviousLogout") == QLatin1String("restorePreviousLogout")) {
++    if (c.readEntry("loginMode", "restorePreviousLogout") == QLatin1String("restoreSavedSession")) {
+         // Now record windows that are not session managed
+         int ret = QProcess::execute(QStringLiteral(PLASMA_FALLBACK_SESSION_SAVE_BIN));
+         if (ret) {
+-- 
+2.44.2
+
