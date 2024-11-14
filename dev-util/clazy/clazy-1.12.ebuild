@@ -4,7 +4,7 @@
 EAPI=8
 
 LLVM_MAX_SLOT=18
-PYTHON_COMPAT=( python3_{10..12} )
+PYTHON_COMPAT=( python3_{11..13} )
 inherit cmake llvm python-any-r1
 
 DESCRIPTION="Compiler plugin which allows clang to understand Qt semantics"
