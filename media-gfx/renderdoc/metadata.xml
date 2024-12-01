@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>darktemplar@dark-templar-archives.net</email>
+		<name>i.Dark_Templar</name>
+	</maintainer>
+	<use>
+		<flag name="qt5">
+			Build and install the qrenderdoc GUI
+		</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">baldurk/renderdoc</remote-id>
+	</upstream>
+</pkgmetadata>
