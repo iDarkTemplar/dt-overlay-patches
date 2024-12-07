@@ -5,7 +5,7 @@ EAPI=8
 
 PYTHON_COMPAT=( python3_{11..13} )
 # matches media-libs/osl
-LLVM_COMPAT=( {15..18} )
+LLVM_COMPAT=( {15..19} )
 
 inherit check-reqs cmake cuda flag-o-matic llvm-r1 pax-utils python-single-r1 toolchain-funcs xdg-utils
 
