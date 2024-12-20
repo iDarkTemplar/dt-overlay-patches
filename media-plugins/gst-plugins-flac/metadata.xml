@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>darktemplar@dark-templar-archives.net</email>
+		<name>i.Dark_Templar</name>
+	</maintainer>
+	<longdescription lang="en">
+		GStreamer plugin for The FLAC Lossless compressor Codec
+
+		Includes the following elements:
+		* flacdec - Decodes FLAC lossless audio streams
+		* flacenc - Encodes audio with the FLAC lossless audio encoder
+		* flactag - Rewrite tags in a FLAC file
+	</longdescription>
+</pkgmetadata>

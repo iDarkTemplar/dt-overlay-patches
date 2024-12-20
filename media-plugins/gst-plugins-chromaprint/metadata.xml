@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>darktemplar@dark-templar-archives.net</email>
+		<name>i.Dark_Templar</name>
+	</maintainer>
+	<longdescription lang="en">
+		GStreamer plugin for calculating Chromaprint fingerprint from audio files.
+
+		Includes the following elements:
+		* chromaprint - Find an audio fingerprint using the Chromaprint library
+	</longdescription>
+</pkgmetadata>
