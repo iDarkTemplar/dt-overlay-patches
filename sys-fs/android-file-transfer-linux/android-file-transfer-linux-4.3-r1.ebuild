@@ -38,7 +38,7 @@ RDEPEND="
 	qt6? (
 		dev-qt/qtbase:6[gui,network,widgets]
 	)
-	taglib? ( media-libs/taglib )
+	taglib? ( media-libs/taglib:= )
 	zune? (
 		dev-libs/openssl:0=
 	)
