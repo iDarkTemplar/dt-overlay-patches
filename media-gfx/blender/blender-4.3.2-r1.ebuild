@@ -72,18 +72,14 @@ RDEPEND="${PYTHON_DEPS}
 	color-management? ( media-libs/opencolorio:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
 	embree? ( media-libs/embree:=[raymask] )
-	ffmpeg? ( media-video/ffmpeg:=[x264,mp3,encode,theora,jpeg2k?,vpx,vorbis,opus,xvid] )
-	fftw? ( sci-libs/fftw:3.0= )
-	gmp? ( dev-libs/gmp )
-	gnome? ( gui-libs/libdecor )
-	hip? (
-		llvm_slot_17? (
-			dev-util/hip:0/5.7
-		)
-		llvm_slot_18? (
-			>=dev-util/hip-6.1:=[llvm_slot_18(-)]
-		)
+	ffmpeg? (
+		media-video/ffmpeg:=[encode(+),jpeg2k?,opus,theora,vorbis,vpx,x264,xvid]
+		|| ( media-video/ffmpeg[lame(-)] media-video/ffmpeg[mp3(-)] )
 	)
+	fftw? ( sci-libs/fftw:3.0= )
+	gmp? ( dev-libs/gmp[cxx] )
+	gnome? ( gui-libs/libdecor )
+	hip? ( >=dev-util/hip-5.7:=[${LLVM_USEDEP}] )
 	jack? ( virtual/jack )
 	jemalloc? ( dev-libs/jemalloc:= )
 	jpeg2k? ( media-libs/openjpeg:2= )
@@ -181,6 +177,8 @@ PATCHES=(
 	"${FILESDIR}/${PN}-2.92-include-deduplication-check-skip.patch"
 	"${FILESDIR}/${PN}-4.0.2-FindClang.patch"
 	"${FILESDIR}/${PN}-4.0.2-CUDA_NVCC_FLAGS.patch"
+	"${FILESDIR}/${PN}-4.1.1-FindLLVM.patch"
+	"${FILESDIR}/${PN}-4.1.1-numpy.patch"
 )
 
 CMAKE_BUILD_TYPE="Release"
@@ -250,11 +248,12 @@ src_configure() {
 		-DWITH_ALEMBIC=$(usex alembic)
 		-DWITH_ASSERT_ABORT=$(usex debug)
 		-DWITH_BOOST=yes
+		-DWITH_BUILDINFO="no"
 		-DWITH_BULLET=$(usex bullet)
 		-DWITH_CODEC_FFMPEG=$(usex ffmpeg)
 		-DWITH_CODEC_SNDFILE=$(usex sndfile)
 		-DWITH_CXX_GUARDEDALLOC=$(usex debug)
-		-DWITH_CPU_CHECK="no"
+		-DWITH_CPU_CHECK=no
 		-DWITH_CYCLES=$(usex cycles)
 		-DWITH_CYCLES_DEVICE_CUDA=$(usex cuda)
 		-DWITH_CYCLES_CUDA_BINARIES="$(usex cuda $(usex cycles-bin-kernels))"
@@ -274,9 +273,7 @@ src_configure() {
 		-DWITH_EXPERIMENTAL_FEATURES="$(usex experimental)"
 		-DWITH_FFTW3=$(usex fftw)
 		-DWITH_GHOST_WAYLAND=$(usex wayland)
-		-DWITH_GHOST_WAYLAND_APP_ID="blender-${BV}"
 		-DWITH_GHOST_WAYLAND_DYNLOAD="no"
-		-DWITH_GHOST_WAYLAND_LIBDECOR="$(usex gnome)"
 		-DWITH_GHOST_X11=$(usex X)
 		-DWITH_GMP=$(usex gmp)
 		-DWITH_GTESTS=OFF
@@ -327,6 +324,13 @@ src_configure() {
 		-DWITH_XR_OPENXR=no
 	)
 
+	if has_version ">=dev-python/numpy-2"; then
+		mycmakeargs+=(
+			-DPYTHON_NUMPY_INCLUDE_DIRS="$(python_get_sitedir)/numpy/_core/include"
+			-DPYTHON_NUMPY_PATH="$(python_get_sitedir)/numpy/_core/include"
+		)
+	fi
+
 	if use cuda; then
 		mycmakeargs+=(
 			-DCUDA_NVCC_FLAGS="--compiler-bindir;$(cuda_gccdir)"
@@ -344,6 +348,13 @@ src_configure() {
 		mycmakeargs+=(
 			-DCYCLES_RUNTIME_OPTIX_ROOT_DIR="${EPREFIX}"/opt/optix
 			-DOPTIX_ROOT_DIR="${EPREFIX}"/opt/optix
+		)
+	fi
+
+	if use wayland; then
+		mycmakeargs+=(
+			-DWITH_GHOST_WAYLAND_APP_ID="blender-${MY_PV}"
+			-DWITH_GHOST_WAYLAND_LIBDECOR="$(usex gnome)"
 		)
 	fi
 
@@ -439,13 +450,6 @@ pkg_postinst() {
 		ewarn ""
 	fi
 
-	ewarn
-	ewarn "This ebuild does not unbundle the massive amount of 3rd party"
-	ewarn "libraries which are shipped with blender. Note that"
-	ewarn "these have caused security issues in the past."
-	ewarn "If you are concerned about security, file a bug upstream:"
-	ewarn "  https://developer.blender.org/"
-	ewarn
 	xdg_icon_cache_update
 	xdg_mimeinfo_database_update
 	xdg_desktop_database_update
