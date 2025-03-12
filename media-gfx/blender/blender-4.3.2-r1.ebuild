@@ -179,6 +179,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-4.0.2-CUDA_NVCC_FLAGS.patch"
 	"${FILESDIR}/${PN}-4.1.1-FindLLVM.patch"
 	"${FILESDIR}/${PN}-4.1.1-numpy.patch"
+	"${FILESDIR}/${PN}-4.3.2-ffmpeg7.patch"
 )
 
 CMAKE_BUILD_TYPE="Release"
