@@ -4,10 +4,15 @@
 EAPI=8
 
 PYTHON_COMPAT=( python3_{11..13} )
-# matches media-libs/osl
-LLVM_COMPAT=( {15..19} )
+# NOTE must match media-libs/osl
+LLVM_COMPAT=( {18..19} )
+LLVM_OPTIONAL=1
 
-inherit check-reqs cmake cuda flag-o-matic llvm-r1 pax-utils python-single-r1 toolchain-funcs xdg-utils
+ROCM_SKIP_GLOBALS=1
+
+inherit cuda rocm llvm-r1
+inherit check-reqs flag-o-matic pax-utils python-single-r1 toolchain-funcs
+inherit cmake xdg-utils
 
 DESCRIPTION="3D Creation/Animation/Publishing System"
 HOMEPAGE="https://www.blender.org"
@@ -19,16 +24,18 @@ SRC_URI="https://download.blender.org/source/${P}.tar.xz"
 MY_PV="$(ver_cut 1-2)"
 
 SLOT="0"
-LICENSE="GPL-3+ cycles? ( Apache-2.0 )"
+# assets is CC0-1.0
+LICENSE="GPL-3+ cycles? ( Apache-2.0 ) CC0-1.0"
 KEYWORDS="~amd64"
 IUSE="
 	alembic +bullet collada +color-management cuda +cycles cycles-bin-kernels
 	debug doc +embree experimental +ffmpeg +fftw +fluid +gmp gnome hip jack
-	jemalloc jpeg2k man +nanovdb ndof nls +oceansim oidn oneapi openal +openexr +openmp +openpgl
-	+opensubdiv +openvdb optix osl +otf +pdf +potrace +pugixml pulseaudio
-	renderdoc sdl +sndfile +tbb +tiff valgrind vulkan wayland +webp X"
+	jemalloc jpeg2k man +nanovdb ndof nls +oceansim oidn openal +openexr +opengl +openmp +openpgl
+	+opensubdiv +openvdb optix osl pipewire +pdf +potrace +pugixml pulseaudio
+	renderdoc sdl +sndfile +tbb +tiff +truetype valgrind vulkan wayland +webp X"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
+	|| ( opengl vulkan )
 	alembic? ( openexr )
 	cuda? ( cycles )
 	cycles? ( openexr tiff tbb )
@@ -46,7 +53,7 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 RDEPEND="${PYTHON_DEPS}
 	app-arch/zstd
 	dev-cpp/gflags:=
-	dev-cpp/glog[gflags(+)]
+	dev-cpp/glog:=[gflags(+)]
 	dev-libs/boost:=[nls?]
 	dev-libs/lzo:2=
 	$(python_gen_cond_dep '
@@ -66,17 +73,20 @@ RDEPEND="${PYTHON_DEPS}
 	sys-libs/zlib:=
 	virtual/glu
 	virtual/libintl
-	virtual/opengl
+	virtual/opengl[X?]
 	alembic? ( >=media-gfx/alembic-1.8.3-r2[boost(+),hdf(+)] )
+	bullet? ( sci-physics/bullet:=[double-precision] )
 	collada? ( >=media-libs/opencollada-1.6.68 )
 	color-management? ( media-libs/opencolorio:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
 	embree? ( media-libs/embree:=[raymask] )
 	ffmpeg? ( media-video/ffmpeg:=[encode(+),lame(-),jpeg2k?,opus,theora,vorbis,vpx,x264,xvid] )
-	fftw? ( sci-libs/fftw:3.0= )
+	fftw? ( sci-libs/fftw:3.0=[threads] )
 	gmp? ( dev-libs/gmp[cxx] )
 	gnome? ( gui-libs/libdecor )
-	hip? ( >=dev-util/hip-5.7:=[${LLVM_USEDEP}] )
+	hip? (
+		>=dev-util/hip-5.7:=
+	)
 	jack? ( virtual/jack )
 	jemalloc? ( dev-libs/jemalloc:= )
 	jpeg2k? ( media-libs/openjpeg:2= )
@@ -87,17 +97,12 @@ RDEPEND="${PYTHON_DEPS}
 	nls? ( virtual/libiconv )
 	openal? ( media-libs/openal )
 	oidn? ( >=media-libs/oidn-2.1.0 )
-	oneapi? ( || (
-			dev-libs/intel-compute-runtime:0[l0]
-			dev-libs/intel-compute-runtime:legacy[l0]
-		)
-	)
 	openexr? (
 		>=dev-libs/imath-3.1.7:=
 		>=media-libs/openexr-3.2.1:0=
 	)
 	openpgl? ( media-libs/openpgl:= )
-	opensubdiv? ( >=media-libs/opensubdiv-3.5.0 )
+	opensubdiv? ( >=media-libs/opensubdiv-3.6.0-r2[opengl,cuda?,openmp?,tbb?] )
 	openvdb? (
 		>=media-gfx/openvdb-11.0.0:=[nanovdb?]
 		dev-libs/c-blosc:=
@@ -130,7 +135,7 @@ RDEPEND="${PYTHON_DEPS}
 		dev-util/glslang
 		media-libs/vulkan-loader
 	)
-	otf? (
+	truetype? (
 		media-libs/harfbuzz
 	)
 	renderdoc? (
@@ -146,10 +151,6 @@ RDEPEND="${PYTHON_DEPS}
 
 DEPEND="${RDEPEND}
 	dev-cpp/eigen:=
-	vulkan? (
-		dev-util/spirv-headers
-		dev-util/vulkan-headers
-	)
 "
 
 BDEPEND="
@@ -164,6 +165,10 @@ BDEPEND="
 		dev-texlive/texlive-latex
 		dev-texlive/texlive-latexextra
 	)
+	vulkan? (
+		dev-util/spirv-headers
+		dev-util/vulkan-headers
+	)
 	nls? ( sys-devel/gettext )
 	wayland? (
 		dev-util/wayland-scanner
@@ -174,13 +179,11 @@ BDEPEND="
 "
 
 PATCHES=(
-	"${FILESDIR}/${PN}-2.82-use-system-glog.patch"
-	"${FILESDIR}/${PN}-2.92-include-deduplication-check-skip.patch"
 	"${FILESDIR}/${PN}-4.0.2-FindClang.patch"
-	"${FILESDIR}/${PN}-4.0.2-CUDA_NVCC_FLAGS.patch"
 	"${FILESDIR}/${PN}-4.1.1-FindLLVM.patch"
 	"${FILESDIR}/${PN}-4.1.1-numpy.patch"
-	"${FILESDIR}/${PN}-4.3.2-ffmpeg7.patch"
+	"${FILESDIR}/${PN}-4.3.2-system-gtest.patch"
+	"${FILESDIR}/${PN}-4.4.0-optix-compile-flags.patch"
 )
 
 CMAKE_BUILD_TYPE="Release"
@@ -195,21 +198,15 @@ blender_check_requirements() {
 
 pkg_pretend() {
 	blender_check_requirements
-
-	if use oneapi; then
-		einfo "The Intel oneAPI support is rudimentary."
-		einfo ""
-		einfo "Please report any bugs you find to https://bugs.gentoo.org/"
-	fi
 }
 
 pkg_setup() {
+	blender_check_requirements
+	python-single-r1_pkg_setup
+
 	if use osl; then
 		llvm-r1_pkg_setup
 	fi
-
-	blender_check_requirements
-	python-single-r1_pkg_setup
 }
 
 src_prepare() {
@@ -217,17 +214,23 @@ src_prepare() {
 
 	cmake_src_prepare
 
-	# Disable MS Windows help generation. The variable doesn't do what it
-	# it sounds like.
-	sed -e "s|GENERATE_HTMLHELP      = YES|GENERATE_HTMLHELP      = NO|" \
-		-i doc/doxygen/Doxyfile || die
+	sed \
+		-e "s#\(set(cycles_kernel_runtime_lib_target_path \)\${cycles_kernel_runtime_lib_target_path}\(/lib)\)#\1\${CYCLES_INSTALL_PATH}\2#" \
+		-i intern/cycles/kernel/CMakeLists.txt \
+		|| die
+
+	if use hip; then
+		# fix hardcoded path
+		sed \
+			-e "s#opt/rocm/hip/bin#$(hipconfig -p)/bin#g" \
+			-i extern/hipew/src/hipew.c \
+			|| die
+	fi
+
+	cmake_comment_add_subdirectory tests
 
 	# Remove bundled libraries which must not be used instead of system ones
 	rm -rf extern/{Eigen3,glew,lzo,gflags,glog}
-
-	if use vulkan; then
-		sed -e "s/extern_vulkan_memory_allocator/extern_vulkan_memory_allocator\nSPIRV-Tools-opt\nSPIRV-Tools\nSPIRV-Tools-link\nglslang\nSPIRV\nSPVRemapper/" -i source/blender/gpu/CMakeLists.txt || die
-	fi
 }
 
 src_configure() {
@@ -242,88 +245,138 @@ src_configure() {
 	append-lfs-flags
 
 	local mycmakeargs=(
-		-DWITH_LIBS_PRECOMPILED=no
-		-DBUILD_SHARED_LIBS=no
+		# we build a host-specific binary
+		-DWITH_CPU_CHECK="no"
+
+		-DWITH_STRICT_BUILD_OPTIONS="yes"
+		-DWITH_LIBS_PRECOMPILED="no"
+		-DBUILD_SHARED_LIBS="no" # quadriflow only?
+		-DWITH_STATIC_LIBS=OFF
+
+		# Build Options:
+		-DWITH_ALEMBIC="$(usex alembic)"
+		-DWITH_BOOST="yes"
+		-DWITH_BULLET="$(usex bullet)"
+		-DWITH_CYCLES="$(usex cycles)"
+		-DWITH_DOC_MANPAGE="$(usex man)"
+		-DWITH_FFTW3="$(usex fftw)"
+		-DWITH_GMP="$(usex gmp)"
+		-DWITH_GTESTS=OFF
+		-DWITH_HARFBUZZ="$(usex truetype)"
+		-DWITH_HARU="$(usex pdf)"
+		-DWITH_HEADLESS="$(usex !X "$(use !wayland)")"
+		-DWITH_INPUT_NDOF="$(usex ndof)"
+		-DWITH_INTERNATIONAL="$(usex nls)"
+		-DWITH_MATERIALX="no" # TODO: Package MaterialX
+		-DWITH_NANOVDB="$(usex nanovdb)"
+		-DWITH_OPENCOLLADA="$(usex collada)"
+		-DWITH_OPENCOLORIO="$(usex color-management)"
+		-DWITH_OPENGL_BACKEND="$(usex opengl)"
+		-DWITH_OPENIMAGEDENOISE="$(usex oidn)"
+		-DWITH_OPENSUBDIV="$(usex opensubdiv)"
+		-DWITH_OPENVDB="$(usex openvdb)"
+		-DWITH_OPENVDB_BLOSC="$(usex openvdb)"
+		-DWITH_POTRACE="$(usex potrace)"
+		-DWITH_PUGIXML="$(usex pugixml)"
+		# -DWITH_QUADRIFLOW=ON
+		-DWITH_RENDERDOC="$(usex renderdoc)"
+		-DWITH_TBB="$(usex tbb)"
+		-DWITH_UNITY_BUILD="no"
+		-DWITH_USD="no" # TODO: Package USD
+		-DWITH_VULKAN_BACKEND="$(usex vulkan)" # experimental
+		-DWITH_XR_OPENXR="no"
+
+		-DWITH_SYSTEM_BULLET="yes"
+		-DWITH_SYSTEM_EIGEN3="yes"
+		-DWITH_SYSTEM_FREETYPE="yes"
+		-DWITH_SYSTEM_GFLAGS="yes"
+		-DWITH_SYSTEM_GLOG="yes"
+		-DWITH_SYSTEM_LZO="yes"
+
+		# Compiler Options:
+		-DWITH_BUILDINFO="no"
+		-DWITH_OPENMP="$(usex openmp)"
+
+		# System Options:
+		-DWITH_INSTALL_PORTABLE="no"
+		-DWITH_MEM_JEMALLOC="$(usex jemalloc)"
+		-DWITH_MEM_VALGRIND="$(usex valgrind)"
+
+		# GHOST Options:
+		-DWITH_GHOST_WAYLAND="$(usex wayland)"
+		-DWITH_GHOST_WAYLAND_APP_ID="blender-${BV}"
+		-DWITH_GHOST_WAYLAND_DYNLOAD="no"
+		-DWITH_GHOST_X11="$(usex X)"
+		# -DWITH_GHOST_XDND=ON
+		# -DWITH_X11_XF86VMODE=ON
+		# -DWITH_X11_XFIXES=ON
+		# -DWITH_X11_XINPUT=ON
+		# -DWITH_GHOST_WAYLAND_DYNLOAD # visible wayland?
+		# -DWITH_GHOST_WAYLAND_LIBDECOR # visible wayland?
+
+		# Image Formats:
+		# -DWITH_IMAGE_CINEON=ON
+		-DWITH_IMAGE_OPENEXR="$(usex openexr)"
+		-DWITH_IMAGE_OPENJPEG="$(usex jpeg2k)"
+		-DWITH_IMAGE_WEBP="$(usex webp)" # unlisted
+
+		# Audio:
+		# -DWITH_AUDASPACE=OFF
+		# -DWITH_SYSTEM_AUDASPACE=OFF
+		-DWITH_CODEC_FFMPEG="$(usex ffmpeg)"
+		-DWITH_CODEC_SNDFILE="$(usex sndfile)"
+		# -DWITH_COREAUDIO=OFF
+		-DWITH_JACK="$(usex jack)"
+		# -DWITH_JACK_DYNLOAD=
+		-DWITH_OPENAL="$(usex openal)"
+		-DWITH_PIPEWIRE="$(usex pipewire)"
+		# -DWITH_PIPEWIRE_DYNLOAD=
+		-DWITH_PULSEAUDIO="$(usex pulseaudio)"
+		# -DWITH_PULSEAUDIO_DYNLOAD=
+		-DWITH_SDL="$(usex sdl)"
+		# -DWITH_WASAPI=OFF
+
+		# Python:
+		# -DWITH_PYTHON=ON
+		-DWITH_PYTHON_INSTALL="no"
+		# -DWITH_PYTHON_INSTALL_NUMPY="no"
+		# -DWITH_PYTHON_INSTALL_ZSTANDARD="no"
+		# -DWITH_PYTHON_MODULE="no"
+		-DWITH_PYTHON_SAFETY=$(usex debug)
+		-DWITH_PYTHON_SECURITY="yes"
 		-DPYTHON_INCLUDE_DIR="$(python_get_includedir)"
 		-DPYTHON_LIBRARY="$(python_get_library_path)"
 		-DPYTHON_VERSION="${EPYTHON/python/}"
-		-DWITH_ALEMBIC=$(usex alembic)
-		-DWITH_ASSERT_ABORT=$(usex debug)
-		-DWITH_BOOST=yes
-		-DWITH_BUILDINFO="no"
-		-DWITH_BULLET=$(usex bullet)
-		-DWITH_CODEC_FFMPEG=$(usex ffmpeg)
-		-DWITH_CODEC_SNDFILE=$(usex sndfile)
-		-DWITH_CXX_GUARDEDALLOC=$(usex debug)
-		-DWITH_CPU_CHECK=no
-		-DWITH_CYCLES=$(usex cycles)
-		-DWITH_CYCLES_DEVICE_CUDA=$(usex cuda)
-		-DWITH_CYCLES_CUDA_BINARIES="$(usex cuda $(usex cycles-bin-kernels))"
-		-DWITH_CYCLES_DEVICE_OPTIX=$(usex optix)
-		-DWITH_CYCLES_DEVICE_HIP="$(usex hip)"
-		-DWITH_CYCLES_HIP_BINARIES=$(usex hip $(usex cycles-bin-kernels))
-		-DWITH_CYCLES_DEVICE_ONEAPI="$(usex oneapi)"
-		-DWITH_CYCLES_ONEAPI_BINARIES="$(usex oneapi $(usex cycles-bin-kernels))"
-		-DWITH_CYCLES_HYDRA_RENDER_DELEGATE="no" # TODO: package Hydra
-		-DWITH_CYCLES_EMBREE="$(usex embree)"
-		-DWITH_CYCLES_OSL=$(usex osl)
-		-DWITH_CYCLES_PATH_GUIDING=$(usex openpgl)
-		-DWITH_CYCLES_STANDALONE=no
-		-DWITH_CYCLES_STANDALONE_GUI=no
-		-DWITH_DOC_MANPAGE=$(usex man)
 		-DWITH_DRACO="no" # TODO: Package Draco
-		-DWITH_EXPERIMENTAL_FEATURES="$(usex experimental)"
-		-DWITH_FFTW3=$(usex fftw)
-		-DWITH_GHOST_WAYLAND=$(usex wayland)
-		-DWITH_GHOST_WAYLAND_DYNLOAD="no"
-		-DWITH_GHOST_X11=$(usex X)
-		-DWITH_GMP=$(usex gmp)
-		-DWITH_GTESTS=OFF
-		-DWITH_HARFBUZZ="$(usex otf)"
-		-DWITH_HARU=$(usex pdf)
-		-DWITH_HEADLESS=$($(use X || use wayland) && echo OFF || echo ON)
+
+		# Modifiers:
+		-DWITH_MOD_FLUID="$(usex fluid)"
+		# -DWITH_MOD_REMESH=ON
+		-DWITH_MOD_OCEANSIM="$(usex oceansim)"
+
+		# Rendering:
 		-DWITH_HYDRA="no" # TODO: Package Hydra
-		-DWITH_IMAGE_OPENEXR=$(usex openexr)
-		-DWITH_IMAGE_OPENJPEG=$(usex jpeg2k)
-		-DWITH_IMAGE_WEBP=$(usex webp)
-		-DWITH_INPUT_NDOF=$(usex ndof)
-		-DWITH_INSTALL_PORTABLE="no"
-		-DWITH_INTERNATIONAL=$(usex nls)
-		-DWITH_JACK=$(usex jack)
-		-DWITH_MATERIALX="no" # TODO: Package MaterialX
-		-DWITH_MEM_JEMALLOC=$(usex jemalloc)
-		-DWITH_MEM_VALGRIND=$(usex valgrind)
-		-DWITH_MOD_FLUID=$(usex fluid)
-		-DWITH_MOD_OCEANSIM=$(usex oceansim)
-		-DWITH_NANOVDB=$(usex nanovdb)
-		-DWITH_OPENAL=$(usex openal)
-		-DWITH_OPENCOLLADA=$(usex collada)
-		-DWITH_OPENCOLORIO=$(usex color-management)
-		-DWITH_OPENIMAGEDENOISE=$(usex oidn)
-		-DWITH_OPENMP=$(usex openmp)
-		-DWITH_OPENSUBDIV=$(usex opensubdiv)
-		-DWITH_OPENVDB=$(usex openvdb)
-		-DWITH_OPENVDB_BLOSC=$(usex openvdb)
-		-DWITH_POTRACE=$(usex potrace)
-		-DWITH_PUGIXML=$(usex pugixml)
-		-DWITH_PULSEAUDIO=$(usex pulseaudio)
-		-DWITH_PYTHON_INSTALL=no
-		-DWITH_PYTHON_INSTALL_NUMPY=no
-		-DWITH_PYTHON_INSTALL_ZSTANDARD=no
-		-DWITH_PYTHON_SAFETY=$(usex debug)
-		-DWITH_RENDERDOC="$(usex renderdoc)"
-		-DWITH_SDL=$(usex sdl)
-		-DWITH_STATIC_LIBS=no
-		-DWITH_STRICT_BUILD_OPTIONS=yes
-		-DWITH_SYSTEM_EIGEN3=yes
-		-DWITH_SYSTEM_FREETYPE=yes
-		-DWITH_SYSTEM_GFLAGS=yes
-		-DWITH_SYSTEM_GLOG=yes
-		-DWITH_SYSTEM_LZO=yes
-		-DWITH_TBB=$(usex tbb)
-		-DWITH_USD="no" # TODO: Package USD
-		-DWITH_VULKAN_BACKEND="$(usex vulkan)"
-		-DWITH_XR_OPENXR=no
+
+		# Rendering (Cycles):
+		-DWITH_CYCLES_OSL="$(usex osl)"
+		-DWITH_CYCLES_EMBREE="$(usex embree)"
+		-DWITH_CYCLES_PATH_GUIDING="$(usex openpgl)"
+
+		-DWITH_CYCLES_DEVICE_OPTIX="$(usex optix)"
+		-DWITH_CYCLES_DEVICE_CUDA="$(usex cuda)"
+		-DWITH_CYCLES_CUDA_BINARIES="$(usex cuda "$(usex cycles-bin-kernels)")"
+
+		-DWITH_CYCLES_DEVICE_HIP="$(usex hip)"
+		-DWITH_CYCLES_HIP_BINARIES="$(usex hip "$(usex cycles-bin-kernels)")"
+		-DWITH_CYCLES_HYDRA_RENDER_DELEGATE="no" # TODO: package Hydra
+
+		# -DWITH_CYCLES_STANDALONE=OFF
+		# -DWITH_CYCLES_STANDALONE_GUI=OFF
+
+		-DWITH_BLENDER_THUMBNAILER="yes"
+
+		-DWITH_ASSERT_ABORT=$(usex debug)
+		-DWITH_EXPERIMENTAL_FEATURES="$(usex experimental)"
 	)
 
 	if has_version ">=dev-python/numpy-2"; then
@@ -334,22 +387,38 @@ src_configure() {
 	fi
 
 	if use cuda; then
-		mycmakeargs+=(
-			-DCUDA_NVCC_FLAGS="--compiler-bindir;$(cuda_gccdir)"
-		)
+		# Ease compiling with required gcc similar to cuda_sanitize but for cmake
+		if use cycles-bin-kernels; then
+			local -x CUDAHOSTCXX="$(cuda_gccdir)"
+			local -x CUDAHOSTLD="$(tc-getCXX)"
+
+			if [[ -n "${CUDAARCHS}" ]]; then
+				mycmakeargs+=(
+					-DCYCLES_CUDA_BINARIES_ARCH="$(echo "${CUDAARCHS}" | sed -e 's/^/sm_/g' -e 's/;/;sm_/g')"
+				)
+			fi
+		fi
 	fi
 
 	if use hip; then
+		# local -x HIP_PATH="$(hipconfig -p)"
 		mycmakeargs+=(
-			-DROCM_PATH="$(hipconfig -R)"
+			# -DROCM_PATH="$(hipconfig -R)"
+			-DHIP_ROOT_DIR="$(hipconfig -p)"
+
 			-DHIP_HIPCC_FLAGS="-fcf-protection=none"
+
+			# -DHIP_LINKER_EXECUTABLE="$(get_llvm_prefix)/bin/clang++"
+			-DCMAKE_HIP_LINK_EXECUTABLE="$(get_llvm_prefix)/bin/clang++"
+
+			-DCYCLES_HIP_BINARIES_ARCH="$(get_amdgpu_flags)"
 		)
 	fi
 
 	if use optix; then
 		mycmakeargs+=(
-			-DCYCLES_RUNTIME_OPTIX_ROOT_DIR="${EPREFIX}"/opt/optix
-			-DOPTIX_ROOT_DIR="${EPREFIX}"/opt/optix
+			-DCYCLES_RUNTIME_OPTIX_ROOT_DIR="${ESYSROOT}/opt/optix"
+			-DOPTIX_ROOT_DIR="${ESYSROOT}/opt/optix"
 		)
 	fi
 
@@ -364,22 +433,19 @@ src_configure() {
 	use arm64 && append-flags -flax-vector-conversions
 
 	append-cflags "$(usex debug '-DDEBUG' '-DNDEBUG')"
-	append-cppflags "$(usex debug '-DDEBUG' '-DNDEBUG')"
+	append-cxxflags "$(usex debug '-DDEBUG' '-DNDEBUG')"
 
-	if tc-is-gcc ; then
-		# These options only exist when GCC is detected.
+	if tc-is-gcc; then
 		# We disable these to respect the user's choice of linker.
 		mycmakeargs+=(
-			-DWITH_LINKER_GOLD=no
-			-DWITH_LINKER_LLD=no
+			-DWITH_LINKER_GOLD="no"
 		)
-		# Ease compiling with required gcc similar to cuda_sanitize but for cmake
-		use cuda && use cycles-bin-kernels && mycmakeargs+=( -DCUDA_HOST_COMPILER="$(cuda_gccdir)" )
 	fi
+
 	if tc-is-clang || use osl; then
 		mycmakeargs+=(
-			-DWITH_CLANG=yes
-			-DWITH_LLVM=yes
+			-DWITH_CLANG="yes"
+			-DWITH_LLVM="yes"
 		)
 	fi
 
@@ -444,12 +510,22 @@ pkg_postinst() {
 	elog "changing the 'Temporary Files' directory in Blender preferences."
 	elog
 
-	if use osl; then
+	if use osl && ! has_version "media-libs/mesa[${LLVM_USEDEP}]"; then
 		ewarn ""
 		ewarn "OSL is known to cause runtime segfaults if Mesa has been linked to"
 		ewarn "an other LLVM version than what OSL is linked to."
 		ewarn "See https://bugs.gentoo.org/880671 for more details"
 		ewarn ""
+	fi
+
+	# NOTE build_files/cmake/Modules/FindPythonLibsUnix.cmake: set(_PYTHON_VERSION_SUPPORTED 3.11)
+	if ! use python_single_target_python3_11; then
+		elog "You are building Blender with a newer python version than"
+		elog "supported by this version upstream."
+		elog "If you experience breakages with e.g. plugins, please switch to"
+		elog "PYTHON_SINGLE_TARGET: python3_11 instead."
+		elog "Bug: https://bugs.gentoo.org/737388"
+		elog
 	fi
 
 	xdg_icon_cache_update
