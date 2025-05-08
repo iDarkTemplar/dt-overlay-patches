@@ -107,7 +107,7 @@ RDEPEND="${PYTHON_DEPS}
 		>=media-gfx/openvdb-11.0.0:=[nanovdb?]
 		dev-libs/c-blosc:=
 	)
-	optix? ( dev-libs/optix )
+	optix? ( <dev-libs/optix-9:= )
 	osl? (
 		>=media-libs/osl-1.13:=[${LLVM_USEDEP}]
 		media-libs/mesa[${LLVM_USEDEP}]
@@ -182,7 +182,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-4.0.2-FindClang.patch"
 	"${FILESDIR}/${PN}-4.1.1-FindLLVM.patch"
 	"${FILESDIR}/${PN}-4.1.1-numpy.patch"
-	"${FILESDIR}/${PN}-4.3.2-system-gtest.patch"
+	"${FILESDIR}/${PN}-4.3.2-system-glog.patch"
 	"${FILESDIR}/${PN}-4.4.0-optix-compile-flags.patch"
 )
 
@@ -240,7 +240,7 @@ src_configure() {
 	filter-lto
 
 	# Workaround for bug #922600
-	append-ldflags $(test-flags-CCLD -Wl,--undefined-version)
+	append-ldflags "$(test-flags-CCLD -Wl,--undefined-version)"
 
 	append-lfs-flags
 
@@ -264,7 +264,7 @@ src_configure() {
 		-DWITH_GTESTS=OFF
 		-DWITH_HARFBUZZ="$(usex truetype)"
 		-DWITH_HARU="$(usex pdf)"
-		-DWITH_HEADLESS="$(usex !X "$(use !wayland)")"
+		-DWITH_HEADLESS="$(usex !X "$(usex !wayland)")"
 		-DWITH_INPUT_NDOF="$(usex ndof)"
 		-DWITH_INTERNATIONAL="$(usex nls)"
 		-DWITH_MATERIALX="no" # TODO: Package MaterialX
@@ -304,7 +304,7 @@ src_configure() {
 
 		# GHOST Options:
 		-DWITH_GHOST_WAYLAND="$(usex wayland)"
-		-DWITH_GHOST_WAYLAND_APP_ID="blender-${BV}"
+		# -DWITH_GHOST_WAYLAND_APP_ID="blender-${BV}"
 		-DWITH_GHOST_WAYLAND_DYNLOAD="no"
 		-DWITH_GHOST_X11="$(usex X)"
 		# -DWITH_GHOST_XDND=ON
@@ -339,15 +339,15 @@ src_configure() {
 		# Python:
 		# -DWITH_PYTHON=ON
 		-DWITH_PYTHON_INSTALL="no"
-		# -DWITH_PYTHON_INSTALL_NUMPY="no"
-		# -DWITH_PYTHON_INSTALL_ZSTANDARD="no"
+		-DWITH_PYTHON_INSTALL_NUMPY="no"
+		-DWITH_PYTHON_INSTALL_ZSTANDARD="no"
 		# -DWITH_PYTHON_MODULE="no"
 		-DWITH_PYTHON_SAFETY=$(usex debug)
 		-DWITH_PYTHON_SECURITY="yes"
 		-DPYTHON_INCLUDE_DIR="$(python_get_includedir)"
 		-DPYTHON_LIBRARY="$(python_get_library_path)"
 		-DPYTHON_VERSION="${EPYTHON/python/}"
-		-DWITH_DRACO="no" # TODO: Package Draco
+		-DWITH_DRACO="yes" # TODO: Package Draco # NOTE use bundled for now
 
 		# Modifiers:
 		-DWITH_MOD_FLUID="$(usex fluid)"
@@ -401,14 +401,11 @@ src_configure() {
 	fi
 
 	if use hip; then
-		# local -x HIP_PATH="$(hipconfig -p)"
 		mycmakeargs+=(
-			# -DROCM_PATH="$(hipconfig -R)"
 			-DHIP_ROOT_DIR="$(hipconfig -p)"
 
 			-DHIP_HIPCC_FLAGS="-fcf-protection=none"
 
-			# -DHIP_LINKER_EXECUTABLE="$(get_llvm_prefix)/bin/clang++"
 			-DCMAKE_HIP_LINK_EXECUTABLE="$(get_llvm_prefix)/bin/clang++"
 
 			-DCYCLES_HIP_BINARIES_ARCH="$(get_amdgpu_flags)"
