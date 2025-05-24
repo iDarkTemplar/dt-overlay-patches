@@ -125,6 +125,7 @@ PATCHES=(
 	"${FILESDIR}"/mozc-2.28.5029.102-abseil.patch
 	"${FILESDIR}"/mozc-2.28.5029.102-abseil-20230802.0.patch
 	"${FILESDIR}"/mozc-2.28.5029.102-abseil-20240116.patch
+	"${FILESDIR}"/mozc-2.28.5029.102-abseil-20250127.1.patch
 )
 
 python_check_deps() {
