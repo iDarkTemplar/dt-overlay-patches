@@ -21,7 +21,6 @@ COMMON_DEPEND="
 	"
 
 DEPEND="${COMMON_DEPEND}
-	dev-libs/boost
 	kde-plasma/libplasma:6
 	"
 
