@@ -1,4 +1,0 @@
-# The user saned should drop its privileges to after startup
-#SANED_USER=""
-#SANED_ADDRESS="127.0.0.1"
-#SANED_PORT="6566"
