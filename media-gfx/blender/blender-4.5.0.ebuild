@@ -267,6 +267,7 @@ src_configure() {
 		-DWITH_HEADLESS="$(usex !X "$(usex !wayland)")"
 		-DWITH_INPUT_NDOF="$(usex ndof)"
 		-DWITH_INTERNATIONAL="$(usex nls)"
+		-DWITH_MANIFOLD="no"
 		-DWITH_MATERIALX="no" # TODO: Package MaterialX
 		-DWITH_NANOVDB="$(usex nanovdb)"
 		-DWITH_OPENCOLLADA="$(usex collada)"
