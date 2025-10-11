@@ -1,0 +1,13 @@
+diff --git a/src/api/KWallet/kwallet.cpp b/src/api/KWallet/kwallet.cpp
+index 9def277d..8327c027 100644
+--- a/src/api/KWallet/kwallet.cpp
++++ b/src/api/KWallet/kwallet.cpp
+@@ -885,7 +885,7 @@ KWalletDLauncher::KWalletDLauncher()
+     , m_cgroup(KSharedConfig::openConfig(QStringLiteral("kwalletrc"), KConfig::NoGlobals)->group(QStringLiteral("Wallet")))
+     , m_walletEnabled(false)
+ {
+-    m_walletEnabled = m_cgroup.readEntry("Enabled", true);
++    m_walletEnabled = m_cgroup.readEntry("Enabled", false);
+     if (!m_walletEnabled) {
+         qCDebug(KWALLET_API_LOG) << "The wallet service was disabled by the user";
+         return;
