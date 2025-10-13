@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{11..13} )
+PYTHON_COMPAT=( python3_{11..14} )
 # NOTE must match media-libs/osl
 LLVM_COMPAT=( {18..19} )
 LLVM_OPTIONAL=1
@@ -183,7 +183,6 @@ PATCHES=(
 	"${FILESDIR}/${PN}-4.1.1-FindLLVM.patch"
 	"${FILESDIR}/${PN}-4.1.1-numpy.patch"
 	"${FILESDIR}/${PN}-4.3.2-system-glog.patch"
-	"${FILESDIR}/${PN}-4.4.0-optix-compile-flags.patch"
 )
 
 CMAKE_BUILD_TYPE="Release"
