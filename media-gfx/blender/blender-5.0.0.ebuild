@@ -5,7 +5,7 @@ EAPI=8
 
 PYTHON_COMPAT=( python3_{11..14} )
 # NOTE must match media-libs/osl
-LLVM_COMPAT=( {18..19} )
+LLVM_COMPAT=( {19..20} )
 LLVM_OPTIONAL=1
 
 ROCM_SKIP_GLOBALS=1
@@ -32,7 +32,7 @@ IUSE="
 	debug doc +embree experimental +ffmpeg +fftw +fluid +gmp gnome hip jack
 	jemalloc jpeg2k man +nanovdb ndof nls +oceansim oidn openal +openexr +opengl +openmp +openpgl
 	+opensubdiv +openvdb optix osl pipewire +pdf +potrace +pugixml pulseaudio
-	renderdoc sdl +sndfile +tbb +tiff +truetype valgrind vulkan wayland +webp X"
+	renderdoc rubberband sdl +sndfile +tbb +tiff +truetype valgrind vulkan wayland +webp X"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	|| ( opengl vulkan )
@@ -140,6 +140,9 @@ RDEPEND="${PYTHON_DEPS}
 	)
 	renderdoc? (
 		media-gfx/renderdoc
+	)
+	rubberband? (
+		media-libs/rubberband:=
 	)
 	X? (
 		x11-libs/libX11
@@ -280,6 +283,7 @@ src_configure() {
 		-DWITH_PUGIXML="$(usex pugixml)"
 		# -DWITH_QUADRIFLOW=ON
 		-DWITH_RENDERDOC="$(usex renderdoc)"
+		-DWITH_RUBBERBAND="$(usex rubberband)"
 		-DWITH_TBB="$(usex tbb)"
 		-DWITH_UNITY_BUILD="no"
 		-DWITH_USD="no" # TODO: Package USD
