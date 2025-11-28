@@ -17,13 +17,15 @@
 		<flag name="bullet">
 			Enable Bullet (Physics Engine).
 		</flag>
-		<flag name="collada">
-			Add support for Collada interchange format through
-			<pkg>media-libs/opencollada</pkg>.
-		</flag>
 		<flag name="color-management">Enable color management via <pkg>media-libs/opencolorio</pkg>.</flag>
 		<flag name="cuda">
 			Build cycles renderer with nVidia CUDA support.
+		</flag>
+		<flag name="hip">
+			Build cycles renderer with AMD HIP support.
+		</flag>
+		<flag name="hiprt">
+			Enable AMD HIP GPU ray tracing acceleration via <pkg>dev-libs/hiprt</pkg>.
 		</flag>
 		<flag name="cycles">
 			Build cycles renderer (requires <pkg>media-libs/openimageio</pkg> and
@@ -48,6 +50,9 @@
 		</flag>
 		<flag name="man">
 			Build and install man pages.
+		</flag>
+		<flag name="manifold">
+			Enable Manifold render backend via <pkg>sci-mathematics/manifold</pkg>
 		</flag>
 		<flag name="nanovdb">
 			Enable nanoVDB support in Cycles. Uses less memory than regular openVDB when rendering.
@@ -92,6 +97,9 @@
 		<flag name="valgrind">
 			Add support for memory debugging using
 			<pkg>dev-util/valgrind</pkg>
+		</flag>
+		<flag name="vulkan">
+			Add support for the Vulkan viewport backend
 		</flag>
 	</use>
 </pkgmetadata>

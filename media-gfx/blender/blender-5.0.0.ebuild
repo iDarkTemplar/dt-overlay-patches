@@ -1,17 +1,32 @@
-# Copyright 1999-2019 Gentoo Authors
+# Copyright 1999-2025 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
+
+# shellcheck disable=SC2207
+
+# TODO
+# - Package Hydra
+# 	https://github.com/Ray-Tracing-Systems/HydraCore
+# 	https://github.com/Ray-Tracing-Systems/HydraAPI
+# - Package USD
+# 	https://github.com/PixarAnimationStudios/OpenUSD
+# - Package MaterialX
+# 	https://github.com/AcademySoftwareFoundation/MaterialX
+# - Package Draco
+# 	https://github.com/google/draco
+# - Package Audaspace
+# 	https://github.com/neXyon/audaspace
 
 EAPI=8
 
 PYTHON_COMPAT=( python3_{11..14} )
 # NOTE must match media-libs/osl
-LLVM_COMPAT=( {19..20} )
+LLVM_COMPAT=( {20..20} )
 LLVM_OPTIONAL=1
 
 ROCM_SKIP_GLOBALS=1
 
-inherit cuda rocm llvm-r1
-inherit check-reqs flag-o-matic pax-utils python-single-r1 toolchain-funcs
+inherit cuda rocm llvm-r2 edo
+inherit eapi9-pipestatus check-reqs flag-o-matic multiprocessing pax-utils python-single-r1 toolchain-funcs virtualx
 inherit cmake xdg-utils
 
 DESCRIPTION="3D Creation/Animation/Publishing System"
@@ -28,9 +43,9 @@ SLOT="0"
 LICENSE="GPL-3+ cycles? ( Apache-2.0 ) CC0-1.0"
 KEYWORDS="~amd64"
 IUSE="
-	alembic +bullet collada +color-management cuda +cycles cycles-bin-kernels
-	debug doc +embree experimental +ffmpeg +fftw +fluid +gmp gnome hip jack
-	jemalloc jpeg2k man +nanovdb ndof nls +oceansim oidn openal +openexr +opengl +openmp +openpgl
+	alembic +bullet +color-management cuda +cycles cycles-bin-kernels
+	debug doc +embree experimental +ffmpeg +fftw +fluid +gmp gnome hip hiprt jack
+	jemalloc jpeg2k man +manifold +nanovdb ndof nls +oceansim oidn openal +openexr +opengl +openpgl
 	+opensubdiv +openvdb optix osl pipewire +pdf +potrace +pugixml pulseaudio
 	renderdoc rubberband sdl +sndfile +tbb +tiff +truetype valgrind vulkan wayland +webp X"
 
@@ -42,6 +57,7 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	fluid? ( tbb )
 	gnome? ( wayland )
 	hip? ( cycles )
+	hiprt? ( hip )
 	nanovdb? ( openvdb )
 	oceansim? ( fftw tbb )
 	openvdb? ( tbb openexr )
@@ -55,80 +71,91 @@ RDEPEND="${PYTHON_DEPS}
 	dev-cpp/gflags:=
 	dev-cpp/glog:=[gflags(+)]
 	dev-libs/boost:=[nls?]
-	dev-libs/lzo:2=
 	$(python_gen_cond_dep '
+		dev-python/cattrs[${PYTHON_USEDEP}]
 		dev-python/cython[${PYTHON_USEDEP}]
 		dev-python/numpy[${PYTHON_USEDEP}]
-		dev-python/zstandard[${PYTHON_USEDEP}]
 		dev-python/requests[${PYTHON_USEDEP}]
+		dev-python/zstandard[${PYTHON_USEDEP}]
 	')
 	media-libs/fontconfig:=
-	media-libs/freetype:=[brotli]
+	>=media-libs/freetype-2.13.3:=[brotli]
 	media-libs/glew:=
 	media-libs/libepoxy:=
 	media-libs/libjpeg-turbo:=
-	media-libs/libpng:=
+	>=media-libs/libpng-1.6.50:=
 	media-libs/libsamplerate
-	>=media-libs/openimageio-2.5.6.0:=
-	sys-libs/zlib:=
+	>=media-libs/openimageio-3.0.9.1:=
 	virtual/glu
 	virtual/libintl
 	virtual/opengl[X?]
+	virtual/zlib:=
 	alembic? ( >=media-gfx/alembic-1.8.3-r2[boost(+),hdf(+)] )
 	bullet? ( sci-physics/bullet:=[double-precision] )
-	collada? ( >=media-libs/opencollada-1.6.68 )
-	color-management? ( media-libs/opencolorio:= )
+	color-management? ( >=media-libs/opencolorio-2.4.2:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
 	embree? ( media-libs/embree:=[raymask] )
 	ffmpeg? ( media-video/ffmpeg:=[encode(+),lame(-),jpeg2k?,opus,theora,vorbis,vpx,x264,xvid] )
 	fftw? ( sci-libs/fftw:3.0=[threads] )
-	gmp? ( dev-libs/gmp[cxx] )
+	gmp? ( dev-libs/gmp:=[cxx] )
 	gnome? ( gui-libs/libdecor )
 	hip? (
-		>=dev-util/hip-5.7:=
+		>=dev-util/hip-6.0:=
+		hiprt? (
+			dev-libs/hiprt:2.5=
+		)
 	)
 	jack? ( virtual/jack )
 	jemalloc? ( dev-libs/jemalloc:= )
-	jpeg2k? ( media-libs/openjpeg:2= )
+	jpeg2k? ( >=media-libs/openjpeg-2.5.3:2= )
+	manifold? ( >=sci-mathematics/manifold-3.2.1:= )
 	ndof? (
 		app-misc/spacenavd
 		dev-libs/libspnav
 	)
 	nls? ( virtual/libiconv )
 	openal? ( media-libs/openal )
-	oidn? ( >=media-libs/oidn-2.1.0 )
+	oidn? ( >=media-libs/oidn-2.1.0:= )
 	openexr? (
 		>=dev-libs/imath-3.1.7:=
-		>=media-libs/openexr-3.2.1:0=
+		>=media-libs/openexr-3.3.5:0=
 	)
 	openpgl? ( media-libs/openpgl:= )
-	opensubdiv? ( >=media-libs/opensubdiv-3.6.0-r2[opengl,cuda?,openmp?,tbb?] )
+	opensubdiv? ( >=media-libs/opensubdiv-3.6.0-r2:=[opengl,cuda?,tbb?] )
 	openvdb? (
 		>=media-gfx/openvdb-11.0.0:=[nanovdb?]
 		dev-libs/c-blosc:=
 	)
-	optix? ( <dev-libs/optix-9:= )
+	optix? (
+		>=dev-libs/optix-8:=
+		osl? (
+			>=media-libs/osl-1.14[clang-cuda]
+		)
+	)
 	osl? (
-		>=media-libs/osl-1.13:=[${LLVM_USEDEP}]
+		>=media-libs/osl-1.14.7.0:=[${LLVM_USEDEP}]
 		media-libs/mesa[${LLVM_USEDEP}]
 	)
-	pdf? ( media-libs/libharu )
+	pipewire? ( >=media-video/pipewire-1.1.0:= )
+	pdf? ( >=media-libs/libharu-2.4.5:= )
 	potrace? ( media-gfx/potrace )
 	pugixml? ( dev-libs/pugixml )
 	pulseaudio? ( media-libs/libpulse )
+	rubberband? ( >=media-libs/rubberband-4.0.0:= )
 	sdl? ( media-libs/libsdl2[sound,joystick] )
 	sndfile? ( media-libs/libsndfile )
 	tbb? ( dev-cpp/tbb:= )
 	tiff? ( media-libs/tiff:= )
 	valgrind? ( dev-debug/valgrind )
 	wayland? (
-		>=dev-libs/wayland-1.12
+		>=dev-libs/wayland-1.24.0
 		>=dev-libs/wayland-protocols-1.15
 		>=x11-libs/libxkbcommon-0.2.0
 		dev-util/wayland-scanner
 		media-libs/mesa[wayland]
 		sys-apps/dbus
 	)
+	webp? ( media-libs/libwebp:= )
 	vulkan? (
 		media-libs/shaderc
 		dev-util/spirv-tools
@@ -141,11 +168,9 @@ RDEPEND="${PYTHON_DEPS}
 	renderdoc? (
 		media-gfx/renderdoc
 	)
-	rubberband? (
-		media-libs/rubberband:=
-	)
 	X? (
 		x11-libs/libX11
+		x11-libs/libXfixes
 		x11-libs/libXi
 		x11-libs/libXxf86vm
 		x11-libs/libXrender
@@ -191,8 +216,6 @@ PATCHES=(
 CMAKE_BUILD_TYPE="Release"
 
 blender_check_requirements() {
-	[[ ${MERGE_TYPE} != binary ]] && use openmp && tc-check-openmp
-
 	if use doc; then
 		CHECKREQS_DISK_BUILD="4G" check-reqs_pkg_pretend
 	fi
@@ -207,7 +230,7 @@ pkg_setup() {
 	python-single-r1_pkg_setup
 
 	if use osl; then
-		llvm-r1_pkg_setup
+		llvm-r2_pkg_setup
 	fi
 }
 
@@ -233,6 +256,11 @@ src_prepare() {
 
 	# Remove bundled libraries which must not be used instead of system ones
 	rm -rf extern/{Eigen3,glew,lzo,gflags,glog}
+
+	# Use slotted libhiprt64
+	sed \
+		-e "s|\"libhiprt64.so\"|\"${ESYSROOT}/usr/lib/hiprt/2.5/$(get_libdir)/libhiprt64.so\"|" \
+		-i extern/hipew/src/hiprtew.cc || die
 }
 
 src_configure() {
@@ -269,10 +297,9 @@ src_configure() {
 		-DWITH_HEADLESS="$(usex !X "$(usex !wayland)")"
 		-DWITH_INPUT_NDOF="$(usex ndof)"
 		-DWITH_INTERNATIONAL="$(usex nls)"
-		-DWITH_MANIFOLD="no"
+		-DWITH_MANIFOLD="$(usex manifold)"
 		-DWITH_MATERIALX="no" # TODO: Package MaterialX
 		-DWITH_NANOVDB="$(usex nanovdb)"
-		-DWITH_OPENCOLLADA="$(usex collada)"
 		-DWITH_OPENCOLORIO="$(usex color-management)"
 		-DWITH_OPENGL_BACKEND="$(usex opengl)"
 		-DWITH_OPENIMAGEDENOISE="$(usex oidn)"
@@ -283,11 +310,10 @@ src_configure() {
 		-DWITH_PUGIXML="$(usex pugixml)"
 		# -DWITH_QUADRIFLOW=ON
 		-DWITH_RENDERDOC="$(usex renderdoc)"
-		-DWITH_RUBBERBAND="$(usex rubberband)"
 		-DWITH_TBB="$(usex tbb)"
 		-DWITH_UNITY_BUILD="no"
 		-DWITH_USD="no" # TODO: Package USD
-		-DWITH_VULKAN_BACKEND="$(usex vulkan)" # experimental
+		-DWITH_VULKAN_BACKEND="$(usex vulkan)"
 		-DWITH_XR_OPENXR="no"
 
 		-DWITH_SYSTEM_BULLET="yes"
@@ -295,11 +321,9 @@ src_configure() {
 		-DWITH_SYSTEM_FREETYPE="yes"
 		-DWITH_SYSTEM_GFLAGS="yes"
 		-DWITH_SYSTEM_GLOG="yes"
-		-DWITH_SYSTEM_LZO="yes"
 
 		# Compiler Options:
-		-DWITH_BUILDINFO="no"
-		-DWITH_OPENMP="$(usex openmp)"
+		-DWITH_BUILDINFO="yes"
 
 		# System Options:
 		-DWITH_INSTALL_PORTABLE="no"
@@ -308,11 +332,10 @@ src_configure() {
 
 		# GHOST Options:
 		-DWITH_GHOST_WAYLAND="$(usex wayland)"
-		# -DWITH_GHOST_WAYLAND_APP_ID="blender-${BV}"
+		# -DWITH_GHOST_WAYLAND_APP_ID="blender-${BV}" # only visible with use wayland. see below
 		-DWITH_GHOST_WAYLAND_DYNLOAD="no"
 		-DWITH_GHOST_X11="$(usex X)"
 		# -DWITH_GHOST_XDND=ON
-		# -DWITH_X11_XF86VMODE=ON
 		# -DWITH_X11_XFIXES=ON
 		# -DWITH_X11_XINPUT=ON
 		# -DWITH_GHOST_WAYLAND_DYNLOAD # visible wayland?
@@ -372,6 +395,7 @@ src_configure() {
 
 		-DWITH_CYCLES_DEVICE_HIP="$(usex hip)"
 		-DWITH_CYCLES_HIP_BINARIES="$(usex hip "$(usex cycles-bin-kernels)")"
+		-DWITH_CYCLES_DEVICE_HIPRT="$(usex hip "$(usex hiprt)")"
 		-DWITH_CYCLES_HYDRA_RENDER_DELEGATE="no" # TODO: package Hydra
 
 		# -DWITH_CYCLES_STANDALONE=OFF
@@ -380,7 +404,20 @@ src_configure() {
 		-DWITH_BLENDER_THUMBNAILER="yes"
 
 		-DWITH_ASSERT_ABORT=$(usex debug)
+		-DWITH_ASSERT_RELEASE="no" # "$(usex debug)"
 		-DWITH_EXPERIMENTAL_FEATURES="$(usex experimental)"
+
+		# -DWITH_FREESTYLE=ON
+		# -DWITH_IK_ITASC=ON
+		# -DWITH_IK_SOLVER=ON
+		# -DWITH_INPUT_IME=ON
+		# -DWITH_LIBMV=ON
+		# -DWITH_LIBMV_SCHUR_SPECIALIZATIONS=ON
+		# -DWITH_UV_SLIM=ON
+		-DWITH_NINJA_POOL_JOBS="yes"
+		-DWITH_RUBBERBAND="$(usex rubberband)"
+		# -DPOSTINSTALL_SCRIPT:PATH=""
+		# -DPOSTCONFIGURE_SCRIPT:PATH=""
 	)
 
 	if has_version ">=dev-python/numpy-2"; then
@@ -414,6 +451,13 @@ src_configure() {
 
 			-DCYCLES_HIP_BINARIES_ARCH="$(get_amdgpu_flags)"
 		)
+
+		if use hiprt; then
+			mycmakeargs+=(
+				-DHIPRT_ROOT_DIR="${ESYSROOT}/usr/lib/hiprt/2.5"
+				-DHIPRT_COMPILER_PARALLEL_JOBS="$(makeopts_jobs)"
+			)
+		fi
 	fi
 
 	if use optix; then
@@ -433,6 +477,7 @@ src_configure() {
 	# This is currently needed on arm64 to get the NEON SIMD wrapper to compile the code successfully
 	use arm64 && append-flags -flax-vector-conversions
 
+	# WITH_ASSERT_RELEASE filters this
 	append-cflags "$(usex debug '-DDEBUG' '-DNDEBUG')"
 	append-cxxflags "$(usex debug '-DDEBUG' '-DNDEBUG')"
 
@@ -540,8 +585,9 @@ pkg_postrm() {
 	xdg_desktop_database_update
 
 	ewarn ""
-	ewarn "You may want to remove the following directory."
-	ewarn "~/.config/${PN}/${MY_PV}/cache/"
+	ewarn "You may want to remove the following directories:"
+	ewarn "- ~/.config/${PN}/${MY_PV}/cache/"
+	ewarn "- ~/.cache/cycles/"
 	ewarn "It may contain extra render kernels not tracked by portage"
 	ewarn ""
 }
