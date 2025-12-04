@@ -15,7 +15,7 @@ KEYWORDS="amd64 x86"
 IUSE="+utils"
 
 COMMON_DEPEND="
-	sys-libs/zlib:=
+	virtual/zlib:=
 	dev-qt/qtbase:6=[gui(+),opengl(+)]
 	dev-qt/qtdeclarative:6=
 	"
