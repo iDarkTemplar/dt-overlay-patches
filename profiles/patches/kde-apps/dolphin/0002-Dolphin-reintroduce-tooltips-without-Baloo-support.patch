@@ -1,4 +1,4 @@
-From 1710a58e23fb692f39af296ca988ddf1ec08171c Mon Sep 17 00:00:00 2001
+From 690e9db90ca5cdb4a736babe5bdac09c61900f3a Mon Sep 17 00:00:00 2001
 From: "i.Dark_Templar" <darktemplar@dark-templar-archives.net>
 Date: Sat, 30 Mar 2019 19:25:50 +0300
 Subject: [PATCH 2/3] Dolphin: reintroduce tooltips without Baloo support
@@ -14,7 +14,7 @@ Tooltips contain only name of item and preview
  6 files changed, 34 insertions(+), 20 deletions(-)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index bbecc49e6..96b59ce08 100644
+index a0b643441..cb145c1ca 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -112,6 +112,8 @@ target_sources(dolphinprivate PRIVATE
@@ -36,7 +36,7 @@ index bbecc49e6..96b59ce08 100644
          views/tooltips/dolphinfilemetadatawidget.h
          views/tooltips/tooltipmanager.h
 diff --git a/src/settings/viewmodes/generalviewsettingspage.cpp b/src/settings/viewmodes/generalviewsettingspage.cpp
-index 988f243c1..1b04d871e 100644
+index d92c89f79..d32580355 100644
 --- a/src/settings/viewmodes/generalviewsettingspage.cpp
 +++ b/src/settings/viewmodes/generalviewsettingspage.cpp
 @@ -68,11 +68,9 @@ GeneralViewSettingsPage::GeneralViewSettingsPage(const QUrl &url, QWidget *paren
@@ -96,10 +96,10 @@ index 77ab004a6..f0a112662 100644
      QCheckBox *m_renameInline = nullptr;
      QCheckBox *m_openArchivesAsFolder = nullptr;
 diff --git a/src/views/dolphinview.cpp b/src/views/dolphinview.cpp
-index b702f5b13..925b90104 100644
+index 47a5461ff..8c2ad51f7 100644
 --- a/src/views/dolphinview.cpp
 +++ b/src/views/dolphinview.cpp
-@@ -227,10 +227,8 @@ DolphinView::DolphinView(const QUrl &url, QWidget *parent)
+@@ -230,10 +230,8 @@ DolphinView::DolphinView(const QUrl &url, QWidget *parent)
      KItemListSelectionManager *selectionManager = controller->selectionManager();
      connect(selectionManager, &KItemListSelectionManager::selectionChanged, this, &DolphinView::slotSelectionChanged);
  
@@ -110,7 +110,7 @@ index b702f5b13..925b90104 100644
  
      m_versionControlObserver = new VersionControlObserver(this);
      m_versionControlObserver->setView(this);
-@@ -1357,12 +1355,10 @@ void DolphinView::slotItemHovered(int index)
+@@ -1382,12 +1380,10 @@ void DolphinView::slotItemHovered(int index)
          const QPoint pos = m_container->mapToGlobal(itemRect.topLeft().toPoint());
          itemRect.moveTo(pos);
  
@@ -123,7 +123,7 @@ index b702f5b13..925b90104 100644
      }
  
      Q_EMIT requestItemInfo(item);
-@@ -1835,11 +1831,7 @@ void DolphinView::updateViewState()
+@@ -1962,11 +1958,7 @@ void DolphinView::updateViewState()
  void DolphinView::hideToolTip(const ToolTipManager::HideBehavior behavior)
  {
      if (GeneralSettings::showToolTips()) {
@@ -242,5 +242,5 @@ index 89f947498..00571d2ae 100644
  
  #endif
 -- 
-2.49.1
+2.51.2
 
