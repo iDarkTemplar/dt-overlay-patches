@@ -1,0 +1,12 @@
+diff --git a/src/Apps/gamescopereaper.cpp b/src/Apps/gamescopereaper.cpp
+index 0fd2c36..24370b1 100644
+--- a/src/Apps/gamescopereaper.cpp
++++ b/src/Apps/gamescopereaper.cpp
+@@ -153,7 +153,6 @@ namespace gamescope
+             }
+ 
+             s_bRun = false;
+-            Process::KillAllChildren( getpid(), SIGTERM );
+             Process::WaitForAllChildren();
+ 
+             return 0;
