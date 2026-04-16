@@ -17,6 +17,9 @@
 		<flag name="bullet">
 			Enable Bullet (Physics Engine).
 		</flag>
+		<flag name="ceres">
+			Enable Ceres (Nonlinear least-squares minimizer).
+		</flag>
 		<flag name="color-management">Enable color management via <pkg>media-libs/opencolorio</pkg>.</flag>
 		<flag name="cuda">
 			Build cycles renderer with nVidia CUDA support.

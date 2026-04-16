@@ -43,9 +43,9 @@ SLOT="0"
 LICENSE="GPL-3+ cycles? ( Apache-2.0 ) CC0-1.0"
 KEYWORDS="~amd64"
 IUSE="
-	alembic +bullet +color-management cuda +cycles cycles-bin-kernels
+	alembic +bullet ceres +color-management cuda +cycles cycles-bin-kernels
 	debug doc +embree experimental +ffmpeg +fftw +fluid +gmp gnome hip hiprt jack
-	jemalloc jpeg2k man +manifold +nanovdb ndof nls +oceansim oidn openal +openexr +opengl +openpgl
+	jpeg2k man +manifold +nanovdb ndof nls +oceansim oidn openal +openexr +opengl +openpgl
 	+opensubdiv +openvdb optix osl pipewire +pdf +potrace +pugixml pulseaudio
 	renderdoc rubberband sdl +sndfile +tbb +tiff +truetype valgrind vulkan wayland +webp X"
 
@@ -92,7 +92,8 @@ RDEPEND="${PYTHON_DEPS}
 	virtual/zlib:=
 	alembic? ( >=media-gfx/alembic-1.8.3-r2[boost(+),hdf(+)] )
 	bullet? ( sci-physics/bullet:=[double-precision] )
-	color-management? ( >=media-libs/opencolorio-2.4.2:= )
+	ceres? ( sci-libs/ceres-solver:=[gflags,schur] )
+	color-management? ( >=media-libs/opencolorio-2.5.1:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
 	embree? ( media-libs/embree:=[raymask] )
 	ffmpeg? ( media-video/ffmpeg:=[encode(+),lame(-),jpeg2k?,opus,theora,vorbis,vpx,x264,xvid] )
@@ -106,7 +107,6 @@ RDEPEND="${PYTHON_DEPS}
 		)
 	)
 	jack? ( virtual/jack )
-	jemalloc? ( dev-libs/jemalloc:= )
 	jpeg2k? ( >=media-libs/openjpeg-2.5.3:2= )
 	manifold? ( >=sci-mathematics/manifold-3.2.1:= )
 	ndof? (
@@ -123,7 +123,7 @@ RDEPEND="${PYTHON_DEPS}
 	openpgl? ( media-libs/openpgl:= )
 	opensubdiv? ( >=media-libs/opensubdiv-3.6.0-r2:=[opengl,cuda?,tbb?] )
 	openvdb? (
-		>=media-gfx/openvdb-11.0.0:=[nanovdb?]
+		>=media-gfx/openvdb-12.1.1:=[nanovdb?]
 		dev-libs/c-blosc:=
 	)
 	optix? (
@@ -178,7 +178,7 @@ RDEPEND="${PYTHON_DEPS}
 "
 
 DEPEND="${RDEPEND}
-	dev-cpp/eigen:=
+	>=dev-cpp/eigen-5.0.1:=
 "
 
 BDEPEND="
@@ -209,7 +209,6 @@ BDEPEND="
 PATCHES=(
 	"${FILESDIR}/${PN}-4.0.2-FindClang.patch"
 	"${FILESDIR}/${PN}-4.1.1-FindLLVM.patch"
-	"${FILESDIR}/${PN}-4.1.1-numpy.patch"
 	"${FILESDIR}/${PN}-4.3.2-system-glog.patch"
 )
 
@@ -285,7 +284,6 @@ src_configure() {
 
 		# Build Options:
 		-DWITH_ALEMBIC="$(usex alembic)"
-		-DWITH_BOOST="yes"
 		-DWITH_BULLET="$(usex bullet)"
 		-DWITH_CYCLES="$(usex cycles)"
 		-DWITH_DOC_MANPAGE="$(usex man)"
@@ -317,7 +315,6 @@ src_configure() {
 		-DWITH_XR_OPENXR="no"
 
 		-DWITH_SYSTEM_BULLET="yes"
-		-DWITH_SYSTEM_EIGEN3="yes"
 		-DWITH_SYSTEM_FREETYPE="yes"
 		-DWITH_SYSTEM_GFLAGS="yes"
 		-DWITH_SYSTEM_GLOG="yes"
@@ -327,7 +324,6 @@ src_configure() {
 
 		# System Options:
 		-DWITH_INSTALL_PORTABLE="no"
-		-DWITH_MEM_JEMALLOC="$(usex jemalloc)"
 		-DWITH_MEM_VALGRIND="$(usex valgrind)"
 
 		# GHOST Options:
@@ -339,7 +335,6 @@ src_configure() {
 		# -DWITH_X11_XFIXES=ON
 		# -DWITH_X11_XINPUT=ON
 		# -DWITH_GHOST_WAYLAND_DYNLOAD # visible wayland?
-		# -DWITH_GHOST_WAYLAND_LIBDECOR # visible wayland?
 
 		# Image Formats:
 		# -DWITH_IMAGE_CINEON=ON
@@ -411,8 +406,8 @@ src_configure() {
 		# -DWITH_IK_ITASC=ON
 		# -DWITH_IK_SOLVER=ON
 		# -DWITH_INPUT_IME=ON
-		# -DWITH_LIBMV=ON
-		# -DWITH_LIBMV_SCHUR_SPECIALIZATIONS=ON
+		-DWITH_LIBMV=$(usex ceres)
+		-DWITH_LIBMV_SCHUR_SPECIALIZATIONS=$(usex ceres)
 		# -DWITH_UV_SLIM=ON
 		-DWITH_NINJA_POOL_JOBS="yes"
 		-DWITH_RUBBERBAND="$(usex rubberband)"
@@ -470,7 +465,6 @@ src_configure() {
 	if use wayland; then
 		mycmakeargs+=(
 			-DWITH_GHOST_WAYLAND_APP_ID="blender-${MY_PV}"
-			-DWITH_GHOST_WAYLAND_LIBDECOR="$(usex gnome)"
 		)
 	fi
 
@@ -480,13 +474,6 @@ src_configure() {
 	# WITH_ASSERT_RELEASE filters this
 	append-cflags "$(usex debug '-DDEBUG' '-DNDEBUG')"
 	append-cxxflags "$(usex debug '-DDEBUG' '-DNDEBUG')"
-
-	if tc-is-gcc; then
-		# We disable these to respect the user's choice of linker.
-		mycmakeargs+=(
-			-DWITH_LINKER_GOLD="no"
-		)
-	fi
 
 	if tc-is-clang || use osl; then
 		mycmakeargs+=(
