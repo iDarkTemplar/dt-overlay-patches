@@ -1,0 +1,51 @@
+From 163468df88f6d850bd9174bd47931ed1a14cc93f Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Sun, 10 Nov 2024 17:20:42 +0100
+Subject: [PATCH 3/4] Install clazy-standalone so relative path look-up works
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+fatal error: ‘stddef.h’ file not found, while using clazy-standalone Be sure the
+clazy-standalone binary is located in the same folder as the
+clang binary.
+
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+---
+ CMakeLists.txt | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d44a842c..4212954a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -172,6 +172,12 @@ endmacro()
+ 
+ set(SYMBOL_FILE Lazy.exports)
+ 
++execute_process(
++  COMMAND ${LLVM_CONFIG_EXECUTABLE} --bindir
++  OUTPUT_VARIABLE LLVM_BIN_DIR
++  OUTPUT_STRIP_TRAILING_WHITESPACE
++)
++
+ if (NOT CLAZY_BUILD_WITH_CLANG)
+   set(CLAZY_MINI_AST_DUMPER_SRCS src/MiniAstDumper.cpp)
+   add_clang_plugin(ClazyPlugin ${CLAZY_PLUGIN_SRCS} ${CLAZY_MINI_AST_DUMPER_SRCS})
+@@ -289,9 +295,12 @@ else()
+ 
+   target_link_libraries(clazy-standalone clazyPlugin)
+ 
+-  install(TARGETS clazy-standalone DESTINATION bin PERMISSIONS OWNER_WRITE OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_READ WORLD_EXECUTE)
++  install(TARGETS clazy-standalone DESTINATION ${LLVM_BIN_DIR} PERMISSIONS OWNER_WRITE OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_READ WORLD_EXECUTE)
+ endif()
+ 
++set_target_properties(clazy-standalone PROPERTIES
++  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${LLVM_BIN_DIR}"
++)
+ 
+ if (CLAZY_BUILD_CLANG_TIDY)
+   find_path(CLANG_TIDY_MODULE_REGISTRY_HEADER
+-- 
+2.53.0
+

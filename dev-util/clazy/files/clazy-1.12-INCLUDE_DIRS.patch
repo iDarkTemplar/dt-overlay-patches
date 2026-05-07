@@ -1,0 +1,46 @@
+From 8a5ea71712d9bec6351dad0010aad8072bb912af Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Sun, 10 Nov 2024 17:19:56 +0100
+Subject: [PATCH 2/4] do not inject include dirs with installed llvm
+
+`string(FIND returns` returns `-1` on failure not `FALSE`.
+If `_llvmSourceRoot` is equal to to first directory in `LLVM_INCLUDE_DIRS`
+this would include non-existant directories.
+
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+---
+ cmake/FindClang.cmake | 3 +--
+ cmake/FindLLVM.cmake  | 3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/cmake/FindClang.cmake b/cmake/FindClang.cmake
+index 06d19e1b..f4c4f476 100644
+--- a/cmake/FindClang.cmake
++++ b/cmake/FindClang.cmake
+@@ -94,8 +94,7 @@ if(CLANG_FOUND)
+     OUTPUT_VARIABLE _llvmSourceRoot
+     OUTPUT_STRIP_TRAILING_WHITESPACE
+   )
+-  string(FIND "${LLVM_INCLUDE_DIRS}" "${_llvmSourceRoot}" _llvmIsInstalled)
+-  if (NOT _llvmIsInstalled)
++  if(NOT "${_llvmSourceRoot}" IN_LIST LLVM_INCLUDE_DIRS)
+     message(STATUS "Detected that llvm-config comes from a build-tree, adding more include directories for Clang")
+     list(APPEND CLANG_INCLUDE_DIRS
+          "${LLVM_INSTALL_PREFIX}/tools/clang/include" # build dir
+diff --git a/cmake/FindLLVM.cmake b/cmake/FindLLVM.cmake
+index d8c32dfd..9ae165f1 100644
+--- a/cmake/FindLLVM.cmake
++++ b/cmake/FindLLVM.cmake
+@@ -137,8 +137,7 @@ if (LLVM_FOUND)
+     OUTPUT_VARIABLE _llvmSourceRoot
+     OUTPUT_STRIP_TRAILING_WHITESPACE
+   )
+-  string(FIND "${LLVM_INCLUDE_DIRS}" "${_llvmSourceRoot}" _llvmIsInstalled)
+-  if (NOT _llvmIsInstalled)
++  if(NOT "${_llvmSourceRoot}" IN_LIST LLVM_INCLUDE_DIRS)
+     list(APPEND LLVM_INCLUDE_DIRS "${LLVM_INSTALL_PREFIX}/include")
+   endif()
+ 
+-- 
+2.53.0
+
