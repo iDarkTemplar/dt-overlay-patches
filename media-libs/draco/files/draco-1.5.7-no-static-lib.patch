@@ -1,0 +1,43 @@
+--- ./CMakeLists.txt.orig	2026-08-09 13:06:39.689825280 +0200
++++ ./CMakeLists.txt	2026-08-09 13:09:51.483397813 +0200
+@@ -1029,6 +1029,7 @@
+     add_library(draco::draco ALIAS draco)
+ 
+   else()
++    if(NOT BUILD_SHARED_LIBS)
+     draco_add_library(
+       NAME draco_static
+       OUTPUT_NAME draco
+@@ -1037,6 +1038,7 @@
+       INCLUDES ${draco_include_paths}
+       OBJLIB_DEPS ${draco_object_library_deps}
+       LIB_DEPS ${draco_lib_deps})
++    endif()
+ 
+     if(BUILD_SHARED_LIBS)
+       draco_add_library(
+@@ -1046,7 +1048,8 @@
+         TYPE SHARED
+         DEFINES ${draco_defines}
+         INCLUDES ${draco_include_paths}
+-        LIB_DEPS draco_static)
++        OBJLIB_DEPS ${draco_object_library_deps}
++        LIB_DEPS ${draco_lib_deps})
+       add_library(draco::draco ALIAS draco_shared)
+       set_target_properties(draco_shared PROPERTIES EXPORT_NAME draco)
+     else()
+--- ./cmake/draco_install.cmake.orig      2026-08-09 13:11:57.471066514 +0200
++++ ./cmake/draco_install.cmake   2026-08-09 13:12:02.283530644 +0200
+@@ -66,10 +66,12 @@
+         ARCHIVE DESTINATION "${libs_path}"
+         LIBRARY DESTINATION "${libs_path}")
+     else()
++      if(NOT BUILD_SHARED_LIBS)
+       install(
+         TARGETS draco_static
+         EXPORT dracoExport
+         DESTINATION "${libs_path}")
++      endif()
+ 
+       if(BUILD_SHARED_LIBS)
+         install(

@@ -1,0 +1,13 @@
+--- ./cmake/draco_targets.cmake.orig    2026-08-09 12:56:29.520131818 +0200
++++ ./cmake/draco_targets.cmake 2026-08-09 12:56:36.046715273 +0200
+@@ -111,10 +111,6 @@
+ 
+     target_compile_features(${exe_NAME} PUBLIC cxx_std_11)
+ 
+-  if(NOT EMSCRIPTEN)
+-    set_target_properties(${exe_NAME} PROPERTIES VERSION ${DRACO_VERSION})
+-  endif()
+-
+   if(exe_OUTPUT_NAME)
+     set_target_properties(${exe_NAME} PROPERTIES OUTPUT_NAME ${exe_OUTPUT_NAME})
+   endif()
