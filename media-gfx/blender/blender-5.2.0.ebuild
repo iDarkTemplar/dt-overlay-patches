@@ -11,8 +11,6 @@
 # 	https://github.com/PixarAnimationStudios/OpenUSD
 # - Package MaterialX
 # 	https://github.com/AcademySoftwareFoundation/MaterialX
-# - Package Draco
-# 	https://github.com/google/draco
 # - Package Audaspace
 # 	https://github.com/neXyon/audaspace
 
@@ -43,24 +41,22 @@ SLOT="0"
 LICENSE="GPL-3+ cycles? ( Apache-2.0 ) CC0-1.0"
 KEYWORDS="~amd64"
 IUSE="
-	alembic +bullet ceres +color-management cuda +cycles cycles-bin-kernels
-	debug doc +embree experimental +ffmpeg +fftw +fluid +gmp gnome hip hiprt jack
-	jpeg2k man +manifold +nanovdb ndof nls +oceansim oidn openal +openexr +opengl +openpgl
+	alembic +bullet ceres cuda +cycles cycles-bin-kernels +draco
+	debug doc +embree experimental +ffmpeg +fftw +fluid +gmp gnome hip jack
+	jpeg2k man +manifold +meshoptimizer +nanovdb ndof nls +oceansim oidn openal +opengl +openpgl
 	+opensubdiv +openvdb optix osl pipewire +pdf +potrace +pugixml pulseaudio
 	renderdoc rubberband sdl +sndfile +tbb +tiff +truetype valgrind vulkan wayland +webp X"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	|| ( opengl vulkan )
-	alembic? ( openexr )
 	cuda? ( cycles )
-	cycles? ( openexr tiff tbb )
+	cycles? ( tiff tbb )
 	fluid? ( tbb )
 	gnome? ( wayland )
 	hip? ( cycles )
-	hiprt? ( hip )
 	nanovdb? ( openvdb )
 	oceansim? ( fftw tbb )
-	openvdb? ( tbb openexr )
+	openvdb? ( tbb )
 	optix? ( cuda )
 	osl? ( cycles pugixml )"
 
@@ -71,6 +67,7 @@ RDEPEND="${PYTHON_DEPS}
 	dev-cpp/gflags:=
 	dev-cpp/glog:=[gflags(+)]
 	dev-libs/boost:=[nls?]
+	>=dev-libs/imath-3.1.7:=
 	$(python_gen_cond_dep '
 		dev-python/cattrs[${PYTHON_USEDEP}]
 		dev-python/cython[${PYTHON_USEDEP}]
@@ -85,6 +82,8 @@ RDEPEND="${PYTHON_DEPS}
 	media-libs/libjpeg-turbo:=
 	>=media-libs/libpng-1.6.50:=
 	media-libs/libsamplerate
+	>=media-libs/opencolorio-2.5.1:=
+	>=media-libs/openexr-3.3.5:0=
 	>=media-libs/openimageio-3.0.9.1:=
 	virtual/glu
 	virtual/libintl
@@ -93,22 +92,18 @@ RDEPEND="${PYTHON_DEPS}
 	alembic? ( >=media-gfx/alembic-1.8.3-r2[boost(+),hdf(+)] )
 	bullet? ( sci-physics/bullet:=[double-precision] )
 	ceres? ( sci-libs/ceres-solver:=[gflags,schur] )
-	color-management? ( >=media-libs/opencolorio-2.5.1:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
+	draco? ( media-libs/draco:= )
 	embree? ( media-libs/embree:=[raymask] )
 	ffmpeg? ( media-video/ffmpeg:=[encode(+),lame(-),jpeg2k?,opus,theora,vorbis,vpx,x264,xvid] )
 	fftw? ( sci-libs/fftw:3.0=[threads] )
 	gmp? ( dev-libs/gmp:=[cxx] )
 	gnome? ( gui-libs/libdecor )
-	hip? (
-		>=dev-util/hip-6.0:=
-		hiprt? (
-			dev-libs/hiprt:2.5=
-		)
-	)
+	hip? ( >=dev-util/hip-6.0:= )
 	jack? ( virtual/jack )
 	jpeg2k? ( >=media-libs/openjpeg-2.5.3:2= )
 	manifold? ( >=sci-mathematics/manifold-3.2.1:= )
+	meshoptimizer? ( media-libs/meshoptimizer )
 	ndof? (
 		app-misc/spacenavd
 		dev-libs/libspnav
@@ -116,10 +111,6 @@ RDEPEND="${PYTHON_DEPS}
 	nls? ( virtual/libiconv )
 	openal? ( media-libs/openal )
 	oidn? ( >=media-libs/oidn-2.1.0:= )
-	openexr? (
-		>=dev-libs/imath-3.1.7:=
-		>=media-libs/openexr-3.3.5:0=
-	)
 	openpgl? ( media-libs/openpgl:= )
 	opensubdiv? ( >=media-libs/opensubdiv-3.6.0-r2:=[opengl,cuda?,tbb?] )
 	openvdb? (
@@ -255,11 +246,6 @@ src_prepare() {
 
 	# Remove bundled libraries which must not be used instead of system ones
 	rm -rf extern/{Eigen3,glew,lzo,gflags,glog}
-
-	# Use slotted libhiprt64
-	sed \
-		-e "s|\"libhiprt64.so\"|\"${ESYSROOT}/usr/lib/hiprt/2.5/$(get_libdir)/libhiprt64.so\"|" \
-		-i extern/hipew/src/hiprtew.cc || die
 }
 
 src_configure() {
@@ -287,6 +273,7 @@ src_configure() {
 		-DWITH_BULLET="$(usex bullet)"
 		-DWITH_CYCLES="$(usex cycles)"
 		-DWITH_DOC_MANPAGE="$(usex man)"
+		-DWITH_DRACO=$(usex draco)
 		-DWITH_FFTW3="$(usex fftw)"
 		-DWITH_GMP="$(usex gmp)"
 		-DWITH_GTESTS=OFF
@@ -297,8 +284,8 @@ src_configure() {
 		-DWITH_INTERNATIONAL="$(usex nls)"
 		-DWITH_MANIFOLD="$(usex manifold)"
 		-DWITH_MATERIALX="no" # TODO: Package MaterialX
+		-DWITH_MESHOPTIMIZER=$(usex meshoptimizer)
 		-DWITH_NANOVDB="$(usex nanovdb)"
-		-DWITH_OPENCOLORIO="$(usex color-management)"
 		-DWITH_OPENGL_BACKEND="$(usex opengl)"
 		-DWITH_OPENIMAGEDENOISE="$(usex oidn)"
 		-DWITH_OPENSUBDIV="$(usex opensubdiv)"
@@ -338,7 +325,6 @@ src_configure() {
 
 		# Image Formats:
 		# -DWITH_IMAGE_CINEON=ON
-		-DWITH_IMAGE_OPENEXR="$(usex openexr)"
 		-DWITH_IMAGE_OPENJPEG="$(usex jpeg2k)"
 		-DWITH_IMAGE_WEBP="$(usex webp)" # unlisted
 
@@ -369,7 +355,6 @@ src_configure() {
 		-DPYTHON_INCLUDE_DIR="$(python_get_includedir)"
 		-DPYTHON_LIBRARY="$(python_get_library_path)"
 		-DPYTHON_VERSION="${EPYTHON/python/}"
-		-DWITH_DRACO="yes" # TODO: Package Draco # NOTE use bundled for now
 
 		# Modifiers:
 		-DWITH_MOD_FLUID="$(usex fluid)"
@@ -390,7 +375,6 @@ src_configure() {
 
 		-DWITH_CYCLES_DEVICE_HIP="$(usex hip)"
 		-DWITH_CYCLES_HIP_BINARIES="$(usex hip "$(usex cycles-bin-kernels)")"
-		-DWITH_CYCLES_DEVICE_HIPRT="$(usex hip "$(usex hiprt)")"
 		-DWITH_CYCLES_HYDRA_RENDER_DELEGATE="no" # TODO: package Hydra
 
 		# -DWITH_CYCLES_STANDALONE=OFF
@@ -446,13 +430,6 @@ src_configure() {
 
 			-DCYCLES_HIP_BINARIES_ARCH="$(get_amdgpu_flags)"
 		)
-
-		if use hiprt; then
-			mycmakeargs+=(
-				-DHIPRT_ROOT_DIR="${ESYSROOT}/usr/lib/hiprt/2.5"
-				-DHIPRT_COMPILER_PARALLEL_JOBS="$(makeopts_jobs)"
-			)
-		fi
 	fi
 
 	if use optix; then

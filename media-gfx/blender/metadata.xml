@@ -20,7 +20,6 @@
 		<flag name="ceres">
 			Enable Ceres (Nonlinear least-squares minimizer).
 		</flag>
-		<flag name="color-management">Enable color management via <pkg>media-libs/opencolorio</pkg>.</flag>
 		<flag name="cuda">
 			Build cycles renderer with nVidia CUDA support.
 		</flag>
@@ -42,6 +41,9 @@
 		<flag name="doc">
 			Build C and Python API documentation directly from the source code.
 		</flag>
+		<flag name="draco">
+			Enable Draco for compressing and decompressing 3D geometric meshes and point clouds via <pkg>media-libs/draco</pkg>.
+		</flag>
 		<flag name="embree">
 			Use embree to accelerate certain areas of the Cycles render engine.
 		</flag>
@@ -55,7 +57,10 @@
 			Build and install man pages.
 		</flag>
 		<flag name="manifold">
-			Enable Manifold render backend via <pkg>sci-mathematics/manifold</pkg>
+			Enable Manifold render backend via <pkg>sci-mathematics/manifold</pkg>.
+		</flag>
+		<flag name="meshoptimizer">
+			Enable mesh optimization via <pkg>media-libs/draco</pkg>.
 		</flag>
 		<flag name="nanovdb">
 			Enable nanoVDB support in Cycles. Uses less memory than regular openVDB when rendering.
