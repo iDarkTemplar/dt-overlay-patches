@@ -201,6 +201,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-4.0.2-FindClang.patch"
 	"${FILESDIR}/${PN}-4.1.1-FindLLVM.patch"
 	"${FILESDIR}/${PN}-4.3.2-system-glog.patch"
+	"${FILESDIR}/${PN}-5.2.3-ffmpeg-compat.patch"
 )
 
 CMAKE_BUILD_TYPE="Release"
